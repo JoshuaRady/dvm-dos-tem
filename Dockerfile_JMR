@@ -253,6 +253,11 @@ COPY --from=dvmdostem-dev /lib/x86_64-linux-gnu/libsqlite3.so.0 /lib/x86_64-linu
 COPY --from=dvmdostem-dev /lib/x86_64-linux-gnu/libheimbase.so.1 /lib/x86_64-linux-gnu/libheimbase.so.1
 
 # JMR_MOD_START:
+
+# Provide information to configure tzdata:
+ENV US/Eastern \
+    DEBIAN_FRONTEND=noninteractive
+
 # Not sure why all this is needed here.
 RUN apt-get update --fix-missing -y && apt-get install -y r-base
 
