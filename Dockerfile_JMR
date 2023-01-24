@@ -255,7 +255,7 @@ COPY --from=dvmdostem-dev /lib/x86_64-linux-gnu/libheimbase.so.1 /lib/x86_64-lin
 # JMR_MOD_START:
 
 # Provide information to configure tzdata:
-ENV US/Eastern \
+ENV TZ=US/Eastern \
     DEBIAN_FRONTEND=noninteractive
 
 # Not sure why all this is needed here.
