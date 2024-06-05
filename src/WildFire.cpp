@@ -274,17 +274,40 @@ void WildFire::burn(int year) {
   BOOST_LOG_NAMED_SCOPE("burning");
   BOOST_LOG_SEV(glg, note) << "HELP!! - WILD FIRE!! RUN FOR YOUR LIFE!";
 
+  // FW_DRAFT_COMMENT: Clear the FireData object:
   BOOST_LOG_SEV(glg, debug) << fd->report_to_string("Before WildFire::burn(..)");
   BOOST_LOG_SEV(glg, note) << "Burning (simply clearing?) the 'FireData object...";
   fd->burn();
   BOOST_LOG_SEV(glg, debug) << fd->report_to_string("After FirData::burn(..)");
   
+
+  // FW_Note:
+  // Determine the fire model we are using:
+  // Pseudocode...
+  if (theFireMode == classic)
+  {
+
+  // FW_DRAFT_COMMENT: Calculate the burn depth based on the fire severity:
   // for soil part and root burning
   // FIX: there isn't really a reason for getBurnOrgSoilthick to return a value
   // as it has already set the "burn thickness" value in FirData...
   double burndepth = getBurnOrgSoilthick(year);
   BOOST_LOG_SEV(glg, debug) << fd->report_to_string("After WildFire::getBurnOrgSoilthick(..)");
+  
+  }
+  else// if theFireMode == new)
+  {
+    //Determine the surface fuels...
+    //Feed fuels and conditions into surface fire models:
+      //Rothermel & Albini -> Burnup
+      // Fuel consumption here must be reflected in update of "litter" components of soil layers below.
+    
+    //Input energy from aboveground fire into soil suface to start ground fire model...
+    
+  }
 
+  // FW_DRAFT_COMMENT: Update soil layers and carbon based on the burn depth.
+  // FW_NOTE: We need to separate out the "litter" soil layer to make the following work for both approaches.
   BOOST_LOG_SEV(glg, note) << "Setup some temporary pools for tracking various burn related attributes (depths, C, N)";
   double totbotdepth = 0.0;
   double burnedsolc = 0.0;
