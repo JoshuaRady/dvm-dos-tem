@@ -12,3 +12,5 @@
  */
 
 void RevisedFire(WildFire* wf).
+
+double GetMidflameWindSpeed();

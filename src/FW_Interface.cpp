@@ -47,9 +47,10 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
   double tempAir = wf->edall.d_atms.ta;//Daily air temp (at surface).
   //Curten (daily if not hourly) (relative) humidity is needed.  A recent time history of
   //double humidity = ?????
-  //Wind speed (m/min) at midflame height is approximated as 2m wind speed.  We need a sub-daily value ~ daily value?
-  //double windSpeed = ?????;//Wind speed does not seem to be available.
-  //The wildfire object contains the slope.
+  
+  double windSpeed = GetMidflameWindSpeed();
+  
+  //The wildfire object contains the slope:
   double slope = wf->slope;//What at the units?  May have to convert to fractional slope.
   //Shortwave radiation may be needed for the moisture calculations.
   
@@ -102,6 +103,33 @@ FuelModel GetMatchingFuelModel(int cmt)
   
   return fuelModel;
 }
+
+/** Get the wind speed at midflame height in m/min.
+ *
+ * The Rothermel Albini spread model takes midflame wind speed, something we are unlikely to ever
+ * have.  If fact the midflame height is not even known prior to running the model, which results
+ * in an unresolvable circularity.  In practice no one seems to worry about this much.  An estimate
+ * of near surface wind speed is what we need.  As a first pass we are going to approximate it as
+ * ~2m wind speed.  The input may not match this so we need to compute our best estimate.
+ *
+ We need a sub-daily value ~ daily value?
+ * The code has to do the following:
+ * - Get the daily windspeed from the host model
+ *   Note: Windspeed is not yet available in DVM-DOS-TEM, but it should be soon.
+ * - Calculate the windspeed at ~2m (or some other value?) if the provided wind speed is at another
+ *   height.
+ * - Possibly: Estimate a sub-daily from a daily mean value.  The fire may occur on timescale where
+ *   it occurs at a specific time of day.  In this case it would be good to estimate what the wind
+ *   speed was at this time.  This may be difficult as wind can be highly variable and may not be
+ *   well predicted by diurnal cycles.
+ * - Convert to m/min if needed.
+ */
+double GetMidflameWindSpeed()//Could pass in the desired height or time of day?
+{
+	//Temporary stub, return an arbitrary value!!!!!:
+	//Summer average wind speeds are ~6 mph in Fairbanks Alaska.
+	//6 * ftPerMi / 60 / ftPerM = 160.9344
+	return 160.9344;
 
 /* Calculate fuel moisture based on recent weather:
 *
