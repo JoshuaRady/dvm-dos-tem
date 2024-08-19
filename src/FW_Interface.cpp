@@ -42,20 +42,10 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
 
   //
 
-  //Determine the surface fuels from the model vegetation and soil states:
-  //The fuels must be estimated from:
-  // - Live fuels: gramanoid, herbaceous, shrub PFTs, and the moss layer.
-  // - Litter: The first soil layer dead vegetation component (rawc) and woody debris (wdebrisc),
-  //which currently is only present after a previous fire.
-  //The mass is upscaled from the carbon stocks.  The litter is distributed into the SAV bins based
-  //on guesstimates informed the PFT inputs and by some ideas of breakdown rates.
-  //Previous or current cfall could be used to help estimate this but some assumptions still need
-  //to be made.
-  
-  //Update the fuel masses from their default values:
-  //fm.w_o_ij[0] = ...
-  
-  
+  //Determine the surface fuels from the model vegetation and soil states and update the fuel
+  //loadings from their default values:
+  CohortStatesToLoading(wf->cd, fm);//Private data access!!!!!
+
   //Do we calculate the fuel bed depth or is it fixed?
   //We could calculate it from af fixed fuel fuel bed density as FATES does.
   //fm.delta = X;
@@ -211,6 +201,33 @@ FuelMoisture CalculateDeadFuelMoisture()
   //...
   
   return fmc;
+}
+
+/** Determine fuel loadings based on the cohorts states:
+ *
+ * This process represts a theory what represent fuels in DVM-DOS-TEM.  Once the mapping is defined
+ * the fuel loadings are know, since model states are clearly defined.  Since the mapping itself is
+ * a theory it represets a place where assumptions could change.
+ *
+//The fuels must be estimated from:
+// - Live fuels: gramanoid, herbaceous, shrub PFTs, and the moss layer.
+// - Litter: The first soil layer dead vegetation component (rawc) and woody debris (wdebrisc),
+//which currently is only present after a previous fire.
+//The mass is upscaled from the carbon stocks.  The litter is distributed into the SAV bins based
+//on guesstimates informed the PFT inputs and by some ideas of breakdown rates.
+//Previous or current cfall could be used to help estimate this but some assumptions still need
+//to be made.
+ 
+ 
+ * Either return w_o_ij or update it in the fuel model.  We might as well do the later if we pass
+ * the model in.  we could just pass SAV_ij in?  Passing in the fuel model allows it to be updated.
+ */
+void CohortStatesToLoading(const CohortData *cd, FuelModel& fm)
+{
+  const c2b = 0.5;//The carbon to biomass ratio for vegetation on a dry basis.
+  //Can this be fixed for all vegetation or does it need vary?
+  
+  
 }
 
 /** Simulate ground fire returning or updating the burn depth...
