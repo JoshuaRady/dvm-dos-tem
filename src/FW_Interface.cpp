@@ -11,6 +11,8 @@
  * should be expected to change.
  */
 
+#include "FireweedRAFireSpread.h"
+
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology,
  *
 The function takes the ecosystem state (cohort pointer? WildFire pointer) and meteorology...
@@ -23,8 +25,22 @@ The soil burn depth should be returned/recorded to take advantage of the existin
 void RevisedFire(WildFire* wf)//The name will definitely change.
 {
 
-  //Determine the fuel model matching the location's CMT:
-  FuelModel fm = GetMatchingFuelModel(CMTnumber)
+  //Determine the fuel model matching the location's CMT:------------------
+  
+  //Get the CMT for the grid cell:
+  //The CMT number is in the CohortData member of the cohort.  The WildFire object maintains a
+  //pointer to it's parent cohort data but it is  private.  This code needs to be in the class,
+  //a friend or have access to the cohort.
+  int theCMTumber = wf->cd.cmttype;//Private data access!!!!!
+
+  //Crosswalk from CMT to fuel model:
+  fuelModelNumber = GetMatchingFuelModel(theCMTumber);
+
+  //The fuel model table file needs to be added to the config file and be loaded:
+  std::string fuelModelTablePath = "/Some/Path/Dropbox/StandardFuelModelTableFileName.csv";//Or tab delimited.
+  FuelModel fm = GetFuelModelFromCSV(fuelModelTablePath, fuelModelNumber);
+
+  //
 
   //Determine the surface fuels from the model vegetation and soil states:
   //The fuels must be estimated from:
@@ -40,11 +56,13 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
   //fm.w_o_ij[0] = ...
   
   
-  //De we calculate the fuel bed depth?
+  //Do we calculate the fuel bed depth or is it fixed?
+  //We could calculate it from af fixed fuel fuel bed density as FATES does.
+  //fm.delta = X;
   
   
   //Gather weather conditions:
-  double tempAir = wf->edall.d_atms.ta;//Daily air temp (at surface).
+  double tempAir = wf->edall.d_atms.ta;//Daily air temp (at surface).  Private data access!!!!!
   //Curten (daily if not hourly) (relative) humidity is needed.  A recent time history of
   //double humidity = ?????
   
@@ -53,29 +71,52 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
   //The wildfire object contains the slope:
   double slope = wf->slope;//What at the units?  May have to convert to fractional slope.
   //Shortwave radiation may be needed for the moisture calculations.
-  
-  
-  //Fuel moisture must be calculated.
-  FuelMoisture theFuelMoisture = CalculateDeadFuelMoisture()
+
+
+  //Fuel moisture must be calculated:-------------
+  //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
+  //might change the fuel sizes.
+  std::vector <double> M_f_ij;
+
+  FuelMoisture theFuelMoisture = CalculateDeadFuelMoisture();//Dead fuel moisture.
+
+  type x = CALCULATELIVEFUELMOISTURE();
+
+  //Combine the live and dead moisture.
   //fm.M_f_ij[0] = theFuelMoisture.XXXXX
-  
-  
+  //M_f_ij
+
+  //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
+  if (UseDynamicFuelMoisture)//Add switch for dynamic moisture!!!!!
+  {
+    fm.CalculateDynamicFuelCuring(M_f_ij);
+  }
+  else
+  {
+    fm.SetFuelMoisture(M_f_ij);
+  }
+
+
   //Feed fuels and weather conditions into surface fire models:
+
   //First to Rothermel & Albini.  We use the calculations to get some component values.
   //This interface is under development.  It takes a fuel model (and attendant data) and returns the
   //calculation details.
-  //FM = SAV_ij, w_o_ij, M_x_1, M_f_ij, h_ij, S_T_ij, S_e_ij, rho_p_ij, liveDead
-  RAData raData = SpreadRateRothermelAlbini_Het(fm,
-                                     fuelBedDepth?????,//fuelBedDepth
-                                     windSpeed,//U
-                                     slope,//slopeSteepness
-                                     false,//useWindLimit
-                                     Metric,//units
-                                     FALSE)//debug
-  
+  //M_f_ij does not need to be included if it is adde to the fuel model object above.
+  SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm,
+                                                      windSpeed,//U
+                                                      slope)//,//slopeSteepness
+                                                      //M_f_ij,//fuel moisture
+                                                      //false,//useWindLimit
+                                                      //FALSE);//debug
+
+
   //Use the fire energy flux into the soil along with the fuel model as input into Burnup:
+  //There are additional fuel and environmental parameters needed here!!!!!
   //raData.XXXXX
-  
+
+
+
   //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
   //the fire air temp (Burnup fire environmental temperature?) as input to the ground fire model:
   //...
@@ -88,20 +129,25 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
 
 }
 
-/* Determine the fuel model matching a given community type:
-
- * Note: FuelModel does not yet exist and is being developed elsewhere!
+/* Determine the fuel model (number) matching a given community type:
+ *
+ * Each CMT has [will have] a predetermined fuel model assigned to it via a parameter file.
+ * It needs to be determined if this will be the CMT parmameter file or an additional lookup table.
  */
-FuelModel GetMatchingFuelModel(int cmt)
+//FuelModel GetMatchingFuelModel(int cmt)
+int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
 {
   //Get the number of the fuel model from the crosswalk in the parameter files.
   //This crosswalk needs to be made!!!!!
   int fuelModelNumber = 1;//Temporarily hardwired
   
+  
+  //If no match either throw an error or warn and return a default fuel model.
+  
   //Get the fuel model data:
   //fuelModel = GetFuelModel(fuelModelNumber);
-  
-  return fuelModel;
+  //return fuelModel;
+  return fuelModelNumber;
 }
 
 /** Get the wind speed at midflame height in m/min.
@@ -131,7 +177,7 @@ double GetMidflameWindSpeed()//Could pass in the desired height or time of day?
 	//6 * ftPerMi / 60 / ftPerM = 160.9344
 	return 160.9344;
 
-/* Calculate fuel moisture based on recent weather:
+/** Calculate fuel moisture based on recent weather:
 *
 * This is a fire science dependent function and as such should probably be moved into the FW library.
 * Here the emphasis is on determining the available inputs we can pass in.
