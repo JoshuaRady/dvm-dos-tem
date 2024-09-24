@@ -71,7 +71,7 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
   //Fuel moisture must be calculated:-------------
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
-  std::vector <double> M_f_ij = CalculateFuelMoisture(fm, tempAir, slope);
+  std::vector <double> M_f_ij = CalculateFuelMoisture(theCohort, fm);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
   if (UseDynamicFuelMoisture)//Add switch for dynamic moisture!!!!!
@@ -166,116 +166,140 @@ double GetMidflameWindSpeed()//Could pass in the desired height or time of day?
 }
 
 /** Calculate fuel moisture based on recent weather:
-*
-* This is a fire science dependent function and as such should probably be moved into the FW library.
-* Here the emphasis is on determining the available inputs we can pass in.
-* An alternative to calculating this at the time of fire would be to make fuel moisture a constantly
-* calculated state.  This would moke more sense if litter existed as a distinct stock as well.
-
-The 1 and 10 hour values could probably be estimated from a daily value, though we have to
-assume a time of day.  We can superimpose a diurnal cycle.  The longer equilibrating fuels will
-need some way of estimating the humidity value for the recent past.
-Days since last rain is available in wf->edall.d_atms.
-
-The Nelson and Fosberg models should be the first to consider.
-These models calculate moistures for ideal hour classes, which have matching diameters.  We could
-better inform the moistures with the actual SAV's diameters.
-Note: consider adding diameteres to the fuel model class!!!!!
-
-Inputs:
-- Humidity, temp, recent precip?
-
- * @param tempAir The air temperature (degrees C).
- * @param slope				Units??????
-
-
+ *
+ * An alternative to calculating this at the time of fire would be to make fuel moisture a
+ * continuously calculated state.  This would moke more sense if litter existed as a distinct stock
+ * as well.
+ *
+ * @param thisCohort The cohort object for this site.
+ * @param fm The fuel model object for this site.
+ *
  * @returns M_f_ij The fuel moisture for all fuel classes.  This is not returned in the fuel model
  * passed in because we don't know if curing is being applied.
  */
-// FuelMoisture CalculateDeadFuelMoisture()
-// {
-//   FuelMoisture dfmc;//FMC = dead fuel moisture content.
-//   
-//   //...
-//   
-//   return fmc;
-// }
-std::vector <double> CalculateFuelMoisture(FuelModel& fm, double tempAir, double slope)
+//std::vector <double> CalculateFuelMoisture(FuelModel& fm, double tempAir, double slope)
+std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm)
 {
-  //thisCohort = the cohort we are in!!!!!
-  
   std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
 
-  //Dead fuel moisture:
-  //
-
-  int hourOfDay = 15;//
-
-  int monthOfYearIndex = X;//0 based			Get!!!!!!
+  //Get the current date:
+  //The month is stored in the cohorts CohortData but that may not be the correct place to get it.
+  //We may need to get from somewhere else upstream.
+  int monthOfYearIndex = thisCohort.cd.month;//0 based
   int monthOfYear = monthOfYearIndex + 1;
-  int dayOfMonthIndex = Y;//0 based...		Get!!!!!!
 
-  //Calculate relative humidity:
-  p_hPa = Z;//Get the atmospheric pressure...
+  //The day of month is really up to us.  The middle of the month seems resonable.  We'll use the
+  //15th for now and add a calculation later?
+  int dayOfMonthIndex = 14;//0 based.
 
-  //Partial pressure of water vapor...
-  P = thisCohort->climate.vapo_d[dayOfMonthIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
-  
-  double P_s = SaturationVaporPressureBuck(tempAir, p_hPa);//Or Climate.cpp calculate_saturated_vapor_pressure()? 
-  //Appears be available as thisCohort->climate.svp_d[]?
+  //The daily data provided in Climate is a vector and should be 0 indexed but the code notes that
+  //it currently returns 366 days.
+  int dayOfYearIndex = temutil::day_of_year(monthOfYearIndex, dayOfMonthIndex);
 
-  double rh = RHfromVP(P, P_s);//Calculate relative humidity.
 
-  //Get the aspect...
+  //Dead fuel moisture:---------------------------
 
+  //Current air temperature:
+  //float tempAir = thisCohort.climate.tair[monthOfYearIndex]//Monthly
+  float tempAir = thisCohort.climate.tair_d[dayOfYearIndex];
+
+  //Calculate current relative humidity:
+
+  //Atmospheric pressure is needed for the the Fireweed code method.
+  //Sea level barometric pressure will be available soon but is not currently.  Use this along with
+  //thisCohort.cd.cell_elevation() to get the pressure at this elevation.
+  //p_hPa = Z;
+
+  //Partial pressure of water vapor:
+  //This is an input variable.  There has been some discussion recently about the units of this.
+  //The docs say it is in hPa but it is used in the code as if it is in in Pa
+  //(see Climate.cpp calculate_vpd()).
+  float P_Pa = thisCohort.climate.vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
+
+  //Saturated vapor pressure:
+  //double P_s_hPa = SaturationVaporPressureBuck(tempAir, p_hPa);//Fireweed method returns hPa.
+  //This is a computed climate variable.
+  float P_s_Pa = thisCohort.climate.svp_d[dayOfYearIndex];//From the code this must be in Pa.
+
+  //Use the pressures to calculate relative humidity:
+  double rhPct = RHfromVP(P_Pa, P_s_Pa);
+
+  //We assume that fires occur in the mid-afternoon.  The exact hour might need to be shared across
+  //the entire fire code.  The Fosberg model was originally devise with afternoon (~14:30) values in
+  //mind, but the table method used below can take any daylight time.
+  int hourOfDay = 15;
+
+  //Slope:
+  //Also duplicated in the Wildfire object.
+  double slopePct = thisCohort.cd.cell_slope;//Percent
+
+  //Get the aspect:
+  //Also duplicated in the Wildfire object.
+  double aspect = thisCohort.cd.cell_aspect;//Units are probably degrees?????
+
+  //Shading:
+  //Shading should take into consideration both cloudiness and canopy cover but we arr currently
+  //only able to address the later.
+  bool shaded = false;
+  if (thisCohort.climate.cld_d[dayOfYearIndex] > 50.0)
+  {
+  	shaded = true;
+  }
+
+  //Need to add paths to config file!!!!!
   double oneHrFM = FosbergNWCG_1HrFM(std::string tableA_Path, std::string tableB_Path, std::string tableC_Path,
-                         std::string tableD_Path,
-                         tempAir, rh, 
-                         monthOfYear, hourOfDay,
-                         double slopePct, char aspectCardinal, bool shaded = false,
-                         char elevation = 'L', UnitsType units = US);
+                                     std::string tableD_Path,
+                                     tempAir, rhPct, monthOfYear, hourOfDay,
+                                     slopePct,
+                                     aspectCardinal,//Need to convert from degrees.
+                                     shaded,
+                                     'L',//The default value for elevation could be omitted if the default for units was changed to metric.
+                                     Metric);
 
   double tenHrFM = NWCG_10hrFM(double oneHrFM);
   double hundredHrFM = NWCG_100hrFM(double oneHrFM);
 
-  //Live fuel moisture:
-  
-  //Minimum and maximum daily temperature are not currently available but will be soon.  We use a
-  //stub for now.
-  double tempCMin = GetDailyMinimumTemperature(tempAir);
+  //Live fuel moisture:---------------------------
+  //The GSI based fuel moistures should be averages of the 21 days up to today:
+  //Monthly values /might work but I suspect minimum daily temp could cause big departures at some
+  //times of the year.
 
-  //Calculate VPD from available mean daily weather values:
-  //double p_hPa = ????;
-  double vpdPa = VPDfromRHBuck(tempAir, rh, p_hPa);// Change units!!!!!
-  //Or use Climate.cpp calculate_vpd() and calculate_saturated_vapor_pressure().
-  //Or may be available as thisCohort->climate.vpd_d[]?
+  double herbLFM = 0;
+  double woodyLFM = 0;
+  for (int i = dayOfYearIndex - 20; i <= dayOfYearIndex; i++)
+  {
+    //Minimum and maximum daily temperature are not currently available but will be soon.  We
+    //use a hack value for now:
+    float tempCMin = thisCohort.climate.tair_d[i] - 10;
+    
+    //Get the VPD:
+    float vpdPa = thisCohort.climate.vpd_d[i];
+    //Or calculate VPD from mean daily weather values:
+    //double p_hPa = ?????;
+    //...
+    //double vpd_hPa = VPDfromRHBuck(tempAir, rh, p_hPa);
 
-  //The day length can be obtained from the length_of_day() routine in TEMUtilityFunctions.h, which
-  //is in hours.
-  int dayOfYear = temutil::day_of_year(monthOfYearIndex, dayOfMonthIndex);
-  //double dayLength = length_of_day();
-  double dayLengthSec = temutil::length_of_day(cohort->lat, dayOfYear) * 60 * 60;//Need the cohort!!!!!
-  
-  double gsi = GrowingSeasonIndex(tempCMin, vpdPa, dayLengthSec);
-  double HerbaceousLiveFuelMoisture(gsi);
-  double WoodyLiveFuelMoisture(gsi);
+    //temutil::length_of_day gives the he day length in hours:
+    float dayLengthSec = temutil::length_of_day(theCohort->lat, dayOfYearIndex) * 60 * 60;
 
-  //Combine the live and dead moisture:
-  
+    double gsi = GrowingSeasonIndex(tempCMin, vpdPa, dayLengthSec);
+    herbLFM += HerbaceousLiveFuelMoisture(gsi);
+    woodyLFM += WoodyLiveFuelMoisture(gsi);
+  }
+  //Average:
+  herbLFM = herbLFM / 21;
+  woodyLFM = woodyLFM / 21;
+
+
+  //Combine the live and dead moisture:-----------
+  //This makes assumption that the order is that of a standard fuel model.
   fm.M_f_ij[0] = oneHrFM;
-  fm.M_f_ij[1] =
-  fm.M_f_ij[2] =
-  fm.M_f_ij[3] =
-  fm.M_f_ij[4] =
+  fm.M_f_ij[1] = tenHrFM;
+  fm.M_f_ij[2] = hundredHrFM;
+  fm.M_f_ij[3] = herbLFM;
+  fm.M_f_ij[4] = woodyLFM;
 
   return M_f_ij;
-}
-
-/** A stub to use until the minimum daily temperature is available as an input:
- */
-double GetDailyMinimumTemperature(double meanDailyAirTempC)
-{
-	return meanDailyAirTempC - 10;
 }
 
 /** Determine fuel loadings based on the cohorts states:
