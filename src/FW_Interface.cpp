@@ -12,6 +12,10 @@
  */
 
 #include "FireweedRAFireSpread.h"
+#include "FireweedDeadFuelMoistureFosberg.h"
+#include "FireweedLiveFuelMoistureGSI.h"
+#include "FireweedMetUtils.h"
+#include "TEMUtilityFunctions.h"//For length_of_day().
 
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology,
  *
@@ -67,15 +71,7 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
   //Fuel moisture must be calculated:-------------
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
-  std::vector <double> M_f_ij;
-
-  FuelMoisture theFuelMoisture = CalculateDeadFuelMoisture();//Dead fuel moisture.
-
-  type x = CALCULATELIVEFUELMOISTURE();
-
-  //Combine the live and dead moisture.
-  //fm.M_f_ij[0] = theFuelMoisture.XXXXX
-  //M_f_ij
+  std::vector <double> M_f_ij = CalculateFuelMoisture(fm, tempAir, slope);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
   if (UseDynamicFuelMoisture)//Add switch for dynamic moisture!!!!!
@@ -120,7 +116,7 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
 
 }
 
-/* Determine the fuel model (number) matching a given community type:
+/** Determine the fuel model (number) matching a given community type:
  *
  * Each CMT has [will have] a predetermined fuel model assigned to it via a parameter file.
  * It needs to be determined if this will be the CMT parmameter file or an additional lookup table.
@@ -167,12 +163,13 @@ double GetMidflameWindSpeed()//Could pass in the desired height or time of day?
 	//Summer average wind speeds are ~6 mph in Fairbanks Alaska.
 	//6 * ftPerMi / 60 / ftPerM = 160.9344
 	return 160.9344;
+}
 
 /** Calculate fuel moisture based on recent weather:
 *
 * This is a fire science dependent function and as such should probably be moved into the FW library.
 * Here the emphasis is on determining the available inputs we can pass in.
-* An alternative to calculating this at the time od fire would be to make fuel moisture a constantly
+* An alternative to calculating this at the time of fire would be to make fuel moisture a constantly
 * calculated state.  This would moke more sense if litter existed as a distinct stock as well.
 
 The 1 and 10 hour values could probably be estimated from a daily value, though we have to
@@ -188,20 +185,97 @@ Note: consider adding diameteres to the fuel model class!!!!!
 Inputs:
 - Humidity, temp, recent precip?
 
-Output:
-A fuel moisture object seems like a compact way to return the moisture values.
-Note: FuelMoisture does not currently exist!
+ * @param tempAir The air temperature (degrees C).
+ * @param slope				Units??????
 
-What about live fuel moisture?
 
+ * @returns M_f_ij The fuel moisture for all fuel classes.  This is not returned in the fuel model
+ * passed in because we don't know if curing is being applied.
  */
-FuelMoisture CalculateDeadFuelMoisture()
+// FuelMoisture CalculateDeadFuelMoisture()
+// {
+//   FuelMoisture dfmc;//FMC = dead fuel moisture content.
+//   
+//   //...
+//   
+//   return fmc;
+// }
+std::vector <double> CalculateFuelMoisture(FuelModel& fm, double tempAir, double slope)
 {
-  FuelMoisture dfmc;//FMC = dead fuel moisture content.
+  //thisCohort = the cohort we are in!!!!!
   
-  //...
+  std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
+
+  //Dead fuel moisture:
+  //
+
+  int hourOfDay = 15;//
+
+  int monthOfYearIndex = X;//0 based			Get!!!!!!
+  int monthOfYear = monthOfYearIndex + 1;
+  int dayOfMonthIndex = Y;//0 based...		Get!!!!!!
+
+  //Calculate relative humidity:
+  p_hPa = Z;//Get the atmospheric pressure...
+
+  //Partial pressure of water vapor...
+  P = thisCohort->climate.vapo_d[dayOfMonthIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
   
-  return fmc;
+  double P_s = SaturationVaporPressureBuck(tempAir, p_hPa);//Or Climate.cpp calculate_saturated_vapor_pressure()? 
+  //Appears be available as thisCohort->climate.svp_d[]?
+
+  double rh = RHfromVP(P, P_s);//Calculate relative humidity.
+
+  //Get the aspect...
+
+  double oneHrFM = FosbergNWCG_1HrFM(std::string tableA_Path, std::string tableB_Path, std::string tableC_Path,
+                         std::string tableD_Path,
+                         tempAir, rh, 
+                         monthOfYear, hourOfDay,
+                         double slopePct, char aspectCardinal, bool shaded = false,
+                         char elevation = 'L', UnitsType units = US);
+
+  double tenHrFM = NWCG_10hrFM(double oneHrFM);
+  double hundredHrFM = NWCG_100hrFM(double oneHrFM);
+
+  //Live fuel moisture:
+  
+  //Minimum and maximum daily temperature are not currently available but will be soon.  We use a
+  //stub for now.
+  double tempCMin = GetDailyMinimumTemperature(tempAir);
+
+  //Calculate VPD from available mean daily weather values:
+  //double p_hPa = ????;
+  double vpdPa = VPDfromRHBuck(tempAir, rh, p_hPa);// Change units!!!!!
+  //Or use Climate.cpp calculate_vpd() and calculate_saturated_vapor_pressure().
+  //Or may be available as thisCohort->climate.vpd_d[]?
+
+  //The day length can be obtained from the length_of_day() routine in TEMUtilityFunctions.h, which
+  //is in hours.
+  int dayOfYear = temutil::day_of_year(monthOfYearIndex, dayOfMonthIndex);
+  //double dayLength = length_of_day();
+  double dayLengthSec = temutil::length_of_day(cohort->lat, dayOfYear) * 60 * 60;//Need the cohort!!!!!
+  
+  double gsi = GrowingSeasonIndex(tempCMin, vpdPa, dayLengthSec);
+  double HerbaceousLiveFuelMoisture(gsi);
+  double WoodyLiveFuelMoisture(gsi);
+
+  //Combine the live and dead moisture:
+  
+  fm.M_f_ij[0] = oneHrFM;
+  fm.M_f_ij[1] =
+  fm.M_f_ij[2] =
+  fm.M_f_ij[3] =
+  fm.M_f_ij[4] =
+
+  return M_f_ij;
+}
+
+/** A stub to use until the minimum daily temperature is available as an input:
+ */
+double GetDailyMinimumTemperature(double meanDailyAirTempC)
+{
+	return meanDailyAirTempC - 10;
 }
 
 /** Determine fuel loadings based on the cohorts states:
