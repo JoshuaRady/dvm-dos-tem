@@ -64,11 +64,11 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
   
   //The wildfire object contains the slope:
   //It is also in the CohortData object.
-  double slope = wf->slope;//What at the units?  May have to convert to fractional slope.
+  double slope = wf->slope;//This is percent slope.  Need to convert to fractional slope!!!!!
   //Shortwave radiation may be needed for the moisture calculations.
 
 
-  //Fuel moisture must be calculated:-------------
+  //Calculate fuel moisture:----------------------
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
   std::vector <double> M_f_ij = CalculateFuelMoisture(theCohort, fm);
@@ -172,12 +172,11 @@ double GetMidflameWindSpeed()//Could pass in the desired height or time of day?
  * as well.
  *
  * @param thisCohort The cohort object for this site.
- * @param fm The fuel model object for this site.
+ * @param fm The fuel model object for this site.			Not currently being used!!!!!
  *
  * @returns M_f_ij The fuel moisture for all fuel classes.  This is not returned in the fuel model
  * passed in because we don't know if curing is being applied.
  */
-//std::vector <double> CalculateFuelMoisture(FuelModel& fm, double tempAir, double slope)
 std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm)
 {
   std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
@@ -241,14 +240,21 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelM
   //Shading should take into consideration both cloudiness and canopy cover but we arr currently
   //only able to address the later.
   bool shaded = false;
-  if (thisCohort.climate.cld_d[dayOfYearIndex] > 50.0)
+  if (thisCohort.climate.cld_d[dayOfYearIndex] > 50.0)//Cloudiness is expressed as a percentage.
   {
   	shaded = true;
   }
+  //The canopy cover could be calculated from LAI.  LAI by PFT is available in thisCohort.cd.d_veg
+  //or m_veg, which are vegstate_dim objects.  The vegcov and fpc members could also be informative.
+  //The Fosberg model of canopy is definitely overhead tree canopy.
+  //For LAI:
+  // - Add up LAI for all trees.  This is some of the woody PFTs.  I'm not sure how to ignore shrubs.
+  // - This can be converted to a light extinction via Beers law ~ canopy cover.
+  // - Multiply the canopy cover fraction by the cloud fraction (climate.cld_d / 100).
+  // - If this product is > 0.5 shaded = true.
 
-  //Need to add paths to config file!!!!!
-  double oneHrFM = FosbergNWCG_1HrFM(std::string tableA_Path, std::string tableB_Path, std::string tableC_Path,
-                                     std::string tableD_Path,
+  //Need to add paths for the Fosberg table files to the config file!!!!!
+  double oneHrFM = FosbergNWCG_1HrFM(tableA_Path, tableB_Path, tableC_Path, tableD_Path,//!!!!!
                                      tempAir, rhPct, monthOfYear, hourOfDay,
                                      slopePct,
                                      aspectCardinal,//Need to convert from degrees.
@@ -293,11 +299,12 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelM
 
   //Combine the live and dead moisture:-----------
   //This makes assumption that the order is that of a standard fuel model.
-  fm.M_f_ij[0] = oneHrFM;
-  fm.M_f_ij[1] = tenHrFM;
-  fm.M_f_ij[2] = hundredHrFM;
-  fm.M_f_ij[3] = herbLFM;
-  fm.M_f_ij[4] = woodyLFM;
+  //It would be better to inform the numbers using information from the fuel model.
+  M_f_ij[0] = oneHrFM;
+  M_f_ij[1] = tenHrFM;
+  M_f_ij[2] = hundredHrFM;
+  M_f_ij[3] = herbLFM;
+  M_f_ij[4] = woodyLFM;
 
   return M_f_ij;
 }
