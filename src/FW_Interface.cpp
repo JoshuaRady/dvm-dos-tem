@@ -234,10 +234,10 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelM
 
   //Get the aspect:
   //Also duplicated in the Wildfire object.
-  double aspect = thisCohort.cd.cell_aspect;//Units are probably degrees?????
+  double aspect = thisCohort.cd.cell_aspect;//Degrees
 
   //Shading:
-  //Shading should take into consideration both cloudiness and canopy cover but we arr currently
+  //Shading should take into consideration both cloudiness and canopy cover but we are currently
   //only able to address the later.
   bool shaded = false;
   if (thisCohort.climate.cld_d[dayOfYearIndex] > 50.0)//Cloudiness is expressed as a percentage.
@@ -256,11 +256,7 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelM
   //Need to add paths for the Fosberg table files to the config file!!!!!
   double oneHrFM = FosbergNWCG_1HrFM(tableA_Path, tableB_Path, tableC_Path, tableD_Path,//!!!!!
                                      tempAir, rhPct, monthOfYear, hourOfDay,
-                                     slopePct,
-                                     aspectCardinal,//Need to convert from degrees.
-                                     shaded,
-                                     'L',//The default value for elevation could be omitted if the default for units was changed to metric.
-                                     Metric);
+                                     slopePct, aspect, shaded);//Default values for the rest.
 
   double tenHrFM = NWCG_10hrFM(double oneHrFM);
   double hundredHrFM = NWCG_100hrFM(double oneHrFM);

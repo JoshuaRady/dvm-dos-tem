@@ -11,6 +11,13 @@
  * should be expected to change.
  */
 
-void RevisedFire(WildFire* wf).
+#ifndef FW_INTERFACE_H
+#define FW_INTERFACE_H
+
+void RevisedFire(WildFire* wf);
 
 double GetMidflameWindSpeed();
+
+std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm);
+
+#endif //FW_INTERFACE_H
