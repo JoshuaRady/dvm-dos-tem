@@ -236,22 +236,29 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelM
   //Also duplicated in the Wildfire object.
   double aspect = thisCohort.cd.cell_aspect;//Degrees
 
-  //Shading:
-  //Shading should take into consideration both cloudiness and canopy cover but we are currently
-  //only able to address the later.
+  //Shading should take into consideration both cloudiness and canopy cover:
   bool shaded = false;
-  if (thisCohort.climate.cld_d[dayOfYearIndex] > 50.0)//Cloudiness is expressed as a percentage.
+
+  //Canopy cover is equivalent to the projected foliage area.  For the Fosberg NWCG method this is
+  //estimated visually.  As such it best to consider this the as the overhead tree canopy.  We can't
+  //get this exactly but we can approximate it by excluding the herbaceous and moss leaf area:
+  double fpcWoody = 0;
+  for (int i = 0; i < NUM_PFT; i++)
+  {
+    if (thisCohort.cd.d_veg.ifwoody[i])
+    {
+      fpcWoody += thisCohort.cd.d_veg.fpc[i];
+    }
+  }
+
+  //To combine the cloudiness (expressed as a percentage) and canopy cover (a fraction) we need to
+  //invert the the values so the product increases the effect when combined.  We then re-invert:
+  double shadeFrac = 1 - ((1 - (thisCohort.climate.cld_d[dayOfYearIndex] / 100)) * (1 - fpcWoody));
+
+  if (shadeFrac > 0.5)
   {
   	shaded = true;
   }
-  //The canopy cover could be calculated from LAI.  LAI by PFT is available in thisCohort.cd.d_veg
-  //or m_veg, which are vegstate_dim objects.  The vegcov and fpc members could also be informative.
-  //The Fosberg model of canopy is definitely overhead tree canopy.
-  //For LAI:
-  // - Add up LAI for all trees.  This is some of the woody PFTs.  I'm not sure how to ignore shrubs.
-  // - This can be converted to a light extinction via Beers law ~ canopy cover.
-  // - Multiply the canopy cover fraction by the cloud fraction (climate.cld_d / 100).
-  // - If this product is > 0.5 shaded = true.
 
   //Need to add paths for the Fosberg table files to the config file!!!!!
   double oneHrFM = FosbergNWCG_1HrFM(tableA_Path, tableB_Path, tableC_Path, tableD_Path,//!!!!!
