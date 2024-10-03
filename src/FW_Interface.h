@@ -17,6 +17,7 @@
 void RevisedFire(const Cohort& thisCohort, int monthIndex);
 
 int GetMatchingFuelModel(int cmt);
+void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm);
 
 double GetMidflameWindSpeed();
 

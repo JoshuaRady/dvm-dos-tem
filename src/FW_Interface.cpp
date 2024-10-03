@@ -17,6 +17,11 @@
 #include "FireweedMetUtils.h"
 #include "TEMUtilityFunctions.h"//For length_of_day().
 
+//Constants:
+const c2b = 2.0//The carbon to biomass multiplier for vegetation on a dry basis.
+//This could vary but many models use a single value.
+
+
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology,
  *
 The function needs the ecosystem state and meteorology...
@@ -151,17 +156,22 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
   return fuelModelNumber;
 }
 
-/** Determine fuel loadings based on the cohorts states:
+/** Determine fuel loadings based on the cohorts states and store then in the sites' fuel model:
  *
- * This process represts a theory what represent fuels in DVM-DOS-TEM.  Once the mapping is defined
+ * This process is a theory what represent fuels in DVM-DOS-TEM.  Once the mapping is defined
  * the fuel loadings are know, since model states are clearly defined.  Since the mapping itself is
  * a theory it represets a place where assumptions could change.
  *
 //The fuels must be estimated from:
+ * Current fuel mapping:
+ *
+ * Dead fuels:
+...
+
 // - Live fuels: graminoid, herbaceous, shrub PFTs, and the moss layer.
 // - Litter: The first soil layer dead vegetation component (rawc) and woody debris (wdebrisc),
 //which currently is only present after a previous fire.
-//The mass is upscaled from the carbon stocks.  The litter is distributed into the SAV bins based
+//The fuel mass is upscaled from the carbon stocks.  The litter is distributed into the SAV bins based
 //on guesstimates informed the PFT inputs and by some ideas of breakdown rates.
 //Previous or current cfall could be used to help estimate this but some assumptions still need
 //to be made.
@@ -170,38 +180,56 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
  * fuels of different sources as separate fuel types, even it they have the same SAV.  This is
  * especially relevant to moss, which could potentially be combined with fine dead material.
  *
- * Either return w_o_ij or update it in the fuel model.  We might as well do the later if we pass
- * the model in.  we could just pass SAV_ij in?  Passing in the fuel model allows it to be updated.
+ 
+Moss is tricky.  It's has it's own biomass stock so it's amount is simple to determine but it is a
+  live fuel that can act like a dead fuel.  It is also always present in DVM-DOS-TEM but may not
+  be what the authors were thinking about when they created the standard fuel models.  It also has
+  unique moisture dynamics.  It shouldn't just be shoved into either the fine dead of live
+  herbaceous type.
+  I think it makes sense to treat it as a live fuel or potentially as a dynamic fuel.  It should be
+  given its own SAV if the live herbaceous is too coarse.  The model has a couple of different moss
+  PFTs and an SAV could be given for each.
+ 
+ * @param thisCohort The cohort object for this site.
+ * @param fm The fuel model for the site (with default loadings).
+ *
+ * returns Nothing but the fuel model loadding (w_o_ij) is updated on return.
+ *
+ * ToDo:
+ * - Record the mapping of stocks to fuels in some way record the value before fire so we can update
+ * stocks appropriately afterwards.
  */
-//void CohortStatesToLoading(const CohortData *cd, FuelModel& fm)
-void CohortStatesToLoading(const Cohort& cd, FuelModel& fm)
+void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
 {
-  const c2b = 2.0//0.5;//The carbon to biomass ratio for vegetation on a dry basis.
-  //Can this be fixed for all vegetation or does it need vary?
-
   //Dead fuels:
-  //Most of the dead surface fuel comes from the rawc component of the first non-moss soil layer.
-  //I don't think the soil is is accessible for via the WildFire object or its CohortData.  The
-  //layers are linked from the Cohort itself.
-  Layer* topFibric = theCohort.soilbgc.ground.fstshlwl;
-  //Cast to SoilLayer?  No, rawc is part of Layer.
-
-  double rawC = topFibric->rawc;
+  //Dead surface fuels include litter and fallen debris.  In DVM-DOS-TEM these are represented by:
+  // - Litter: The rawc component of the first non-moss soil layer.  This is part of the 'soil' but
+  //is where all aboveground litter-fall ends up.  This may include some root cfall as well.   ??????
+  // - Large fire debris: After fire there is a pool of woody debris (wdebrisc) (and standing dead stems?).
+  //Currently we focus on the former.  We get the total 'litter' mass and distribute it among the
+  //fuel model's dead fuel size classes.
+  //We don't include dead moss.  We treat that as duff, part of the ground fuels.
+  
+  Layer* topFibric = theCohort.soilbgc.ground.fstshlwl;//Get the top non-moss layer.
+  double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
 
   //Distribute the rawc to the dead size classes:
-  int numDead = std::count(fm.liveDead.begin(), fm.liveDead.end(), Dead);
   
-  std::vector <double> SAV_DeadFM(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
-  
+  //Get the dead fuel SAVs:
+  int numDead = std::count(fm.liveDead.begin(), fm.liveDead.end(), Dead);//The FuelModel class should provide an interface for this!!!!!
+  std::vector <double> savDead(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
+
+  //Get an estimated distribution of fuel size:
   //For now we assume fm is a standard fuel model and assume the default loadings represent a
-  //typical size distribution.  This is probably not the case and a better 
-  std::vector <double> w_o_DeadFM(fm.w_o_ij.begin(), fm.w_o_ij.begin() + numDead);
+  //typical size distribution.  This is probably not the case and a better method for estimating
+  //the size distribution will be developed in the future using literature or calculations.
+  std::vector <double> w_o_Dead(fm.w_o_ij.begin(), fm.w_o_ij.begin() + numDead);
   //Or something like:
   //std::vector <double> sizeWts = GetSizeDistribution();
 
   //DistributeDeadFuelsD2() is the current R draft of this function.  It needed to be finalized and
   //ported to C++.  THe arguments are SAVsIn, weights, litterMass, SAVsOut.
-  std::vector <double> w_o_Dead = DistributeDeadFuelsD2(SAV_DeadFM, w_o_DeadFM, (rawC * c2), SAV_DeadFM);
+  std::vector <double> w_o_Dead = DistributeDeadFuelsD2(savDead, w_o_Dead, (rawC * c2b), savDead);
 
   //Update the loadings (or do below):
   for (int i = 0; i < numDead; i++)
@@ -210,36 +238,69 @@ void CohortStatesToLoading(const Cohort& cd, FuelModel& fm)
   }
 
   //Live fuels:
-  //The live fuels are generally split into herbaceous and woody (shrubs):
+  //The live fuels are generally split into herbaceous and woody (shrubs).  However, some fuel
+  //models may not have both.  Making sure the fuel classes match the CMT's PFTs is something that
+  //should be done in advance but we do checking here for safety.
 
-  //We have to look through the PFTs...
-  //I can't find where the PFT's carbon identifiers and stocks live.  Pseudo-coding for now!:
-  for [EACH PFT]
-  //for (int j = 0; j < numPFTs; j++)
-  {
-    if (IS_GRAMINOID(PFT) || IS_HERBACEOUS(PFT))
-    {
-    	//Put graminoid and herbaceous PFTs in the herbaceous:
-    	liveHerbIndex = FuelClassIndex(fm.liveDead, Live, 0);//Can we guarantee the herbaceous will alway be the first live?????
-    	fm.w_o_ij[liveHerbIndex] += (StemC + LeafC) * c2;
-    }
-    else if (IS_WOODYSHRUB(PFT))
-    {
-    	//Put in the woody.
-    }
-    //Skip tree PFTs.
-  }
-
-
-  /*Moss is tricky.  It's has it's own biomass stock so it's amount is simple determine but it is a
-  live fuel that can act like a dead fuel.  It is also always present in DVM-DOS-TEM but may not
-  be what the autors were thinking about when they created the standard fuel models.  It also has
-  unique moisture dynamics.  It shouldn't just be shoved into either the fine dead of live
-  herbaceous type.
-  I think it makes sense to treat it as a live fuel or potentially as a dynamic fuel.  It should be
-  given its own SAV if the live herbaceous is too coarse.  The model has a couple of different moss
-  PFTs and an SAV could be given for each.*/
+  //Sort the PFT biomass into the appropriate live fuel classes:
   
+  //The fuel model may contain default loadings that should be disregarded:
+  liveHerbIndex = FuelClassIndex(fm.liveDead, Live, 0);//Can we guarantee the herbaceous will alway be the first live?????
+  liveWoodyIndex = XXXXX;
+  fm.w_o_ij[liveHerbIndex] = 0;
+  fm.w_o_ij[liveWoodyIndex] = 0;
+  
+  //I can't find where the PFT's carbon identifiers and stocks live.  Pseudo-coding for now!:
+  for (int pftNum = 0; pftNum < NUM_PFT; pftNum++)
+  {
+    //if (IS_GRAMINOID(PFT) || IS_HERBACEOUS(PFT))
+    if (!theCohort.cd.d_veg.ifwoody(pftNum))//Or m_veg??????
+    {
+      //Put all herbaceous PFTs in the herbaceous:
+      //Note: There is currently tell graminoids and forbs appart.
+      if (nonvascular == 0)
+      {
+        //Include aboveground parts:
+        double leafC = theCohort.bd[pftNum].m_vegs.c[I_leaf];
+        double stemC = theCohort.bd[pftNum].m_vegs.c[I_stem];
+        theCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b;//Convert to dry biomass.
+      }
+      else//Mosses:
+      {
+        
+      }
+    }
+    else//Woody PFTs:
+    {
+      //Put shrubs in the woody:
+      if (IsShrub(theCohort.cd.d_veg, pftNum))
+      {
+        //Include aboveground parts:
+        double leafC = theCohort.bd[pftNum].m_vegs.c[I_leaf];
+        double stemC = theCohort.bd[pftNum].m_vegs.c[I_stem];
+        theCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b;//Convert to dry biomass.
+      }
+      //Ignore trees.
+    }
+  }
+}
+
+/** Is this PFT a shrub?
+ *
+ * Currently there is no shrub or tree flag so we have to use other information to infer
+ * shrubbiness.  This is a work in progress and may be replaced by a flag later.
+ *
+ * Since plants can have different growth forms and dwarf statures especially in harsh climates we
+ * could try to used stature to help infer shrub status.
+ *
+ * @param vegState The object containing PFT attributes for this site/
+ * @param 
+ *
+ * @returns True if this PFT is a shrub. 
+ */
+bool IsShrub(const& vegstate_dim vegState, int pftNum)
+{
+	
 }
 
 /** Get the wind speed at midflame height in m/min.
