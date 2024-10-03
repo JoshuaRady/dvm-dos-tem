@@ -151,6 +151,97 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
   return fuelModelNumber;
 }
 
+/** Determine fuel loadings based on the cohorts states:
+ *
+ * This process represts a theory what represent fuels in DVM-DOS-TEM.  Once the mapping is defined
+ * the fuel loadings are know, since model states are clearly defined.  Since the mapping itself is
+ * a theory it represets a place where assumptions could change.
+ *
+//The fuels must be estimated from:
+// - Live fuels: graminoid, herbaceous, shrub PFTs, and the moss layer.
+// - Litter: The first soil layer dead vegetation component (rawc) and woody debris (wdebrisc),
+//which currently is only present after a previous fire.
+//The mass is upscaled from the carbon stocks.  The litter is distributed into the SAV bins based
+//on guesstimates informed the PFT inputs and by some ideas of breakdown rates.
+//Previous or current cfall could be used to help estimate this but some assumptions still need
+//to be made.
+ *
+ * In order to be able to update the stocks after a fire occurs it will be a lot simpler if we keep
+ * fuels of different sources as separate fuel types, even it they have the same SAV.  This is
+ * especially relevant to moss, which could potentially be combined with fine dead material.
+ *
+ * Either return w_o_ij or update it in the fuel model.  We might as well do the later if we pass
+ * the model in.  we could just pass SAV_ij in?  Passing in the fuel model allows it to be updated.
+ */
+//void CohortStatesToLoading(const CohortData *cd, FuelModel& fm)
+void CohortStatesToLoading(const Cohort& cd, FuelModel& fm)
+{
+  const c2b = 2.0//0.5;//The carbon to biomass ratio for vegetation on a dry basis.
+  //Can this be fixed for all vegetation or does it need vary?
+
+  //Dead fuels:
+  //Most of the dead surface fuel comes from the rawc component of the first non-moss soil layer.
+  //I don't think the soil is is accessible for via the WildFire object or its CohortData.  The
+  //layers are linked from the Cohort itself.
+  Layer* topFibric = theCohort.soilbgc.ground.fstshlwl;
+  //Cast to SoilLayer?  No, rawc is part of Layer.
+
+  double rawC = topFibric->rawc;
+
+  //Distribute the rawc to the dead size classes:
+  int numDead = std::count(fm.liveDead.begin(), fm.liveDead.end(), Dead);
+  
+  std::vector <double> SAV_DeadFM(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
+  
+  //For now we assume fm is a standard fuel model and assume the default loadings represent a
+  //typical size distribution.  This is probably not the case and a better 
+  std::vector <double> w_o_DeadFM(fm.w_o_ij.begin(), fm.w_o_ij.begin() + numDead);
+  //Or something like:
+  //std::vector <double> sizeWts = GetSizeDistribution();
+
+  //DistributeDeadFuelsD2() is the current R draft of this function.  It needed to be finalized and
+  //ported to C++.  THe arguments are SAVsIn, weights, litterMass, SAVsOut.
+  std::vector <double> w_o_Dead = DistributeDeadFuelsD2(SAV_DeadFM, w_o_DeadFM, (rawC * c2), SAV_DeadFM);
+
+  //Update the loadings (or do below):
+  for (int i = 0; i < numDead; i++)
+  {
+    fm.w_o_ij[i] = w_o_Dead[i];
+  }
+
+  //Live fuels:
+  //The live fuels are generally split into herbaceous and woody (shrubs):
+
+  //We have to look through the PFTs...
+  //I can't find where the PFT's carbon identifiers and stocks live.  Pseudo-coding for now!:
+  for [EACH PFT]
+  //for (int j = 0; j < numPFTs; j++)
+  {
+    if (IS_GRAMINOID(PFT) || IS_HERBACEOUS(PFT))
+    {
+    	//Put graminoid and herbaceous PFTs in the herbaceous:
+    	liveHerbIndex = FuelClassIndex(fm.liveDead, Live, 0);//Can we guarantee the herbaceous will alway be the first live?????
+    	fm.w_o_ij[liveHerbIndex] += (StemC + LeafC) * c2;
+    }
+    else if (IS_WOODYSHRUB(PFT))
+    {
+    	//Put in the woody.
+    }
+    //Skip tree PFTs.
+  }
+
+
+  /*Moss is tricky.  It's has it's own biomass stock so it's amount is simple determine but it is a
+  live fuel that can act like a dead fuel.  It is also always present in DVM-DOS-TEM but may not
+  be what the autors were thinking about when they created the standard fuel models.  It also has
+  unique moisture dynamics.  It shouldn't just be shoved into either the fine dead of live
+  herbaceous type.
+  I think it makes sense to treat it as a live fuel or potentially as a dynamic fuel.  It should be
+  given its own SAV if the live herbaceous is too coarse.  The model has a couple of different moss
+  PFTs and an SAV could be given for each.*/
+  
+}
+
 /** Get the wind speed at midflame height in m/min.
  *
  * The Rothermel Albini spread model takes midflame wind speed, something we are unlikely to ever
@@ -330,97 +421,6 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIn
   M_f_ij[4] = woodyLFM;
 
   return M_f_ij;
-}
-
-/** Determine fuel loadings based on the cohorts states:
- *
- * This process represts a theory what represent fuels in DVM-DOS-TEM.  Once the mapping is defined
- * the fuel loadings are know, since model states are clearly defined.  Since the mapping itself is
- * a theory it represets a place where assumptions could change.
- *
-//The fuels must be estimated from:
-// - Live fuels: graminoid, herbaceous, shrub PFTs, and the moss layer.
-// - Litter: The first soil layer dead vegetation component (rawc) and woody debris (wdebrisc),
-//which currently is only present after a previous fire.
-//The mass is upscaled from the carbon stocks.  The litter is distributed into the SAV bins based
-//on guesstimates informed the PFT inputs and by some ideas of breakdown rates.
-//Previous or current cfall could be used to help estimate this but some assumptions still need
-//to be made.
- *
- * In order to be able to update the stocks after a fire occurs it will be a lot simpler if we keep
- * fuels of different sources as separate fuel types, even it they have the same SAV.  This is
- * especially relevant to moss, which could potentially be combined with fine dead material.
- *
- * Either return w_o_ij or update it in the fuel model.  We might as well do the later if we pass
- * the model in.  we could just pass SAV_ij in?  Passing in the fuel model allows it to be updated.
- */
-//void CohortStatesToLoading(const CohortData *cd, FuelModel& fm)
-void CohortStatesToLoading(const Cohort& cd, FuelModel& fm)
-{
-  const c2b = 2.0//0.5;//The carbon to biomass ratio for vegetation on a dry basis.
-  //Can this be fixed for all vegetation or does it need vary?
-
-  //Dead fuels:
-  //Most of the dead surface fuel comes from the rawc component of the first non-moss soil layer.
-  //I don't think the soil is is accessible for via the WildFire object or its CohortData.  The
-  //layers are linked from the Cohort itself.
-  Layer* topFibric = theCohort.soilbgc.ground.fstshlwl;
-  //Cast to SoilLayer?  No, rawc is part of Layer.
-
-  double rawC = topFibric->rawc;
-
-  //Distribute the rawc to the dead size classes:
-  int numDead = std::count(fm.liveDead.begin(), fm.liveDead.end(), Dead);
-  
-  std::vector <double> SAV_DeadFM(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
-  
-  //For now we assume fm is a standard fuel model and assume the default loadings represent a
-  //typical size distribution.  This is probably not the case and a better 
-  std::vector <double> w_o_DeadFM(fm.w_o_ij.begin(), fm.w_o_ij.begin() + numDead);
-  //Or something like:
-  //std::vector <double> sizeWts = GetSizeDistribution();
-
-  //DistributeDeadFuelsD2() is the current R draft of this function.  It needed to be finalized and
-  //ported to C++.  THe arguments are SAVsIn, weights, litterMass, SAVsOut.
-  std::vector <double> w_o_Dead = DistributeDeadFuelsD2(SAV_DeadFM, w_o_DeadFM, (rawC * c2), SAV_DeadFM);
-
-  //Update the loadings (or do below):
-  for (int i = 0; i < numDead; i++)
-  {
-    fm.w_o_ij[i] = w_o_Dead[i];
-  }
-
-  //Live fuels:
-  //The live fuels are generally split into herbaceous and woody (shrubs):
-
-  //We have to look through the PFTs...
-  //I can't find where the PFT's carbon identifiers and stocks live.  Pseudo-coding for now!:
-  for [EACH PFT]
-  //for (int j = 0; j < numPFTs; j++)
-  {
-    if (IS_GRAMINOID(PFT) || IS_HERBACEOUS(PFT))
-    {
-    	//Put graminoid and herbaceous PFTs in the herbaceous:
-    	liveHerbIndex = FuelClassIndex(fm.liveDead, Live, 0);//Can we guarantee the herbaceous will alway be the first live?????
-    	fm.w_o_ij[liveHerbIndex] += (StemC + LeafC) * c2;
-    }
-    else if (IS_WOODYSHRUB(PFT))
-    {
-    	//Put in the woody.
-    }
-    //Skip tree PFTs.
-  }
-
-
-  /*Moss is tricky.  It's has it's own biomass stock so it's amount is simple determine but it is a
-  live fuel that can act like a dead fuel.  It is also always present in DVM-DOS-TEM but may not
-  be what the autors were thinking about when they created the standard fuel models.  It also has
-  unique moisture dynamics.  It shouldn't just be shoved into either the fine dead of live
-  herbaceous type.
-  I think it makes sense to treat it as a live fuel or potentially as a dynamic fuel.  It should be
-  given its own SAV if the live herbaceous is too coarse.  The model has a couple of different moss
-  PFTs and an SAV could be given for each.*/
-  
 }
 
 /** Simulate ground fire returning or updating the burn depth...
