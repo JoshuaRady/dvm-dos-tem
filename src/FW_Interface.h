@@ -14,10 +14,12 @@
 #ifndef FW_INTERFACE_H
 #define FW_INTERFACE_H
 
-void RevisedFire(WildFire* wf);
+void RevisedFire(const Cohort& thisCohort, int monthIndex);
+
+int GetMatchingFuelModel(int cmt);
 
 double GetMidflameWindSpeed();
 
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm);
+std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIndex);
 
 #endif //FW_INTERFACE_H

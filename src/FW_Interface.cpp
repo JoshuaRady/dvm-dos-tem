@@ -19,14 +19,23 @@
 
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology,
  *
-The function takes the ecosystem state (cohort pointer? WildFire pointer) and meteorology...
+The function needs the ecosystem state and meteorology...
+ * @param thisCohort The cohort object for this site.
+ *   The WildFire object doesn't have all the data we need.  The Cohort gives access to stocks and
+ *   meteorology we need.
+ * @param monthIndex The current month as a zero based index.
+ *
 
 Output:
 The output should be stored in the cohort object...
 The soil burn depth should be returned/recorded to take advantage of the existing code.
 
+ToDo:
+- Add switch for dynamic moisture?
+
  */
-void RevisedFire(WildFire* wf)//The name will definitely change.
+//void RevisedFire(WildFire* wf)//The name will definitely change.
+void RevisedFire(const Cohort& thisCohort, int monthIndex)
 {
 
   //Determine the fuel model matching the location's CMT:------------------
@@ -35,10 +44,11 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
   //The CMT number is in the CohortData member of the cohort.  The WildFire object maintains a
   //pointer to it's parent cohort data but it is  private.  This code needs to be in the class,
   //a friend or have access to the cohort.
-  int theCMTumber = wf->cd.cmttype;//Private data access!!!!!
+  //int theCMTnumber = wf->cd.cmttype;//Private data access!!!!!
+  int theCMTnumber = thisCohort.cd.cmttype;
 
   //Crosswalk from CMT to fuel model:
-  fuelModelNumber = GetMatchingFuelModel(theCMTumber);
+  fuelModelNumber = GetMatchingFuelModel(theCMTnumber);
 
   //The fuel model table file needs to be added to the config file and be loaded:
   std::string fuelModelTablePath = "/Some/Path/Dropbox/StandardFuelModelTableFileName.csv";//Or tab delimited.
@@ -120,6 +130,10 @@ void RevisedFire(WildFire* wf)//The name will definitely change.
  *
  * Each CMT has [will have] a predetermined fuel model assigned to it via a parameter file.
  * It needs to be determined if this will be the CMT parmameter file or an additional lookup table.
+ *
+ * @param cmt The number of the CMT for this location.
+ *
+ * @returns The fuel model number matching the CMT input.	STUB!!!!!
  */
 //FuelModel GetMatchingFuelModel(int cmt)
 int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
@@ -172,19 +186,25 @@ double GetMidflameWindSpeed()//Could pass in the desired height or time of day?
  * as well.
  *
  * @param thisCohort The cohort object for this site.
- * @param fm The fuel model object for this site.			Not currently being used!!!!!
- *
- * @returns M_f_ij The fuel moisture for all fuel classes.  This is not returned in the fuel model
+ * 			@param fm The fuel model object for this site.			Not currently being used!!!!!
+ * @param monthIndex The current month as a zero based index.
+ #
+ * @returns M_f_ij, the fuel moisture for all fuel classes.  This is not returned in the fuel model
  * passed in because we don't know if curing is being applied.
+ 
+ ToDo:
+ - Make Fosberg table files paths available.
+ 
  */
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm)
+std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIndex)//, const FuelModel& fm)
 {
+  //std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
+  //We get the number of fuel classes here and then assume the number below.  To handle more than
+  //the standard five fuel types we need additional tools to undestand what they are.
   std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
 
   //Get the current date:
-  //The month is stored in the cohorts CohortData but that may not be the correct place to get it.
-  //We may need to get from somewhere else upstream.
-  int monthOfYearIndex = thisCohort.cd.month;//0 based
+  //There is a month member in the cohorts CohortData but that apparently is not the current month.
   int monthOfYear = monthOfYearIndex + 1;
 
   //The day of month is really up to us.  The middle of the month seems resonable.  We'll use the
@@ -193,13 +213,13 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelM
 
   //The daily data provided in Climate is a vector and should be 0 indexed but the code notes that
   //it currently returns 366 days.
-  int dayOfYearIndex = temutil::day_of_year(monthOfYearIndex, dayOfMonthIndex);
+  int dayOfYearIndex = temutil::day_of_year(monthIndex, dayOfMonthIndex);
 
 
   //Dead fuel moisture:---------------------------
 
   //Current air temperature:
-  //float tempAir = thisCohort.climate.tair[monthOfYearIndex]//Monthly
+  //float tempAir = thisCohort.climate.tair[monthIndex]//Monthly
   float tempAir = thisCohort.climate.tair_d[dayOfYearIndex];
 
   //Calculate current relative humidity:
@@ -302,7 +322,7 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelM
 
   //Combine the live and dead moisture:-----------
   //This makes assumption that the order is that of a standard fuel model.
-  //It would be better to inform the numbers using information from the fuel model.
+  //It would be better to inform the numbers using information from the fuel model.  See above.
   M_f_ij[0] = oneHrFM;
   M_f_ij[1] = tenHrFM;
   M_f_ij[2] = hundredHrFM;
