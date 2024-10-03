@@ -160,36 +160,41 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
  *
  * This process is a theory what represent fuels in DVM-DOS-TEM.  Once the mapping is defined
  * the fuel loadings are know, since model states are clearly defined.  Since the mapping itself is
- * a theory it represets a place where assumptions could change.
- *
-//The fuels must be estimated from:
- * Current fuel mapping:
+ * a theory it represets a place where assumptions could change.  The current fuel mapping is:
  *
  * Dead fuels:
-...
-
-// - Live fuels: graminoid, herbaceous, shrub PFTs, and the moss layer.
-// - Litter: The first soil layer dead vegetation component (rawc) and woody debris (wdebrisc),
-//which currently is only present after a previous fire.
-//The fuel mass is upscaled from the carbon stocks.  The litter is distributed into the SAV bins based
-//on guesstimates informed the PFT inputs and by some ideas of breakdown rates.
-//Previous or current cfall could be used to help estimate this but some assumptions still need
-//to be made.
+ * Dead surface fuels include litter and fallen debris.  In DVM-DOS-TEM these are represented by:
+ * - Litter: The rawc component of the first non-moss soil layer.  rawc is part of the 'soil' but
+ * is where all aboveground litter-fall ends up.  We assume this is not yet buried.
+ * This may include some root cfall as well??????
+ * We upscaled the total 'litter' carbon stock to biomass and distribute it among the fuel model's
+ * dead fuel size classes.
+ * - Large woody debris: Only after fire there is a pool of woody debris (wdebrisc) (and standing
+ * dead stems?).
+ * We could put all of that in the largest class but some of it might belong in the smaller classes
+ * or in a 1000 hour class, which will have a limited effect on fire behavior and is missing from most
+ * fuel models.
+ * - Possibly live moss (see below).
  *
- * In order to be able to update the stocks after a fire occurs it will be a lot simpler if we keep
- * fuels of different sources as separate fuel types, even it they have the same SAV.  This is
- * especially relevant to moss, which could potentially be combined with fine dead material.
+ * Live fuels:
+ * Live fuels include graminoids, forbs, shrubs, and moss (see below).  We convert PFT aboveground
+ * carbon stocks to biomass and sort into herbaceous (graminoids & forbs) and woody (shrubs) size
+ * classes.
  *
- 
-Moss is tricky.  It's has it's own biomass stock so it's amount is simple to determine but it is a
-  live fuel that can act like a dead fuel.  It is also always present in DVM-DOS-TEM but may not
-  be what the authors were thinking about when they created the standard fuel models.  It also has
-  unique moisture dynamics.  It shouldn't just be shoved into either the fine dead of live
-  herbaceous type.
-  I think it makes sense to treat it as a live fuel or potentially as a dynamic fuel.  It should be
-  given its own SAV if the live herbaceous is too coarse.  The model has a couple of different moss
-  PFTs and an SAV could be given for each.
- 
+ * Moss:
+ * Moss is tricky.  It is a live fuel that can act like a dead fuel, with highly dynamic moisture.
+ * The standard fuel models were developed with a focus on the lower 48 so the authors were not
+ * thinking a lot about moss.  Moss is hoever an important driver of fire behavior in the north and
+ * is ubiquitous in the DVM-DOS-TEM CMTs.  Figuring out how to handle moss is ongoing work.
+ *
+ * Given this uncertainty we are starting with the two simplest options, place it into either the
+ * fine dead or live herbaceous type.  There are several other options.
+ * I think it may make sense to treat it as a custom live fuel or potentially as a dynamic fuel.  It
+ * should be given its own SAV if the live herbaceous is too coarse.  The model has a couple of
+ * different moss PFTs and an SAV could be given for each.
+ *
+ * We don't include dead moss as a surface fuel.  We treat that as duff, part of the ground fuels.
+ *
  * @param thisCohort The cohort object for this site.
  * @param fm The fuel model for the site (with default loadings).
  *
@@ -198,18 +203,11 @@ Moss is tricky.  It's has it's own biomass stock so it's amount is simple to det
  * ToDo:
  * - Record the mapping of stocks to fuels in some way record the value before fire so we can update
  * stocks appropriately afterwards.
+ * - Deal with wdebrisc.
  */
 void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
 {
   //Dead fuels:
-  //Dead surface fuels include litter and fallen debris.  In DVM-DOS-TEM these are represented by:
-  // - Litter: The rawc component of the first non-moss soil layer.  This is part of the 'soil' but
-  //is where all aboveground litter-fall ends up.  This may include some root cfall as well.   ??????
-  // - Large fire debris: After fire there is a pool of woody debris (wdebrisc) (and standing dead stems?).
-  //Currently we focus on the former.  We get the total 'litter' mass and distribute it among the
-  //fuel model's dead fuel size classes.
-  //We don't include dead moss.  We treat that as duff, part of the ground fuels.
-  
   Layer* topFibric = theCohort.soilbgc.ground.fstshlwl;//Get the top non-moss layer.
   double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
 
@@ -238,9 +236,9 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
   }
 
   //Live fuels:
-  //The live fuels are generally split into herbaceous and woody (shrubs).  However, some fuel
-  //models may not have both.  Making sure the fuel classes match the CMT's PFTs is something that
-  //should be done in advance but we do checking here for safety.
+  //Standard fuel models have herbaceous and woody classes but in some models both are not actually
+  //occupied.  Making sure the fuel classes match the CMT's PFTs is something that should be done
+  //in advance but we do checking here for safety.
 
   //Sort the PFT biomass into the appropriate live fuel classes:
   
@@ -253,13 +251,14 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
   //I can't find where the PFT's carbon identifiers and stocks live.  Pseudo-coding for now!:
   for (int pftNum = 0; pftNum < NUM_PFT; pftNum++)
   {
-    //if (IS_GRAMINOID(PFT) || IS_HERBACEOUS(PFT))
     if (!theCohort.cd.d_veg.ifwoody(pftNum))//Or m_veg??????
     {
       //Put all herbaceous PFTs in the herbaceous:
       //Note: There is currently tell graminoids and forbs appart.
       if (nonvascular == 0)
       {
+        //Check if class is present!!!!
+
         //Include aboveground parts:
         double leafC = theCohort.bd[pftNum].m_vegs.c[I_leaf];
         double stemC = theCohort.bd[pftNum].m_vegs.c[I_stem];
@@ -267,7 +266,7 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
       }
       else//Mosses:
       {
-        
+        //Add switch!!!!!
       }
     }
     else//Woody PFTs:
@@ -275,6 +274,8 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
       //Put shrubs in the woody:
       if (IsShrub(theCohort.cd.d_veg, pftNum))
       {
+        //Check if class is present!!!!
+
         //Include aboveground parts:
         double leafC = theCohort.bd[pftNum].m_vegs.c[I_leaf];
         double stemC = theCohort.bd[pftNum].m_vegs.c[I_stem];
