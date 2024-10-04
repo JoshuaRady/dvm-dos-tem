@@ -40,7 +40,7 @@ ToDo:
 
  */
 //void RevisedFire(WildFire* wf)//The name will definitely change.
-void RevisedFire(const Cohort& thisCohort, int monthIndex)
+void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't be const?????
 {
 
   //Determine the fuel model matching the location's CMT:------------------
@@ -49,7 +49,6 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)
   //The CMT number is in the CohortData member of the cohort.  The WildFire object maintains a
   //pointer to it's parent cohort data but it is  private.  This code needs to be in the class,
   //a friend or have access to the cohort.
-  //int theCMTnumber = wf->cd.cmttype;//Private data access!!!!!
   int theCMTnumber = thisCohort.cd.cmttype;
 
   //Crosswalk from CMT to fuel model:
@@ -59,11 +58,13 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)
   std::string fuelModelTablePath = "/Some/Path/Dropbox/StandardFuelModelTableFileName.csv";//Or tab delimited.
   FuelModel fm = GetFuelModelFromCSV(fuelModelTablePath, fuelModelNumber);
 
-  //
-
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
-  CohortStatesToLoading(wf->cd, fm);//Private data access!!!!!
+  bool treatMossAsDead = SOMEFLAG;//Add config setting!!!!!
+  CohortStatesToFuelLoading(theCohort, fm, treatMossAsDead)
+
+  //Save the fuel loading prior to fire: (will be compared below...)
+  std::vector <double> fuelLoadingBefore = fm.w_o_ij;
 
   //Do we calculate the fuel bed depth or is it fixed?
   //We could calculate it from af fixed fuel fuel bed density as FATES does.
@@ -145,7 +146,7 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
 {
   //Get the number of the fuel model from the crosswalk in the parameter files.
   //This crosswalk needs to be made!!!!!
-  int fuelModelNumber = 1;//Temporarily hardwired
+  int fuelModelNumber = 1;//Temporarily hardwired.  Need to change to a more robust model!!!!!
   
   
   //If no match either throw an error or warn and return a default fuel model.
@@ -205,14 +206,14 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
  * stocks appropriately afterwards.
  * - Deal with wdebrisc.
  */
-void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
+void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm, bool treatMossAsDead)
 {
   //Dead fuels:
   Layer* topFibric = theCohort.soilbgc.ground.fstshlwl;//Get the top non-moss layer.
   double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
 
   //Distribute the rawc to the dead size classes:
-  
+
   //Get the dead fuel SAVs:
   int numDead = std::count(fm.liveDead.begin(), fm.liveDead.end(), Dead);//The FuelModel class should provide an interface for this!!!!!
   std::vector <double> savDead(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
@@ -221,13 +222,13 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
   //For now we assume fm is a standard fuel model and assume the default loadings represent a
   //typical size distribution.  This is probably not the case and a better method for estimating
   //the size distribution will be developed in the future using literature or calculations.
-  std::vector <double> w_o_Dead(fm.w_o_ij.begin(), fm.w_o_ij.begin() + numDead);
+  std::vector <double> w_o_DeadFM(fm.w_o_ij.begin(), fm.w_o_ij.begin() + numDead);
   //Or something like:
   //std::vector <double> sizeWts = GetSizeDistribution();
 
   //DistributeDeadFuelsD2() is the current R draft of this function.  It needed to be finalized and
   //ported to C++.  THe arguments are SAVsIn, weights, litterMass, SAVsOut.
-  std::vector <double> w_o_Dead = DistributeDeadFuelsD2(savDead, w_o_Dead, (rawC * c2b), savDead);
+  std::vector <double> w_o_Dead = DistributeDeadFuelsD2(savDead, w_o_DeadFM, (rawC * c2b), savDead);
 
   //Update the loadings (or do below):
   for (int i = 0; i < numDead; i++)
@@ -257,7 +258,7 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
       //Note: There is currently tell graminoids and forbs appart.
       if (nonvascular == 0)
       {
-        //Check if class is present!!!!
+        //Check if herbaceous class is present!!!!
 
         //Include aboveground parts:
         double leafC = theCohort.bd[pftNum].m_vegs.c[I_leaf];
@@ -266,7 +267,23 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
       }
       else//Mosses:
       {
-        //Add switch!!!!!
+        //I'm not sure if moss has 'roots', i.e. rhizoids = root C.  Id so they are are so shallow
+        //they will probably burn too:
+        double leafC = theCohort.bd[pftNum].m_vegs.c[I_leaf];
+        double stemC = theCohort.bd[pftNum].m_vegs.c[I_stem];
+        double rootC = theCohort.bd[pftNum].m_vegs.c[I_root];
+        double mossC = (leafC + stemC + rootC) * c2b
+
+        if (treatMossAsDead)
+        {
+          fm.w_o_ij[1] += mossC;//Assumes fine fuel is first, which is pretty safe.
+        }
+        else
+        {
+          //Check if herbaceous class is present!!!!
+
+          theCohort.bd.fm.w_o_ij[liveHerbIndex] += mossC;//Convert to dry biomass.
+        }
       }
     }
     else//Woody PFTs:
@@ -301,7 +318,7 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm)
  */
 bool IsShrub(const& vegstate_dim vegState, int pftNum)
 {
-	
+	//!!!!!
 }
 
 /** Get the wind speed at midflame height in m/min.
