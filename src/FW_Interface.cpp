@@ -15,7 +15,10 @@
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedLiveFuelMoistureGSI.h"
 #include "FireweedMetUtils.h"
+#include "../include/TEMLogger.h"
 #include "TEMUtilityFunctions.h"//For length_of_day().
+
+extern src::severity_logger< severity_level > glg;
 
 //Constants:
 const c2b = 2.0//The carbon to biomass multiplier for vegetation on a dry basis.
@@ -289,7 +292,7 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm, bool trea
     else//Woody PFTs:
     {
       //Put shrubs in the woody:
-      if (IsShrub(theCohort.cd.d_veg, pftNum))
+      if (IsShrub(theCohort, pftNum))
       {
         //Check if class is present!!!!
 
@@ -308,17 +311,107 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm, bool trea
  * Currently there is no shrub or tree flag so we have to use other information to infer
  * shrubbiness.  This is a work in progress and may be replaced by a flag later.
  *
- * Since plants can have different growth forms and dwarf statures especially in harsh climates we
- * could try to used stature to help infer shrub status.
+ * The vegetation parameter files include names for most of the PFTS, but only in comments, which
+ * are not imported.  These include DecShrub and EvrShrub.  The order of PFTs in a CMT are also not
+ * systematic.  The only approach that remains is to check the PFT numbers agains their CMTs.  This
+ * requires knowledge of the CMT file (cmt_bgcvegetation.txt).  Since the CMTs will change in due
+ * course this implementation is not robust and should be replaced soon.
  *
- * @param vegState The object containing PFT attributes for this site/
- * @param 
+ * Since plants can have different growth forms and dwarf statures, especially in harsh climates, we
+ * could try to used stature to help infer when trees are shrubby in a way that is relevant to fuel
+ * models.  That might be getting a bit fancy.
+ *
+ * @param thisCohort The cohort object for this site.
+ *                   (We could alternatively pass the cohort's CohortData or just the CMT number.)
+ * @param pftIdx The index of the PFT to check.
  *
  * @returns True if this PFT is a shrub. 
  */
-bool IsShrub(const& vegstate_dim vegState, int pftNum)
+bool IsShrub(const Cohort& thisCohort, int pftIdx)
 {
-	//!!!!!
+  //I believe all the following PFTs are considered shrubs:
+  //A few of these CMT cases could be combined but I'm prioritizing readability over compactness.
+  switch (thisCohort.cd.cmttype) {
+    case 0://Bare ground, contains junk values.
+      break;
+
+    case 1://Boreal Black Spruce
+    case 2://Boreal White Spruce Forest
+    case 3://Boreal Deciduous Forest
+      if (pftIdx == 1)//DecidShrub
+      {
+        return true;
+      }
+      break;
+
+    case 4://Shrub Tundra (Toolik area)
+      if (pftIdx >= 0 && pftIdx <= 3)//Salix, Betula, Decid, EGreen
+      {
+        return true;
+      }
+      break;
+
+    case 5://Tussock Tundra (2022)
+      if (pftIdx >= 0 && pftIdx <= 2)//Betula, Decid, EGreen
+      {
+        return true;
+      }
+      break;
+
+    case 6://Wet Sedge Tundra (Toolik area)
+      if (pftIdx == 0)//Decid
+      {
+        return true;
+      }
+      break;
+
+    case 7://Heath Tundra (2019)
+      if (pftIdx >= 0 && pftIdx <= 1)//Decid, EGreen
+      {
+        return true;
+      }
+      break;
+
+    case 12://Lowland Boreal Wet Shrubland
+      if (pftIdx >= 0 && pftIdx <= 1)//DecShrub, EvrShrub
+      {
+        return true;
+      }
+      break;
+
+    case 20://EML Shrub Tundra
+      if (pftIdx == 0)//Betnan (Betuala nana)
+      {
+        return true;
+      }
+      break;
+
+    case 21://EML Tussock Tundra (2022)
+      if (pftIdx >= 0 && pftIdx <= 1)//Decidsh, Egreensh 
+      {
+        return true;
+      }
+      break;
+
+    case 31://Boreal Bog
+      if (pftIdx >= 2 && pftIdx <= 3)//DecShrub, EvrShrub
+      {
+        return true;
+      }
+      break;
+
+    case 44://Shrub Tundra (Kougarok)
+      if (pftIdx >= 0 && pftIdx <= 3)//Salix, Betula, Decid, EGreen
+      {
+        return true;
+      }
+      break;
+
+    default:
+      BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT.";
+      break;
+  }
+  return false;
 }
 
 /** Get the wind speed at midflame height in m/min.
