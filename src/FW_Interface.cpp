@@ -64,7 +64,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
   bool treatMossAsDead = SOMEFLAG;//Add config setting!!!!!
-  CohortStatesToFuelLoading(theCohort, fm, treatMossAsDead)
+  CohortStatesToFuelLoading(thisCohort, fm, treatMossAsDead)
 
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
@@ -90,7 +90,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //Calculate fuel moisture:----------------------
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
-  std::vector <double> M_f_ij = CalculateFuelMoisture(theCohort, fm);
+  std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, fm);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
   if (UseDynamicFuelMoisture)//Add switch for dynamic moisture!!!!!
@@ -209,10 +209,10 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
  * stocks appropriately afterwards.
  * - Deal with wdebrisc.
  */
-void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm, bool treatMossAsDead)
+void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead)
 {
   //Dead fuels:
-  Layer* topFibric = theCohort.soilbgc.ground.fstshlwl;//Get the top non-moss layer.
+  Layer* topFibric = thisCohort.soilbgc.ground.fstshlwl;//Get the top non-moss layer.
   double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
 
   //Distribute the rawc to the dead size classes:
@@ -255,7 +255,7 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm, bool trea
   //I can't find where the PFT's carbon identifiers and stocks live.  Pseudo-coding for now!:
   for (int pftNum = 0; pftNum < NUM_PFT; pftNum++)
   {
-    if (!theCohort.cd.d_veg.ifwoody(pftNum))//Or m_veg??????
+    if (!thisCohort.cd.d_veg.ifwoody(pftNum))//Or m_veg??????
     {
       //Put all herbaceous PFTs in the herbaceous:
       //Note: There is currently tell graminoids and forbs appart.
@@ -264,17 +264,17 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm, bool trea
         //Check if herbaceous class is present!!!!
 
         //Include aboveground parts:
-        double leafC = theCohort.bd[pftNum].m_vegs.c[I_leaf];
-        double stemC = theCohort.bd[pftNum].m_vegs.c[I_stem];
-        theCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b;//Convert to dry biomass.
+        double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
+        double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
+        thisCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b;//Convert to dry biomass.
       }
       else//Mosses:
       {
         //I'm not sure if moss has 'roots', i.e. rhizoids = root C.  Id so they are are so shallow
         //they will probably burn too:
-        double leafC = theCohort.bd[pftNum].m_vegs.c[I_leaf];
-        double stemC = theCohort.bd[pftNum].m_vegs.c[I_stem];
-        double rootC = theCohort.bd[pftNum].m_vegs.c[I_root];
+        double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
+        double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
+        double rootC = thisCohort.bd[pftNum].m_vegs.c[I_root];
         double mossC = (leafC + stemC + rootC) * c2b
 
         if (treatMossAsDead)
@@ -285,21 +285,21 @@ void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm, bool trea
         {
           //Check if herbaceous class is present!!!!
 
-          theCohort.bd.fm.w_o_ij[liveHerbIndex] += mossC;//Convert to dry biomass.
+          thisCohort.bd.fm.w_o_ij[liveHerbIndex] += mossC;//Convert to dry biomass.
         }
       }
     }
     else//Woody PFTs:
     {
       //Put shrubs in the woody:
-      if (IsShrub(theCohort, pftNum))
+      if (IsShrub(thisCohort, pftNum))
       {
         //Check if class is present!!!!
 
         //Include aboveground parts:
-        double leafC = theCohort.bd[pftNum].m_vegs.c[I_leaf];
-        double stemC = theCohort.bd[pftNum].m_vegs.c[I_stem];
-        theCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b;//Convert to dry biomass.
+        double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
+        double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
+        thisCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b;//Convert to dry biomass.
       }
       //Ignore trees.
     }
@@ -572,7 +572,7 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIn
     //double vpd_hPa = VPDfromRHBuck(tempAir, rh, p_hPa);
 
     //temutil::length_of_day gives the he day length in hours:
-    float dayLengthSec = temutil::length_of_day(theCohort->lat, dayOfYearIndex) * 60 * 60;
+    float dayLengthSec = temutil::length_of_day(thisCohort->lat, dayOfYearIndex) * 60 * 60;
 
     double gsi = GrowingSeasonIndex(tempCMin, vpdPa, dayLengthSec);
     herbLFM += HerbaceousLiveFuelMoisture(gsi);

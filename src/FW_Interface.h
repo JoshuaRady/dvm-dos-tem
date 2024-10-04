@@ -17,7 +17,7 @@
 void RevisedFire(const Cohort& thisCohort, int monthIndex);
 
 int GetMatchingFuelModel(int cmt);
-void CohortStatesToFuelLoading(const Cohort& theCohort, FuelModel& fm, bool treatMossAsDead);
+void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead);
 bool IsShrub(const Cohort& thisCohort, int pftIdx);
 
 double GetMidflameWindSpeed();
