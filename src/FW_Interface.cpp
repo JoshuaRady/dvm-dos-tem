@@ -13,6 +13,7 @@
 
 #include "FireweedRAFireSpread.h"
 #include "FireweedDeadFuelMoistureFosberg.h"
+#include "FireweedFuelTools.h"
 #include "FireweedLiveFuelMoistureGSI.h"
 #include "FireweedMetUtils.h"
 #include "../include/TEMLogger.h"
@@ -219,9 +220,9 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
 
   //Get the dead fuel SAVs:
   int numDead = std::count(fm.liveDead.begin(), fm.liveDead.end(), Dead);//The FuelModel class should provide an interface for this!!!!!
-  std::vector <double> savDead(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
+  std::vector <double> savsDead(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
 
-  //Get an estimated distribution of fuel size:
+  //Get an estimated distribution of fuel sizes:
   //For now we assume fm is a standard fuel model and assume the default loadings represent a
   //typical size distribution.  This is probably not the case and a better method for estimating
   //the size distribution will be developed in the future using literature or calculations.
@@ -229,9 +230,8 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   //Or something like:
   //std::vector <double> sizeWts = GetSizeDistribution();
 
-  //DistributeDeadFuelsD2() is the current R draft of this function.  It needed to be finalized and
-  //ported to C++.  THe arguments are SAVsIn, weights, litterMass, SAVsOut.
-  std::vector <double> w_o_Dead = DistributeDeadFuelsD2(savDead, w_o_DeadFM, (rawC * c2b), savDead);
+  //Distribute the litter carbon using the distribution:
+  std::vector <double> w_o_Dead = DistributeFuel(savsDead, w_o_DeadFM, (rawC * c2b), savsDead);
 
   //Update the loadings (or do below):
   for (int i = 0; i < numDead; i++)
