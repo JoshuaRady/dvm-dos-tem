@@ -23,7 +23,7 @@ extern src::severity_logger< severity_level > glg;
 
 //Constants:
 const c2b = 2.0//The carbon to biomass multiplier for vegetation on a dry basis.
-//This could vary but many models use a single value.
+//This could vary by PFT but many models use a single value.
 
 
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology,
@@ -212,6 +212,8 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
  */
 void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead)
 {
+  const double gPerKg = 1000;//Move to FireweedUnits.h?
+  
   //Dead fuels:
   Layer* topFibric = thisCohort.soilbgc.ground.fstshlwl;//Get the top non-moss layer.
   double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
@@ -231,7 +233,8 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   //std::vector <double> sizeWts = GetSizeDistribution();
 
   //Distribute the litter carbon using the distribution:
-  std::vector <double> w_o_Dead = DistributeFuel(savsDead, w_o_DeadFM, (rawC * c2b), savsDead);
+  //All carbon stocks are in g/m^2 C and need to be converted to kg/m^2 dry biomass.
+  std::vector <double> w_o_Dead = DistributeFuel(savsDead, w_o_DeadFM, (rawC * c2b / gPerKg), savsDead);
 
   //Update the loadings (or do below):
   for (int i = 0; i < numDead; i++)
@@ -258,7 +261,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
     if (!thisCohort.cd.d_veg.ifwoody(pftNum))//Or m_veg??????
     {
       //Put all herbaceous PFTs in the herbaceous:
-      //Note: There is currently tell graminoids and forbs appart.
+      //Note: There is currently no way to tell graminoids and forbs appart.
       if (nonvascular == 0)
       {
         //Check if herbaceous class is present!!!!
@@ -266,16 +269,16 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         //Include aboveground parts:
         double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
         double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
-        thisCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b;//Convert to dry biomass.
+        thisCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
       }
       else//Mosses:
       {
-        //I'm not sure if moss has 'roots', i.e. rhizoids = root C.  Id so they are are so shallow
-        //they will probably burn too:
+        //My best reading is that moss is all leaf in DVM-DOS-TEM.  However if they had stems and
+        //'roots', i.e. rhizoids = root C, they should burn too.  Include just in case for now:
         double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
-        double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
-        double rootC = thisCohort.bd[pftNum].m_vegs.c[I_root];
-        double mossC = (leafC + stemC + rootC) * c2b
+        double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];//Should be 0.
+        double rootC = thisCohort.bd[pftNum].m_vegs.c[I_root];//Should be 0.
+        double mossC = (leafC + stemC + rootC) * c2b / gPerKg;
 
         if (treatMossAsDead)
         {
@@ -299,7 +302,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         //Include aboveground parts:
         double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
         double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
-        thisCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b;//Convert to dry biomass.
+        thisCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
       }
       //Ignore trees.
     }
