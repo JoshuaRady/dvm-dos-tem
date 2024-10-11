@@ -26,9 +26,11 @@ const c2b = 2.0//The carbon to biomass multiplier for vegetation on a dry basis.
 //This could vary by PFT but many models use a single value.
 
 
-/** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology,
+/** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
+ * This is the main entry point for the revised wildfire model.
  *
-The function needs the ecosystem state and meteorology...
+ * The function needs the ecosystem state, and meteorology time or year as inputs.
+ * 
  * @param thisCohort The cohort object for this site.
  *   The WildFire object doesn't have all the data we need.  The Cohort gives access to stocks and
  *   meteorology we need.
@@ -41,7 +43,7 @@ The soil burn depth should be returned/recorded to take advantage of the existin
 
 ToDo:
 - Add switch for dynamic moisture?
-
+ *
  */
 //void RevisedFire(WildFire* wf)//The name will definitely change.
 void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't be const?????
@@ -75,16 +77,17 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //fm.delta = X;
   
   
-  //Gather weather conditions:
-  double tempAir = wf->edall.d_atms.ta;//Daily air temp (at surface).  Private data access!!!!!
-  //Curten (daily if not hourly) (relative) humidity is needed.  A recent time history of
-  //double humidity = ?????
+  //Gather weather / environmental conditions:
+  double tempAir = thisCohort->edall.d_atms.ta;//Daily air temp (at surface).
+  //Current humidity is needed for calculating fuel moisture but that code handles it itself.
+  //We may also need it for duff moisture soon.
   
   double windSpeed = GetMidflameWindSpeed();
   
-  //The wildfire object contains the slope:
-  //It is also in the CohortData object.
-  double slope = wf->slope;//This is percent slope.  Need to convert to fractional slope!!!!!
+  //The slope is stored in he CohortData object and also in the wildfire object.  This is percent slope.  Need to convert to fractional slope!!!!!
+  //double slope = wf->slope;//
+  double slope = thisCohort.cd.cell_slope;
+
   //Shortwave radiation may be needed for the moisture calculations.
 
 
@@ -207,7 +210,7 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
  *
  * ToDo:
  * - Record the mapping of stocks to fuels in some way record the value before fire so we can update
- * stocks appropriately afterwards.
+ * stocks appropriately afterwards.  We have done this to some extend in the calling code.
  * - Deal with wdebrisc.
  */
 void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead)
