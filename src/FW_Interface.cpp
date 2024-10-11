@@ -258,17 +258,17 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   //I can't find where the PFT's carbon identifiers and stocks live.  Pseudo-coding for now!:
   for (int pftNum = 0; pftNum < NUM_PFT; pftNum++)
   {
-    if (!thisCohort.cd.d_veg.ifwoody(pftNum))//Or m_veg??????
+    if (!thisCohort.cd.d_veg.ifwoody[pftNum])//Or m_veg??????
     {
       //Put all herbaceous PFTs in the herbaceous:
       //Note: There is currently no way to tell graminoids and forbs appart.
-      if (nonvascular == 0)
+      if (thisCohort.cd.d_veg.nonvascular[pftNum] == 0)
       {
         //If the herbaceous class is not present adding carbon to it will not influence the fire
         //behavior.  If herbaceous fuels are not important in this system we could ignore them.
         //This is not something we can really resolve at run time.  This is a science question that
         //needs to be addressed during fuel model selection.
-        if (!LiveHerbaceousPresent())
+        if (!fm.LiveHerbaceousPresent())
         {
           Stop("The live herbaceous fuel type is not active in this fuel model.")
         }
@@ -276,7 +276,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         //Include aboveground parts:
         double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
         double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
-        thisCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
+        fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
       }
       else//Mosses:
       {
@@ -294,23 +294,23 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         else
         {
           //See notes above.
-          if (!LiveHerbaceousPresent())
+          if (!fm.LiveHerbaceousPresent())
           {
             Stop("The live herbaceous fuel type is not active in this fuel model.")
           }
 
-          thisCohort.bd.fm.w_o_ij[liveHerbIndex] += mossC;//Convert to dry biomass.
+          fm.w_o_ij[liveHerbIndex] += mossC;//Convert to dry biomass.
         }
       }
     }
     else//Woody PFTs:
     {
-      //Put shrubs in the woody:
+      //Put shrubs in the live woody fuel:
       if (IsShrub(thisCohort, pftNum))
       {
         //If the woody class is not present adding carbon to it will not influence the fire
         //behavior.  See notes for herbaceous fules above.
-        if (!LiveHerbaceousPresent())
+        if (!fm.LiveHerbaceousPresent())
         {
           Stop("The live woody fuel type is not active in this fuel model.")
         }
@@ -318,7 +318,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         //Include aboveground parts:
         double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
         double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
-        thisCohort.bd.fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
+        fm.w_o_ij[liveWoodyIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
       }
       //Ignore trees.
     }
