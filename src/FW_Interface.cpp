@@ -224,17 +224,14 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   int numDead = fm.NumDeadClasses();
   std::vector <double> savsDead(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
 
-  //Get an estimated distribution of fuel sizes:
-  //For now we assume fm is a standard fuel model and assume the default loadings represent a
-  //typical size distribution.  This is probably not the case and a better method for estimating
-  //the size distribution will be developed in the future using literature or calculations.
-  std::vector <double> w_o_DeadFM(fm.w_o_ij.begin(), fm.w_o_ij.begin() + numDead);
-  //Or something like:
-  //std::vector <double> sizeWts = GetSizeDistribution();
+  //Get an estimated distribution of dead fuel sizes:
+  std::vector <double> distribSAVs, distribWts;//Empty vectors to hold the distribution.
+  GetDeadFuelSizeDistribution(fm, distribSAVs, distribWts);
 
   //Distribute the litter carbon using the distribution:
   //All carbon stocks are in g/m^2 C and need to be converted to kg/m^2 dry biomass.
-  std::vector <double> w_o_Dead = DistributeFuel(savsDead, w_o_DeadFM, (rawC * c2b / gPerKg), savsDead);
+  //std::vector <double> w_o_Dead = DistributeFuel(savsDead, w_o_DeadFM, (rawC * c2b / gPerKg), savsDead);
+  std::vector <double> w_o_Dead = DistributeFuel(distribSAVs, distribWts, (rawC * c2b / gPerKg), savsDead);
 
   //Update the loadings (or do below):
   for (int i = 0; i < numDead; i++)
@@ -323,6 +320,31 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
       //Ignore trees.
     }
   }
+}
+
+/** Get the estimated dead fuel size distribution for the site.
+ * The distribution is returned via the vectors passed.
+ *
+ * This is a temporary stub-ish implementation of the code.  For now we assume fm is a standard fuel
+ * model and that the default loadings represent a typical dead fuel size distribution.  This is
+ * probably not the case and a better method for estimating the size distribution will be developed
+ * in the future using literature or calculations.  Then this function will be updated to some
+ * lookup process using the CMT of fuel model number to get the estimate that is calculated or
+ * supplied via an input file.
+ * 
+ * @param fm A fuel model to base the distribution on. [Temporary!!!!!];
+ * @param distribSAVs An empty vector to return the SAVs of the distribution in. =
+ * @param distribWts An empty vector to return the weights of the distribution in.
+ * 
+ * @returns Nothing.  Parameters are updated instead.
+ */ 
+void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,
+                                 std::vector <double>& distribWts)
+{
+  //Copy the appropriate dead members:
+  int numDead = fm.NumDeadClasses();
+  distribSAVs.assign(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
+  distribWts.assign(fm.w_o_ij.begin(), fm.w_o_ij.begin() + numDead);
 }
 
 /** Is this PFT a shrub?
