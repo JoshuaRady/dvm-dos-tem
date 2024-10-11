@@ -221,7 +221,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   //Distribute the rawc to the dead size classes:
 
   //Get the dead fuel SAVs:
-  int numDead = std::count(fm.liveDead.begin(), fm.liveDead.end(), Dead);//The FuelModel class should provide an interface for this!!!!!
+  int numDead = fm.NumDeadClasses();
   std::vector <double> savsDead(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
 
   //Get an estimated distribution of fuel sizes:
@@ -250,8 +250,8 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   //Sort the PFT biomass into the appropriate live fuel classes:
   
   //The fuel model may contain default loadings that should be disregarded:
-  liveHerbIndex = FuelClassIndex(fm.liveDead, Live, 0);//Can we guarantee the herbaceous will alway be the first live?????
-  liveWoodyIndex = XXXXX;
+  liveHerbIndex = fm.LiveHerbaceousIndex();
+  liveWoodyIndex = fm.LiveWoodyIndex();
   fm.w_o_ij[liveHerbIndex] = 0;
   fm.w_o_ij[liveWoodyIndex] = 0;
   
@@ -264,7 +264,14 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
       //Note: There is currently no way to tell graminoids and forbs appart.
       if (nonvascular == 0)
       {
-        //Check if herbaceous class is present!!!!
+        //If the herbaceous class is not present adding carbon to it will not influence the fire
+        //behavior.  If herbaceous fuels are not important in this system we could ignore them.
+        //This is not something we can really resolve at run time.  This is a science question that
+        //needs to be addressed during fuel model selection.
+        if (!LiveHerbaceousPresent())
+        {
+          Stop("The live herbaceous fuel type is not active in this fuel model.")
+        }
 
         //Include aboveground parts:
         double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
@@ -286,7 +293,11 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         }
         else
         {
-          //Check if herbaceous class is present!!!!
+          //See notes above.
+          if (!LiveHerbaceousPresent())
+          {
+            Stop("The live herbaceous fuel type is not active in this fuel model.")
+          }
 
           thisCohort.bd.fm.w_o_ij[liveHerbIndex] += mossC;//Convert to dry biomass.
         }
@@ -297,7 +308,12 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
       //Put shrubs in the woody:
       if (IsShrub(thisCohort, pftNum))
       {
-        //Check if class is present!!!!
+        //If the woody class is not present adding carbon to it will not influence the fire
+        //behavior.  See notes for herbaceous fules above.
+        if (!LiveHerbaceousPresent())
+        {
+          Stop("The live woody fuel type is not active in this fuel model.")
+        }
 
         //Include aboveground parts:
         double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
