@@ -22,7 +22,7 @@ void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& dist
                                  std::vector <double>& distribWts)
 bool IsShrub(const Cohort& thisCohort, int pftIdx);
 
-double GetMidflameWindSpeed();
+double GetMidflameWindSpeed(const Cohort& thisCohort);
 
 std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIndex);
 

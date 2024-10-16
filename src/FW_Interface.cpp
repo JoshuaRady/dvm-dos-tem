@@ -82,7 +82,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
   //We may also need it for duff moisture soon.
   
-  double windSpeed = GetMidflameWindSpeed();
+  double windSpeed = GetMidflameWindSpeed(thisCohort);
   
   //The slope is stored in he CohortData object and also in the wildfire object.  This is percent slope.  Need to convert to fractional slope!!!!!
   //double slope = wf->slope;//
@@ -475,15 +475,22 @@ bool IsShrub(const Cohort& thisCohort, int pftIdx)
  *   speed was at this time.  This may be difficult as wind can be highly variable and may not be
  *   well predicted by diurnal cycles.
  * - Convert to m/min if needed.
+ *
+ * @param thisCohort The cohort object for this site.
+ *
+ * @returns The wind speed [at 2 meters] (m/min).
  */
-double GetMidflameWindSpeed()//Could pass in the desired height or time of day?
+double GetMidflameWindSpeed(const Cohort& thisCohort)//Could pass in the desired height or time of day?
 {
   double windSpeed;//Return value.
   
-  //Semi-psuedocode:
-  //double u = thisCohort->edall.d_atms.tEasternWindSpeed;//Zonal component U.
-  //double v = thisCohort->edall.d_atms.tEasternWindSpeed;//Meridional component V.
+  //Draft:
+  //If this is daily how do we know what day of the month it is?
+  //double u = thisCohort->edall.d_atms.EasternWindSpeed;//Zonal component U.
+  //double v = thisCohort->edall.d_atms.NorthernWindSpeed;//Meridional component V.
   //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));
+
+  //Convert units...
 
   //Temporary stub, return an arbitrary value!!!!!:
   //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
