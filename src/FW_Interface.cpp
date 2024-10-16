@@ -77,7 +77,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //fm.delta = X;
   
   
-  //Gather weather / environmental conditions:
+  //Gather weather and environmental conditions:
   double tempAir = thisCohort->edall.d_atms.ta;//Daily air temp (at surface).
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
   //We may also need it for duff moisture soon.
@@ -460,18 +460,16 @@ bool IsShrub(const Cohort& thisCohort, int pftIdx)
 
 /** Get the wind speed at midflame height in m/min.
  *
- * The Rothermel Albini spread model takes midflame wind speed, something we are unlikely to ever
- * have.  If fact the midflame height is not even known prior to running the model, which results
- * in an unresolvable circularity.  In practice no one seems to worry about this much.  An estimate
- * of near surface wind speed is what we need.  As a first pass we are going to approximate it as
- * ~2m wind speed.  The input may not match this so we need to compute our best estimate.
+ * The Rothermel Albini spread model takes midflame wind speed, an ill defined quantity representing
+ * the mean wind speed in the flaming zone.  An estimate of near surface wind speed is what we need.
+ * 2 meter wind speed should be fine.  The input may not match this so we need to compute our best
+ * estimate.
  *
- We need a sub-daily value ~ daily value?
+ * We need a sub-daily value ~ daily value?
  * The code has to do the following:
  * - Get the daily windspeed from the host model
  *   Note: Windspeed is not yet available in DVM-DOS-TEM, but it should be soon.
- * - Calculate the windspeed at ~2m (or some other value?) if the provided wind speed is at another
- *   height.
+ * - Calculate the windspeed at ~2m if the provided wind speed is at another height.
  * - Possibly: Estimate a sub-daily from a daily mean value.  The fire may occur on timescale where
  *   it occurs at a specific time of day.  In this case it would be good to estimate what the wind
  *   speed was at this time.  This may be difficult as wind can be highly variable and may not be
@@ -480,10 +478,19 @@ bool IsShrub(const Cohort& thisCohort, int pftIdx)
  */
 double GetMidflameWindSpeed()//Could pass in the desired height or time of day?
 {
-	//Temporary stub, return an arbitrary value!!!!!:
-	//Summer average wind speeds are ~6 mph in Fairbanks Alaska.
-	//6 * ftPerMi / 60 / ftPerM = 160.9344
-	return 160.9344;
+  double windSpeed;//Return value.
+  
+  //Semi-psuedocode:
+  //double u = thisCohort->edall.d_atms.tEasternWindSpeed;//Zonal component U.
+  //double v = thisCohort->edall.d_atms.tEasternWindSpeed;//Meridional component V.
+  //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));
+
+  //Temporary stub, return an arbitrary value!!!!!:
+  //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
+  //6 * ftPerMi / 60 / ftPerM = 160.9344
+  windSpeed = 160.9344;
+  
+  return windSpeed;
 }
 
 /** Calculate fuel moisture based on recent weather:
