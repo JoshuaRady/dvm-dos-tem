@@ -64,6 +64,9 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   std::string fuelModelTablePath = "/Some/Path/Dropbox/StandardFuelModelTableFileName.csv";//Or tab delimited.
   FuelModel fm = GetFuelModelFromCSV(fuelModelTablePath, fuelModelNumber);
 
+  //Convert to metric units:
+  fm.ConvertUnits(Metric);
+
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
   bool treatMossAsDead = SOMEFLAG;//Add config setting!!!!!
@@ -135,6 +138,9 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //SimulateGroundFire();
   //wf->fd->fire_soid.burnthick = burnDepth;
   //Include messaging of original code?????
+
+ //Update litter, moss, and soil carbon stocks:
+ 
 
 }
 
