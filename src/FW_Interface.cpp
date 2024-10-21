@@ -84,9 +84,8 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   
   double windSpeed = GetMidflameWindSpeed(thisCohort);
   
-  //The slope is stored in he CohortData object and also in the wildfire object.  This is percent slope.  Need to convert to fractional slope!!!!!
-  //double slope = wf->slope;//
-  double slope = thisCohort.cd.cell_slope;
+  //The percent slope is stored in he CohortData object and also in the wildfire object:
+  double slopeSteepness = SlopePctToSteepness(thisCohort.cd.cell_slope);
 
   //Shortwave radiation may be needed for the moisture calculations.
 
@@ -115,7 +114,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //M_f_ij does not need to be included if it is adde to the fuel model object above.
   SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm,
                                                       windSpeed,//U
-                                                      slope)//,//slopeSteepness
+                                                      slopeSteepness)
                                                       //M_f_ij,//fuel moisture
                                                       //false,//useWindLimit
                                                       //FALSE);//debug
@@ -569,8 +568,7 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIn
   //mind, but the table method used below can take any daylight time.
   int hourOfDay = 15;
 
-  //Slope:
-  //Also duplicated in the Wildfire object.
+  //The percent slope is stored in he CohortData object and also in the wildfire object:
   double slopePct = thisCohort.cd.cell_slope;//Percent
 
   //Get the aspect:
