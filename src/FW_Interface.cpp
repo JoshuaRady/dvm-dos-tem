@@ -75,10 +75,8 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
 
-  //Do we calculate the fuel bed depth or is it fixed?
-  //We could calculate it from af fixed fuel fuel bed density as FATES does.
-  //fm.delta = X;
-  
+  //Calculate the fuel bed depth:
+  CalculateFuelbedDepth(fm);//Could add mode switch here!!!!!
   
   //Gather weather and environmental conditions:
   double tempAir = thisCohort->edall.d_atms.ta;//Daily air temp (at surface).
@@ -461,6 +459,41 @@ bool IsShrub(const Cohort& thisCohort, int pftIdx)
       break;
   }
   return false;
+}
+
+/** Calculate the fuel bed depth and update it in the fuel model passed.
+ *
+ * Standard fuel models include a fuel bed depth among their default values.  We need a way to
+ * estimate this from the model along with fuel loadings.  DVM-DOS-TEM doesn't give us much to work
+ * with.  Ecosystem structural information would be most useful but we don't have that.  For now we
+ * will make some assumptions.  Here are some options:
+ * 
+ * - The fuel bed depth is constant.  This may be reasonable for gramaniod dominated ecosystems,
+ * e.g. grasslands, tussock tundra, etc., where the vegetation has a typical maximum height but may
+ * be more or less dense.
+ * 
+ * - The mix of fuels and it structure is fairly constant but the amount is not.  That implies the
+ * bulk density of the fuel bed is constant but the height varies with fuel loading.  Fuel bed depth
+ * is then calculable from fuel loading and an estimate of they typical bulk density.
+ *
+ * The reality is likely more complicated but we will build our approach around these for now.
+ *
+ * @param fm The fuel model for the site (with default fuel bed depth and updated fuel loadings).
+ * @param dynamic Temporary: Should the fuel bed depth be treated as changing with fuel amounts?
+ *
+ * @returns Nothing.  The fuel bed depth is updated in the fuel model passed.
+ */
+void CalculateFuelbedDepth(FuelModel& fm, bool dynamic)
+{
+  //Determine which approach to use based on the fuel model or CMT would be ideal but it will
+  //require some research.  For now we use a switch.  If the depth is constant there is nothing to
+  //do.  Otherwise calculate the depth based on constant bulk density:
+  if (dynamic)
+  {
+    double totalLoading = std::accumulate(fm.w_o_ij.begin(), fm.w_o_ij.end(), 0.0);
+    //This assumes fm.bulkDensity is the standard fuel model default value:
+    fm.delta = totalLoading / fm.bulkDensity;//kg/m^2 / kg/m^3 = m
+  }
 }
 
 /** Get the wind speed at midflame height in m/min.
