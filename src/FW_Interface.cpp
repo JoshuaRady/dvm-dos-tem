@@ -76,7 +76,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
 
   //Calculate the fuel bed depth:
-  CalculateFuelbedDepth(fm);//Could add mode switch here!!!!!
+  CalculateFuelbedDepth(fm);//Could add a mode switch here!!!!!
   
   //Gather weather and environmental conditions:
   double tempAir = thisCohort->edall.d_atms.ta;//Daily air temp (at surface).
@@ -121,10 +121,8 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
                                                       //FALSE);//debug
 
 
-  //Use the fire energy flux into the soil along with the fuel model as input into Burnup:
-  //There are additional fuel and environmental parameters needed here!!!!!
-  //raData.XXXXX
-
+  //Simulate the combustion of surface fuels:
+  CalculateSurfaceCombustion(fm, SpreadCalcs raData, tempAir, windSpeed);
 
 
   //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
@@ -688,6 +686,44 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIn
   M_f_ij[4] = woodyLFM;
 
   return M_f_ij;
+}
+
+/** Simulate combustion of surface fuels.
+ *
+ * We simulate surface fuel combustion with the Burnup model of Albini 1995?????.
+ *
+ * @param fm The fuel model for the site.
+ * @param raData The results of a Rothermel Albini spread model calculation for the site.
+ *
+ * @returns ?????
+ */
+void CalculateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed)//SimulateSurfaceCombustion?
+{
+  //Burnup takes a number of parameters:
+  
+  //Wind and air temperature are needed (passed in):
+  
+  //Fuel properties are a superset of those in a standard fire behavior fuel model:
+  
+  //Additionally duff loading and moisture are needed:
+  
+  //Fire properties are obtained from the spread rate calculations:
+  //The model takes fire intensity and residence time.  These can be estimated form the spread rate calculations.
+  
+  //A set of simulation settings...
+  
+  //Data structures to hold the output:
+  
+  
+  //Call Burnup:
+  
+  
+  //The simulation calculates the both consumption of fuels and the time evolution of the fire behavior.
+  //The changes in fuels can be returned in the fuel model itself.  The fire behavior must returned
+  //in some other manner.
+  
+  
+  //return -1;//Note sure what to return yet.
 }
 
 /** Simulate ground fire returning or updating the burn depth...
