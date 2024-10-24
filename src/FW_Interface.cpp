@@ -122,7 +122,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
 
 
   //Simulate the combustion of surface fuels:
-  CalculateSurfaceCombustion(fm, SpreadCalcs raData, tempAir, windSpeed);
+  SimulateSurfaceCombustion(fm, SpreadCalcs raData, tempAir, windSpeed);
 
 
   //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
@@ -697,7 +697,7 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIn
  *
  * @returns ?????
  */
-void CalculateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed)//SimulateSurfaceCombustion?
+void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed)//CalculateSurfaceCombustion?
 {
   //Burnup takes a number of parameters:
   

@@ -28,4 +28,6 @@ double GetMidflameWindSpeed(const Cohort& thisCohort);
 
 std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIndex);
 
+void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed);
+
 #endif //FW_INTERFACE_H
