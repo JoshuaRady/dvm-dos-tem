@@ -11,18 +11,23 @@
  * should be expected to change.
  */
 
-#include "FireweedRAFireSpread.h"
+#include "FW_Interface.h"
+
+//#include "FireweedRAFireSpread.h"
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedFuelTools.h"
 #include "FireweedLiveFuelMoistureGSI.h"
 #include "FireweedMetUtils.h"
+#include "FireweedMessaging.h"//Temporary for Stop()!!!!!
+
+#include "Layer.h"
 #include "../include/TEMLogger.h"
 #include "TEMUtilityFunctions.h"//For length_of_day().
 
 extern src::severity_logger< severity_level > glg;
 
 //Constants:
-const c2b = 2.0//The carbon to biomass multiplier for vegetation on a dry basis.
+const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dry basis.
 //This could vary by PFT but many models use a single value.
 
 
@@ -48,7 +53,6 @@ ToDo:
 //void RevisedFire(WildFire* wf)//The name will definitely change.
 void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't be const?????
 {
-
   //Determine the fuel model matching the location's CMT:------------------
   
   //Get the CMT for the grid cell:
@@ -58,7 +62,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   int theCMTnumber = thisCohort.cd.cmttype;
 
   //Crosswalk from CMT to fuel model:
-  fuelModelNumber = GetMatchingFuelModel(theCMTnumber);
+  int fuelModelNumber = GetMatchingFuelModel(theCMTnumber);
 
   //The fuel model table file needs to be added to the config file and be loaded:
   std::string fuelModelTablePath = "/Some/Path/Dropbox/StandardFuelModelTableFileName.csv";//Or tab delimited.
@@ -69,8 +73,8 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
 
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
-  bool treatMossAsDead = SOMEFLAG;//Add config setting!!!!!
-  CohortStatesToFuelLoading(thisCohort, fm, treatMossAsDead)
+  bool treatMossAsDead = true;//SOMEFLAG;//Add config setting!!!!!
+  CohortStatesToFuelLoading(thisCohort, fm, treatMossAsDead);
 
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
@@ -79,7 +83,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   CalculateFuelbedDepth(fm);//Could add a mode switch here!!!!!
   
   //Gather weather and environmental conditions:
-  double tempAir = thisCohort->edall.d_atms.ta;//Daily air temp (at surface).
+  double tempAir = thisCohort.edall->d_atms.ta;//Daily air temp (at surface).
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
   //We may also need it for duff moisture soon.
   
@@ -94,9 +98,10 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //Calculate fuel moisture:----------------------
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
-  std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, fm);
+  std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, fm, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
+  bool UseDynamicFuelMoisture = false;//Temporary hack!!!!!
   if (UseDynamicFuelMoisture)//Add switch for dynamic moisture!!!!!
   {
     fm.CalculateDynamicFuelCuring(M_f_ij);
@@ -115,14 +120,14 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //M_f_ij does not need to be included if it is adde to the fuel model object above.
   SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm,
                                                       windSpeed,//U
-                                                      slopeSteepness)
+                                                      slopeSteepness);
                                                       //M_f_ij,//fuel moisture
                                                       //false,//useWindLimit
                                                       //FALSE);//debug
 
 
   //Simulate the combustion of surface fuels:
-  SimulateSurfaceCombustion(fm, SpreadCalcs raData, tempAir, windSpeed);
+  SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
 
 
   //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
@@ -219,7 +224,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   const double gPerKg = 1000;//Move to FireweedUnits.h?
   
   //Dead fuels:
-  Layer* topFibric = thisCohort.soilbgc.ground.fstshlwl;//Get the top non-moss layer.
+  Layer* topFibric = thisCohort.soilbgc.ground->fstshlwl;//Get the top non-moss layer.
   double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
 
   //Distribute the rawc to the dead size classes:
@@ -251,8 +256,8 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   //Sort the PFT biomass into the appropriate live fuel classes:
   
   //The fuel model may contain default loadings that should be disregarded:
-  liveHerbIndex = fm.LiveHerbaceousIndex();
-  liveWoodyIndex = fm.LiveWoodyIndex();
+  int liveHerbIndex = fm.LiveHerbaceousIndex();
+  int liveWoodyIndex = fm.LiveWoodyIndex();
   fm.w_o_ij[liveHerbIndex] = 0;
   fm.w_o_ij[liveWoodyIndex] = 0;
   
@@ -271,7 +276,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         //needs to be addressed during fuel model selection.
         if (!fm.LiveHerbaceousPresent())
         {
-          Stop("The live herbaceous fuel type is not active in this fuel model.")
+          Stop("The live herbaceous fuel type is not active in this fuel model.");//Change to native messaging!!!!!
         }
 
         //Include aboveground parts:
@@ -297,7 +302,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
           //See notes above.
           if (!fm.LiveHerbaceousPresent())
           {
-            Stop("The live herbaceous fuel type is not active in this fuel model.")
+            Stop("The live herbaceous fuel type is not active in this fuel model.");
           }
 
           fm.w_o_ij[liveHerbIndex] += mossC;//Convert to dry biomass.
@@ -313,7 +318,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         //behavior.  See notes for herbaceous fules above.
         if (!fm.LiveHerbaceousPresent())
         {
-          Stop("The live woody fuel type is not active in this fuel model.")
+          Stop("The live woody fuel type is not active in this fuel model.");
         }
 
         //Include aboveground parts:
@@ -543,7 +548,7 @@ double GetMidflameWindSpeed(const Cohort& thisCohort)//Could pass in the desired
  * as well.
  *
  * @param thisCohort The cohort object for this site.
- * 			@param fm The fuel model object for this site.			Not currently being used!!!!!
+ * @param fm The fuel model object for this site.
  * @param monthIndex The current month as a zero based index.
  #
  * @returns M_f_ij, the fuel moisture for all fuel classes.  This is not returned in the fuel model
@@ -553,7 +558,8 @@ double GetMidflameWindSpeed(const Cohort& thisCohort)//Could pass in the desired
  - Make Fosberg table files paths available.
  
  */
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIndex)//, const FuelModel& fm)
+//std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIndex)//, const FuelModel& fm)
+std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm, int monthIndex)
 {
   //std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
   //We get the number of fuel classes here and then assume the number below.  To handle more than
@@ -562,7 +568,7 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIn
 
   //Get the current date:
   //There is a month member in the cohorts CohortData but that apparently is not the current month.
-  int monthOfYear = monthOfYearIndex + 1;
+  int monthOfYear = monthIndex + 1;
 
   //The day of month is really up to us.  The middle of the month seems resonable.  We'll use the
   //15th for now and add a calculation later?
@@ -637,12 +643,16 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIn
   }
 
   //Need to add paths for the Fosberg table files to the config file!!!!!
+  std::string tableA_Path = "Some/File/Path";
+  std::string tableB_Path = "Some/File/Path";
+  std::string tableC_Path = "Some/File/Path";
+  std::string tableD_Path = "Some/File/Path";
   double oneHrFM = FosbergNWCG_1HrFM(tableA_Path, tableB_Path, tableC_Path, tableD_Path,//!!!!!
                                      tempAir, rhPct, monthOfYear, hourOfDay,
                                      slopePct, aspect, shaded);//Default values for the rest.
 
-  double tenHrFM = NWCG_10hrFM(double oneHrFM);
-  double hundredHrFM = NWCG_100hrFM(double oneHrFM);
+  double tenHrFM = NWCG_10hrFM(oneHrFM);
+  double hundredHrFM = NWCG_100hrFM(oneHrFM);
 
   //Live fuel moisture:---------------------------
   //The GSI based fuel moistures should be averages of the 21 days up to today:
@@ -665,7 +675,7 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIn
     //double vpd_hPa = VPDfromRHBuck(tempAir, rh, p_hPa);
 
     //temutil::length_of_day gives the he day length in hours:
-    float dayLengthSec = temutil::length_of_day(thisCohort->lat, dayOfYearIndex) * 60 * 60;
+    float dayLengthSec = temutil::length_of_day(thisCohort.lat, dayOfYearIndex) * 60 * 60;
 
     double gsi = GrowingSeasonIndex(tempCMin, vpdPa, dayLengthSec);
     herbLFM += HerbaceousLiveFuelMoisture(gsi);

@@ -14,19 +14,23 @@
 #ifndef FW_INTERFACE_H
 #define FW_INTERFACE_H
 
+#include "Cohort.h"
+//#include "FireweedFuelModels.h"
+#include "FireweedRAFireSpread.h"
+
 void RevisedFire(const Cohort& thisCohort, int monthIndex);
 
 int GetMatchingFuelModel(int cmt);
 void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead);
 void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,
-                                 std::vector <double>& distribWts)
+                                 std::vector <double>& distribWts);
 bool IsShrub(const Cohort& thisCohort, int pftIdx);
 
 void CalculateFuelbedDepth(FuelModel& fm, bool dynamic = true);
 
 double GetMidflameWindSpeed(const Cohort& thisCohort);
 
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIndex);
+std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm, int monthIndex);
 
 void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed);
 
