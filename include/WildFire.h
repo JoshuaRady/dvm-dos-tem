@@ -120,7 +120,7 @@ private:
   bool isFireReturnDate(const int yr, const int midx);// FW_MOD
   double getBurnOrgSoilthick(const int year);
   void getBurnAbgVegetation(const int ipft, const int year);
-  void WildFire::updateBurntOrgSoil();
+  void updateBurntOrgSoil();
 
   ////////
   // MAYBE get rid of all these???
