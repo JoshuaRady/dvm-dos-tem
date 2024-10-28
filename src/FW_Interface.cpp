@@ -224,8 +224,12 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   const double gPerKg = 1000;//Move to FireweedUnits.h?
   
   //Dead fuels:
-  Layer* topFibric = thisCohort.soilbgc.ground->fstshlwl;//Get the top non-moss layer.
-  double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
+  //The following approach won't work since the Ground object is private to the parent Soil_Bgc object:
+  //Layer* topFibric = thisCohort.soilbgc.ground->fstshlwl;//Get the top non-moss layer.
+  //double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
+  //The WildFire object's bdall member also gives access to layer carbon stocks but is also private.
+  //We created a accessor to get the data we need.  This is likely temporary until find a better way.
+  double rawC = thisCohort.fire.GetLitterRawC();
 
   //Distribute the rawc to the dead size classes:
 
