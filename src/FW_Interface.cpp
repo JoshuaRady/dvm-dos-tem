@@ -229,7 +229,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   //double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
   //The WildFire object's bdall member also gives access to layer carbon stocks but is also private.
   //We created a accessor to get the data we need.  This is likely temporary until find a better way.
-  double rawC = thisCohort.fire.GetLitterRawC();
+  double rawC = thisCohort.fire.getLitterRawC();
 
   //Distribute the rawc to the dead size classes:
 
