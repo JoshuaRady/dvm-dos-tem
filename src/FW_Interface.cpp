@@ -39,6 +39,8 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
  * @param thisCohort The cohort object for this site.
  *   The WildFire object doesn't have all the data we need.  The Cohort gives access to stocks and
  *   meteorology we need.
+ *   Note: This is currently const but this will need be to changed when we start updating the
+ *   states post-fire.
  * @param monthIndex The current month as a zero based index.
  *
 
@@ -92,7 +94,7 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //The percent slope is stored in he CohortData object and also in the wildfire object:
   double slopeSteepness = SlopePctToSteepness(thisCohort.cd.cell_slope);
 
-  //Shortwave radiation may be needed for the moisture calculations.
+  //Shortwave radiation may be needed for more advanced moisture calculations added in the future.
 
 
   //Calculate fuel moisture:----------------------
@@ -140,9 +142,11 @@ void RevisedFire(const Cohort& thisCohort, int monthIndex)//thisCohort shouldn't
   //wf->fd->fire_soid.burnthick = burnDepth;
   //Include messaging of original code?????
 
- //Update litter, moss, and soil carbon stocks:
- 
+  //Update litter, moss, and soil carbon stocks:
+  //Some of this could be done directly here but we could also use parts of the 'original' code like
+  // WildFire::updateBurntOrgSoil(), which I split out. 
 
+  //Return anything.
 }
 
 /** Determine the fuel model (number) matching a given community type:
@@ -720,6 +724,9 @@ void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double t
   //Fuel properties are a superset of those in a standard fire behavior fuel model:
   
   //Additionally duff loading and moisture are needed:
+  /*It is unclear exactly what should be used nere.  The duff concept in Burnup is certainly not
+  synonymous with the deep duff of the boreal.  We heed to decide whether any of the duff can be
+  involved in the surface fire.  The moisture can be obtained from the dead moss layer moisture state.*/
   
   //Fire properties are obtained from the spread rate calculations:
   //The model takes fire intensity and residence time.  These can be estimated form the spread rate calculations.
