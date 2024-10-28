@@ -920,7 +920,7 @@ int WildFire::getFRI(){
  * 
  * @note This is a temporary hack to get around the fact that bdall is private.
  */
-double WildFire::getLitterRawC()//or GetLitterRawC
+double WildFire::getLitterRawC() const//or GetLitterRawC
 {
   int topFibricIndex;
 

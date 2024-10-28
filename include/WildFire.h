@@ -56,6 +56,8 @@ public:
 
   std::string report_fire_inputs();
 
+  double getLitterRawC() const;// FW_MOD
+
 private:
 
   // There are two distinct types of fire "drivers":
@@ -121,7 +123,6 @@ private:
   double getBurnOrgSoilthick(const int year);
   void getBurnAbgVegetation(const int ipft, const int year);
   void updateBurntOrgSoil();// FW_MOD
-  double WildFire::getLitterRawC();// FW_MOD
 
   ////////
   // MAYBE get rid of all these???
