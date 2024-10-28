@@ -284,7 +284,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         //needs to be addressed during fuel model selection.
         if (!fm.LiveHerbaceousPresent())
         {
-          Stop("The live herbaceous fuel type is not active in this fuel model.");//Change to native messaging!!!!!
+          BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";
         }
 
         //Include aboveground parts:
@@ -310,7 +310,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
           //See notes above.
           if (!fm.LiveHerbaceousPresent())
           {
-            Stop("The live herbaceous fuel type is not active in this fuel model.");
+            BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";
           }
 
           fm.w_o_ij[liveHerbIndex] += mossC;//Convert to dry biomass.
@@ -326,7 +326,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         //behavior.  See notes for herbaceous fules above.
         if (!fm.LiveHerbaceousPresent())
         {
-          Stop("The live woody fuel type is not active in this fuel model.");
+          BOOST_LOG_SEV(glg, fatal) << "The live woody fuel type is not active in this fuel model.";
         }
 
         //Include aboveground parts:
