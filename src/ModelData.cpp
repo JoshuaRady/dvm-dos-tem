@@ -98,6 +98,11 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   co2_file          = controldata["IO"]["co2_file"].asString();
   proj_co2_file     = controldata["IO"]["proj_co2_file"].asString();
   runmask_file      = controldata["IO"]["runmask_file"].asString();
+  fire_fuel_model_file = controldata["IO"]["fire_fuel_model_file"].asString();//FW_MOD
+  fire_fosberg_a_file  = controldata["IO"]["fire_fosberg_a_file"].asString();//FW_MOD
+  fire_fosberg_b_file  = controldata["IO"]["fire_fosberg_b_file"].asString();//FW_MOD
+  fire_fosberg_c_file  = controldata["IO"]["fire_fosberg_c_file"].asString();//FW_MOD
+  fire_fosberg_d_file  = controldata["IO"]["fire_fosberg_d_file"].asString();//FW_MOD
   output_dir        = controldata["IO"]["output_dir"].asString();
   output_spec_file  = controldata["IO"]["output_spec_file"].asString();
   output_monthly    = controldata["IO"]["output_monthly"].asInt();

@@ -80,6 +80,11 @@ public:
   string runmask_file;
   string output_dir;
   string output_spec_file;
+  string fire_fuel_model_file;//FW_MOD
+  string fire_fosberg_a_file;//FW_MOD
+  string fire_fosberg_b_file;//FW_MOD
+  string fire_fosberg_c_file;//FW_MOD
+  string fire_fosberg_d_file;//FW_MOD
   bool output_monthly;
   bool nc_eq; // NetCDF output flags for each stage
   bool nc_sp;

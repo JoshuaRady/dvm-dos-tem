@@ -18,7 +18,7 @@
 //#include "FireweedFuelModels.h"
 #include "FireweedRAFireSpread.h"
 
-void RevisedFire(const Cohort& thisCohort, int monthIndex);
+void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex);
 
 int GetMatchingFuelModel(int cmt);
 void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead);
@@ -30,7 +30,8 @@ void CalculateFuelbedDepth(FuelModel& fm, bool dynamic = true);
 
 double GetMidflameWindSpeed(const Cohort& thisCohort);
 
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm, int monthIndex);
+std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm,
+                                           const ModelData& md, int monthIndex);
 
 void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed);
 

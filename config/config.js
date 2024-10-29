@@ -18,6 +18,11 @@
     "hist_exp_fire_file": "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/historic-explicit-fire.nc",
     "proj_exp_fire_file": "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/projected-explicit-fire.nc",
     "topo_file":          "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/topo.nc",
+    "fire_fuel_model_file" "WildfireData/Standard Fuel Models D3 No BOM.csv",
+    "fire_fosberg_a_file" "WildfireData/NWGC_Fosberg_Table_A_D3.txt",
+    "fire_fosberg_b_file" "WildfireData/NWGC_Fosberg_Table_B_D4.txt",
+    "fire_fosberg_c_file" "WildfireData/NWGC_Fosberg_Table_C_D4.txt",
+    "fire_fosberg_d_file" "WildfireData/NWGC_Fosberg_Table_D_D4.txt",
     "output_dir":         "output/",
     "output_spec_file":   "config/output_spec.csv",
     "output_monthly":     1, //JSON specific
