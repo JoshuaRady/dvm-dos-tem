@@ -13,12 +13,10 @@
 
 #include "FW_Interface.h"
 
-//#include "FireweedRAFireSpread.h"
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedFuelTools.h"
 #include "FireweedLiveFuelMoistureGSI.h"
 #include "FireweedMetUtils.h"
-//#include "FireweedMessaging.h"//Temporary for Stop()!!!!!
 
 #include "Layer.h"
 #include "../include/TEMLogger.h"
@@ -70,17 +68,13 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   int fuelModelNumber = GetMatchingFuelModel(theCMTnumber);
 
   //The fuel model table file needs to be added to the config file and be loaded:
-  //std::string fuelModelTablePath = "/Some/Path/Dropbox/StandardFuelModelTableFileName.csv";//Or tab delimited.
-  //FuelModel fm = GetFuelModelFromCSV(fuelModelTablePath, fuelModelNumber);
-  FuelModel fm = GetFuelModelFromCSV(md.fire_fuel_model_file, fuelModelNumber);
+  FuelModel fm = GetFuelModelFromCSV(md.fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
 
   //Convert to metric units:
   fm.ConvertUnits(Metric);
 
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
-  //bool treatMossAsDead = true;//SOMEFLAG;//Add config setting!!!!!
-  //CohortStatesToFuelLoading(thisCohort, fm, treatMossAsDead);
   CohortStatesToFuelLoading(thisCohort, fm, md.fire_moss_as_dead_fuel);
 
   //Save the fuel loading prior to fire: (will be compared below...)
@@ -108,8 +102,6 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, md, fm, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
-  //bool UseDynamicFuelMoisture = false;//Temporary hack!!!!!
-  //if (UseDynamicFuelMoisture)//Add switch for dynamic moisture!!!!!
   if (md.fire_dynamic_fuel)
   {
     fm.CalculateDynamicFuelCuring(M_f_ij);
