@@ -41,7 +41,7 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
  *   meteorology we need.
  *   Note: This is currently const but this will need be to changed when we start updating the
  *   states post-fire.
- * @param md The odel data object.
+ * @param md The ModelData object containing configuration data.
  *   Note: Most of the code above this use a pointer but we should be able to dereference it and
  *   pass it in by reference.
  * @param monthIndex The current month as a zero based index.
@@ -560,20 +560,15 @@ double GetMidflameWindSpeed(const Cohort& thisCohort)//Could pass in the desired
  * as well.
  *
  * @param thisCohort The cohort object for this site.
+ * @param md The ModelData object containing configuration data.
  * @param fm The fuel model object for this site.
  * @param monthIndex The current month as a zero based index.
  #
  * @returns M_f_ij, the fuel moisture for all fuel classes.  This is not returned in the fuel model
  * passed in because we don't know if curing is being applied.
- 
- ToDo:
- - Make Fosberg table files paths available.
- 
  */
-//std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIndex)//, const FuelModel& fm)
-//std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm, int monthIndex)
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm,
-                                           const ModelData& md, int monthIndex)
+std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const ModelData& md,
+                                           const FuelModel& fm, int monthIndex)
 {
   //std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
   //We get the number of fuel classes here and then assume the number below.  To handle more than
@@ -656,12 +651,7 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelM
   	shaded = true;
   }
 
-  //Need to add paths for the Fosberg table files to the config file!!!!!
-//   std::string tableA_Path = "Some/File/Path";
-//   std::string tableB_Path = "Some/File/Path";
-//   std::string tableC_Path = "Some/File/Path";
-//   std::string tableD_Path = "Some/File/Path";
-//   double oneHrFM = FosbergNWCG_1HrFM(tableA_Path, tableB_Path, tableC_Path, tableD_Path,//!!!!!
+  //Perform the 1hr moisture look up and derive the rest from that:
   double oneHrFM = FosbergNWCG_1HrFM(md.fire_fosberg_a_file, md.fire_fosberg_b_file,
                                      md.fire_fosberg_c_file, md.fire_fosberg_d_file,
                                      tempAir, rhPct, monthOfYear, hourOfDay,

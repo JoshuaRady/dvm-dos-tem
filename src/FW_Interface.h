@@ -30,8 +30,8 @@ void CalculateFuelbedDepth(FuelModel& fm, bool dynamic = true);
 
 double GetMidflameWindSpeed(const Cohort& thisCohort);
 
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm,
-                                           const ModelData& md, int monthIndex);
+std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const ModelData& md,
+                                           const FuelModel& fm, int monthIndex);
 
 void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed);
 
