@@ -139,13 +139,18 @@
         // 2+: Reserved for future use.
         // Fire is alway off in the PR stage and can only be FRI for EQ/SP so no switches are
         // provided for these stages.
-        "ignition_tr": 0
-        "ignition_sc": 0
+        "ignition_tr": 0,
+        "ignition_sc": 0,
 
         // More future controls per stage can go here...
         //"severity_pr":
         //"severity_eq":
         // ...
+
+        //Treat the fuel models as dynamic:
+        "fire_dynamic_fuel": false,
+        //Should moss be treated as a dead fuel (true) or live fuel (false):
+        "fire_moss_as_dead_fuel": true
       },
       // Future disturbances go here...
       //"insect": { ... },

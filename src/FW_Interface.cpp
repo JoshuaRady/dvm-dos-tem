@@ -79,8 +79,9 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
 
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
-  bool treatMossAsDead = true;//SOMEFLAG;//Add config setting!!!!!
-  CohortStatesToFuelLoading(thisCohort, fm, treatMossAsDead);
+  //bool treatMossAsDead = true;//SOMEFLAG;//Add config setting!!!!!
+  //CohortStatesToFuelLoading(thisCohort, fm, treatMossAsDead);
+  CohortStatesToFuelLoading(thisCohort, fm, md.fire_moss_as_dead_fuel);
 
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
@@ -107,8 +108,9 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, fm, md, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
-  bool UseDynamicFuelMoisture = false;//Temporary hack!!!!!
-  if (UseDynamicFuelMoisture)//Add switch for dynamic moisture!!!!!
+  //bool UseDynamicFuelMoisture = false;//Temporary hack!!!!!
+  //if (UseDynamicFuelMoisture)//Add switch for dynamic moisture!!!!!
+  if (md.fire_dynamic_fuel)
   {
     fm.CalculateDynamicFuelCuring(M_f_ij);
   }

@@ -132,6 +132,8 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   fire_on_SC        = controldata["stage_settings"]["sc"]["fire"].asBool();
   fire_ignition_tr  = controldata["module_settings"]["dsb"]["fire"]["ignition_tr"].asInt();
   fire_ignition_sc  = controldata["module_settings"]["dsb"]["fire"]["ignition_sc"].asInt();
+  fire_dynamic_fuel = controldata["module_settings"]["dsb"]["fire"]["fire_use_dyn_fuel"].asBool();
+  fire_moss_as_dead_fuel = controldata["module_settings"]["dsb"]["fire"]["fire_moss_as_dead_fuel"].asBool();
   // FW_MOD_END.
 }
 

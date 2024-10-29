@@ -123,6 +123,10 @@ public:
   // Wildfire ignitions modes: 0: explicit for TR/SC. 1: Use fire return interval, 2+: Reserved for future use.
   int fire_ignition_tr;
   int fire_ignition_sc;
+  //Treat the fuel models as dynamic:
+  bool fire_dynamic_fuel;
+  //Should moss be treated as a dead fuel (true) or live fuel (false):
+  bool fire_moss_as_dead_fuel;
   // FW_MOD_END.
 
   bool outSiteDay;
