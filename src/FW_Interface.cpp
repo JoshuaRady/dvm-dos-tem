@@ -105,7 +105,7 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   //Calculate fuel moisture:----------------------
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
-  std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, fm, md, monthIndex);
+  std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, md, fm, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
   //bool UseDynamicFuelMoisture = false;//Temporary hack!!!!!
