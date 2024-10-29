@@ -72,7 +72,7 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   //The fuel model table file needs to be added to the config file and be loaded:
   //std::string fuelModelTablePath = "/Some/Path/Dropbox/StandardFuelModelTableFileName.csv";//Or tab delimited.
   //FuelModel fm = GetFuelModelFromCSV(fuelModelTablePath, fuelModelNumber);
-  FuelModel fm = GetFuelModelFromCSV(md->fire_fuel_model_file, fuelModelNumber);
+  FuelModel fm = GetFuelModelFromCSV(md.fire_fuel_model_file, fuelModelNumber);
 
   //Convert to metric units:
   fm.ConvertUnits(Metric);
@@ -104,7 +104,7 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   //Calculate fuel moisture:----------------------
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
-  std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, fm, monthIndex);
+  std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, fm, md, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
   bool UseDynamicFuelMoisture = false;//Temporary hack!!!!!
@@ -571,7 +571,7 @@ double GetMidflameWindSpeed(const Cohort& thisCohort)//Could pass in the desired
  
  */
 //std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, int monthIndex)//, const FuelModel& fm)
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm, int monthIndex)
+//std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm, int monthIndex)
 std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const FuelModel& fm,
                                            const ModelData& md, int monthIndex)
 {
