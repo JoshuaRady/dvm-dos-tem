@@ -49,7 +49,7 @@ public:
   void set_state_from_restartdata(const RestartData & rdata);
 
   //bool should_ignite(const int yr, const int midx, const std::string& stage);
-  bool should_ignite(const int yr, const int midx, const std::string& stage);// FW_MOD
+  bool should_ignite(const int yr, const int midx, const std::string& stage, const ModelData* md);// FW_MOD
 
   // not used or fully implemented yet...
   //int lookup_severity(const int yr, const int midx, const std::string& stage);
