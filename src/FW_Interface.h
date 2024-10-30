@@ -15,7 +15,6 @@
 #define FW_INTERFACE_H
 
 #include "Cohort.h"
-//#include "FireweedFuelModels.h"
 #include "FireweedRAFireSpread.h"
 
 void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex);

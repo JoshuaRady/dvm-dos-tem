@@ -411,7 +411,11 @@ void WildFire::burn(int year) {
 //       cd->m_soil.frootfrac[il][ip] /= rootfracsum;
 //     }
 //   }
-  updateBurntOrgSoil();
+  //Variables to hold return values:
+  double burnedsolc = 0.0;
+  double burnedsoln = 0.0;
+  double r_burn2bg_cn[NUM_PFT];
+  updateBurntOrgSoil(burndepth, burnedsolc, burnedsoln, r_burn2bg_cn[]);
 
   // all woody debris will burn out
   BOOST_LOG_SEV(glg, note) << "Handle burnt woody debris...";
@@ -429,13 +433,13 @@ void WildFire::burn(int year) {
 
   BOOST_LOG_SEV(glg, note) << "Handle Vegetation burning and mortality...";
   double comb_vegc = 0.0;  // summed for all PFTs
-  double comb_vegn = 0.0;
-  double comb_deadc = 0.0;
+  double comb_vegn = 0.0;//The live vegetation mass that gets burned...
+  double comb_deadc = 0.0;//(Standing) dead vegetation mass that gets burned...
   double comb_deadn = 0.0;
   double dead_bg_vegc = 0.0;
   double dead_bg_vegn = 0.0;
-  double veg_2_dead_C = 0.0;
-  double veg_2_dead_N = 0.0;
+  double veg_2_dead_C = 0.0;//Only local...
+  double veg_2_dead_N = 0.0;//Only local...
 
   bdall->m_vegs.deadc0 = 0.0;//Zeroing the standing dead pools
   bdall->m_vegs.deadn0 = 0.0;
@@ -610,6 +614,18 @@ void WildFire::burn(int year) {
 
 
 // above ground burning ONLY, based on fire severity indirectly or directly
+/*
+
+ * This function determines the fractions of a given PFT that are combusted, are killed but are not
+ * combusted, and that survive fire.  This is based on the current fire severity and input
+ * parameters.
+ *
+ * The fractions are returned via class data members.  This is a bit wierd since these values are
+ * only use transiently.  The member values are only for a single PFT and the PFT in question can
+ * only be know from within the calling loop.  Perhaps this an artifact from a time before PFT
+ * specific fractions?  In any case it might be better to return the values directly.
+ * 
+ */
 void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
   
   BOOST_LOG_SEV(glg, note) << "Lookup the above ground vegetation burned as a funciton of severity.";
@@ -774,24 +790,48 @@ double WildFire::getBurnOrgSoilthick(const int year) {
   return burn_thickness;
 };
 
-// FW_MOD: The following code was moved out of WildFire::burn().
-// FW_NOTE: We need to separate out the "litter" soil layer to make the following work for both approaches.
-// So far only minor formatting changes have been made.
 /** Update soil layers and carbon based on the burn depth.
  *
+ * The function does the following:
+ * - Soil carbon and nitrogen is removed from burned soil layers (via bdall).
+ * - Root carbon and nitrogen is removed from burned soil layers (via cd).
+ * - Carbon and nitrogen burned away is summed and returned in function arguments.
+ * - Revise the burn depth if it exceeds the organic depth.
+ * - Set the relative organic layer burn (rolb) value (via fd).
+ * - The root fractions for each PFT / layer are updated (via cd).
+ *
+ * @param burndepth The calculated soil burn depth.
+ *   As mentioned elsewhere the burn depth doesn't have to be passed in since it is stored in fd by
+ *   getBurnOrgSoilthick().  I is clearer though as is more similar to the code prior to refactor.
+ * @param burnedsolc On return the amount of organic soil carbon burned. (units?)
+ * @param burnedsoln On return the amount of soil nitroget burned.
+ * @param r_burn2bg_cn On return the ratio of root carbon burned.
+ *
+ * Togeather these values are used to calculate fire fluxes.
+ 
+ FW_MOD: The following code was moved out of WildFire::burn().  Changes are primarily in formatting
+ and comments.
+ 
+ FW_NOTE: We need to separate out the "litter" to make the following work for both approaches,
+ otherwise it may get double counted.
+ *
  */
-void WildFire::updateBurntOrgSoil()//int year)//Name?????
+void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& burnedsoln,
+                                  double r_burn2bg_cn[NUM_PFT])//Name?????
 {
   BOOST_LOG_SEV(glg, note) << "Setup some temporary pools for tracking various burn related attributes (depths, C, N)";
   double totbotdepth = 0.0;
-  double burnedsolc = 0.0;
-  double burnedsoln = 0.0;
-  double r_burn2bg_cn[NUM_PFT]; // ratio of dead veg. after burning
+  //double burnedsolc = 0.0;
+  //double burnedsoln = 0.0;
+  burnedsolc = 0.0;
+  burnedsoln = 0.0;
+  //double r_burn2bg_cn[NUM_PFT]; // ratio of dead veg. after burning
   for (int ip=0; ip<NUM_PFT; ip++) {
     r_burn2bg_cn[ip] = 0.; //  used for vegetation below-ground (root) loss,
                            //  and calculated below
   }
 
+  //Burn down until the burn depth is reached:
   BOOST_LOG_SEV(glg, debug) << "Handle burning the soil (loop over all soil layers)...";
   for (int il = 0; il < cd->m_soil.numsl; il++) {
 
@@ -801,7 +841,7 @@ void WildFire::updateBurntOrgSoil()//int year)//Name?????
                               << "   top:" << cd->m_soil.z[il]
                               << "   bottom:"<< cd->m_soil.z[il] + cd->m_soil.dz[il];
 
-    if (cd->m_soil.type[il] <= 2) {
+    if (cd->m_soil.type[il] <= 2) {//Dead moss and organic soil layers:
 
       totbotdepth += cd->m_soil.dz[il];
 
@@ -812,6 +852,8 @@ void WildFire::updateBurntOrgSoil()//int year)//Name?????
 
       if (totbotdepth <= burndepth) { //remove all the orgc/n in this layer
         BOOST_LOG_SEV(glg, debug) << "Haven't reached burndepth (" << burndepth << ") yet. Remove all org C and N in this layer";
+
+        //Soil C and N:
         burnedsolc += ilsolc;
         burnedsoln += ilsoln;
         bdall->m_sois.rawc[il] = 0.0;
@@ -821,19 +863,23 @@ void WildFire::updateBurntOrgSoil()//int year)//Name?????
         bdall->m_sois.orgn[il] = 0.0;
         bdall->m_sois.avln[il] = 0.0;
 
+        //Burn up the roots in the layer:
+//Note: The root fraction ?????
         for (int ip=0; ip<NUM_PFT; ip++) {
           if (cd->m_veg.vegcov[ip]>0.) {
             r_burn2bg_cn[ip] += cd->m_soil.frootfrac[il][ip];
             cd->m_soil.frootfrac[il][ip] = 0.0;
           }
         }
-      } else {
+      } else {//For the last partial layer remove a fraction of the C, N, and roots:
         BOOST_LOG_SEV(glg, debug) << "The bottom of this layer (il: " << il << ") is past the 'burndepth'. Find the remaining C and N as a fraction of layer thickness";
         double partleft = totbotdepth - burndepth;
 
         // Calculate the remaining C, N
         if (partleft < cd->m_soil.dz[il]) { // <-- Maybe this should be an assert instead of an if statement??
           BOOST_LOG_SEV(glg, debug) << "Burning all but "<<partleft<<"of layer "<<il;
+
+          //Soil C and N:
           burnedsolc += (1.0-partleft/cd->m_soil.dz[il]) * ilsolc;
           burnedsoln += (1.0-partleft/cd->m_soil.dz[il]) * ilsoln;
           bdall->m_sois.rawc[il] *= partleft/cd->m_soil.dz[il];
@@ -843,6 +889,7 @@ void WildFire::updateBurntOrgSoil()//int year)//Name?????
           bdall->m_sois.orgn[il] *= partleft/cd->m_soil.dz[il];
           bdall->m_sois.avln[il] *= partleft/cd->m_soil.dz[il];
 
+          //Burn up a fraction of the roots in the layer:
           for (int ip=0; ip<NUM_PFT; ip++) {
             if (cd->m_veg.vegcov[ip] > 0.0) {
               r_burn2bg_cn[ip] += (1-partleft/cd->m_soil.dz[il])

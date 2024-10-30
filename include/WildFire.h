@@ -122,7 +122,8 @@ private:
   bool isFireReturnDate(const int yr, const int midx);// FW_MOD
   double getBurnOrgSoilthick(const int year);
   void getBurnAbgVegetation(const int ipft, const int year);
-  void updateBurntOrgSoil();// FW_MOD
+  void updateBurntOrgSoil(double burndepth, double& burnedsolc, double& burnedsoln,
+                          double r_burn2bg_cn[NUM_PFT]);// FW_MOD
 
   ////////
   // MAYBE get rid of all these???
