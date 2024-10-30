@@ -176,7 +176,7 @@ bool WildFire::should_ignite(const int yr, const int midx, const std::string& st
   {
     int fire_ignition_mode;
 
-    if (stage.compare("tr-run")
+    if (stage.compare("tr-run"))
     {
       fire_ignition_mode = md->fire_ignition_tr
     }
@@ -412,7 +412,7 @@ void WildFire::burn(int year) {
   double burnedsolc = 0.0;
   double burnedsoln = 0.0;
   double r_burn2bg_cn[NUM_PFT];
-  updateBurntOrgSoil(burndepth, burnedsolc, burnedsoln, r_burn2bg_cn[]);
+  updateBurntOrgSoil(burndepth, burnedsolc, burnedsoln, r_burn2bg_cn);
 
   // all woody debris will burn out
   BOOST_LOG_SEV(glg, note) << "Handle burnt woody debris...";
@@ -980,7 +980,7 @@ double WildFire::getLitterRawC() const//or GetLitterRawC
     if (cd->m_soil.type[i] == 1)//Shallow organic / peat ~ I_FIB
     {
       topFibricIndex = i;
-      break
+      break;
     }
   }
 
