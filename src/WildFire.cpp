@@ -316,7 +316,7 @@ void WildFire::burn(const Cohort& thisCohort, int year, const int midx) {//const
   else// if theFireMode == new)
   {
     //RevisedFire() does a lot more that get the burn depth.  This may not be the best place to call it.
-    RevisedFire(thisCohort, md, midx);
+    //RevisedFire(thisCohort, md, midx);
   }
 
   // FW_DRAFT_COMMENT: Update soil layers and carbon based on the burn depth.
