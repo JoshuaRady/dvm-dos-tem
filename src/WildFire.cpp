@@ -121,7 +121,6 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
   fd->fire_a2soi.orgn = rdata.firea2sorgn;
 }
 
-
 /** Figure out whether or not there should be a fire, based on stage, yr, month.
  *
  *  There are two modes of operation: "FRI" (fire recurrence interval) and
@@ -139,7 +138,13 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
  *
  *  NOTE: how to handle fire severity, to be determined.
  *
-*/
+ * @param yr The current year.
+ * @param midx The current month index (zero based).
+ * @param stage The run stage.
+ * @param md A pointer to the model data. [Change to a reference?????] FW_NOTE: Addition.
+ *
+ * @returns Should an wildfire ignition occur at this time?
+ */
 //bool WildFire::should_ignite(const int yr, const int midx, const std::string& stage) {
 bool WildFire::should_ignite(const int yr, const int midx, const std::string& stage,
                              const ModelData* md) {// FW_MOD
@@ -247,6 +252,9 @@ bool WildFire::should_ignite(const int yr, const int midx, const std::string& st
 // FW_MOD_START:
 /** Determine if the current date, by year and month (index), aligns with the fire return interval.
  * 
+ * @param yr The current year.
+ * @param midx The current month index (zero based).
+ *
  * FW_NOTE: 
  * This code was extracted from should_ignite() to avoid code repetition due to other changes in the
  * function.
@@ -269,7 +277,10 @@ bool WildFire::isFireReturnDate(const int yr, const int midx)
   return false;
 }// FW_MOD_END.
 
-/** Burning vegetation and soil organic C */
+/** Burning vegetation and soil organic C 
+ *
+ * @param year The current year.
+ */
 void WildFire::burn(int year) {
   BOOST_LOG_NAMED_SCOPE("burning");
   BOOST_LOG_SEV(glg, note) << "HELP!! - WILD FIRE!! RUN FOR YOUR LIFE!";
@@ -631,6 +642,9 @@ void WildFire::burn(int year) {
  * only be know from within the calling loop.  Perhaps this an artifact from a time before PFT
  * specific fractions?  In any case it might be better to return the values directly.
  * 
+ * @param ipft The PFT index.
+ * @param year The current year.
+ *
  */
 void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
   
@@ -675,6 +689,9 @@ void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
 *   1. only organic layer can be burned
 *   2. can't exceed a pixel specified 'max burn thickness'
 *   3. should not burn into "wet" organic soil layers
+
+ * @param year The current year.
+
 */
 double WildFire::getBurnOrgSoilthick(const int year) {
 
