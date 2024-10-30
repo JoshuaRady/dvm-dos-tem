@@ -425,17 +425,21 @@ void WildFire::burn(int year) {
   bdall->m_sois.wdebrisn = 0.0;
 
   // summarize
-  BOOST_LOG_SEV(glg, note) << "Summarize...?";
+  //BOOST_LOG_SEV(glg, note) << "Summarize...?";//FW_Note: This doesn't seem to be acsurate.
+  BOOST_LOG_SEV(glg, note) << "Caluate the fractions of burnt C & N emitted vs. left on site...";
   double vola_solc = burnedsolc * (1.0 - firpar.r_retain_c) + wdebrisc;
   double vola_soln = burnedsoln * (1.0 - firpar.r_retain_n) + wdebrisn;
   double reta_solc = burnedsolc * firpar.r_retain_c;   //together with veg.-burned C return, This will be put into soil later
   double reta_soln = burnedsoln * firpar.r_retain_n;   //together with veg.-burned N return, This will be put into soil later
 
   BOOST_LOG_SEV(glg, note) << "Handle Vegetation burning and mortality...";
-  double comb_vegc = 0.0;  // summed for all PFTs
-  double comb_vegn = 0.0;//The live vegetation mass that gets burned...
-  double comb_deadc = 0.0;//(Standing) dead vegetation mass that gets burned...
+  //The live vegetation mass that combusts, summed for all PFTs:
+  double comb_vegc = 0.0;
+  double comb_vegn = 0.0;
+  //(Standing) dead vegetation mass that combusts:
+  double comb_deadc = 0.0;
   double comb_deadn = 0.0;
+  //The dead mass of roots (belowground vegetation):
   double dead_bg_vegc = 0.0;
   double dead_bg_vegn = 0.0;
   double veg_2_dead_C = 0.0;//Only local...
