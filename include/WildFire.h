@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "Cohort.h"//Wil this cause a header loop?
+//#include "Cohort.h"//Wil this cause a header loop?
 #include "CohortData.h"
 #include "EnvData.h"
 #include "FireData.h"
