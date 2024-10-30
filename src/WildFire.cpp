@@ -566,7 +566,7 @@ void WildFire::burn(int year) {
 
   double reta_vegc;
   double reta_vegn;
-  burnVegetation(comb_vegc, comb_vegn, dead_bg_vegc, dead_bg_vegn, reta_vegc, reta_vegn);
+  burnVegetation(year, r_burn2bg_cn, comb_vegc, comb_vegn, dead_bg_vegc, dead_bg_vegn, reta_vegc, reta_vegn);
 
   BOOST_LOG_SEV(glg, note) << "Save the fire emission and return data into 'fd'...";
   //Summing the PFT specific fluxes to dead standing
@@ -811,7 +811,7 @@ double WildFire::getBurnOrgSoilthick(const int year) {
  *   getBurnOrgSoilthick().  I is clearer though as is more similar to the code prior to refactor.
  * @param burnedsolc On return the amount of organic soil carbon burned. (units?)
  * @param burnedsoln On return the amount of soil nitroget burned.
- * @param r_burn2bg_cn On return the ratio of root carbon burned.
+ * @param r_burn2bg_cn On return an array with the ratio of root carbon burned for each PFT.
  *
  * Togeather these values are used to calculate fire fluxes.
  
@@ -994,16 +994,21 @@ double WildFire::getLitterRawC() const//or GetLitterRawC
 
 /** FW_MOD: Handle vegetation fire mortality and burning of vegetation and standing dead stock (classic).
  * 
+ * @param year The current year.
+ * @param r_burn2bg_cn An array with the ratio of root carbon burned for each PFT.
  * @param comb_vegc On return the total live vegetation carbon that combusts.
  * @param comb_vegn On return the total live vegetation nitrogen that combusts.
- * @param 
- * @param 
+ * @param dead_bg_vegc On return the dead root carbon from fire.
+ * @param dead_bg_vegn On return the dead root nitrogen from fire.
+ * @param reta_vegc On return the retained burnt carbon.
+ * @param reta_vegn On return the retained burnt nitrogen.
  * 
  * FW_NOTE: This code was extracted from burn() to make it more modular.  The interface is not ideal
  * due to the larde number of return values.
  */
-void WildFire::burnVegetation(double& comb_vegc, double &comb_vegn, double& dead_bg_vegc,
-                    double& dead_bg_vegn, double& reta_vegc, double& reta_vegn)//Name? vegMortAndCombustion()
+void WildFire::burnVegetation(int year, double r_burn2bg_cn[NUM_PFT], double& comb_vegc,
+                              double &comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
+                              double& reta_vegc, double& reta_vegn)//Name? vegMortAndCombustion()
 {
   // The live vegetation mass that combusts, summed for all PFTs:
   comb_vegc = 0.0;
