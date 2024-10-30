@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 
+//#include "Cohort.h"
 #include "CohortData.h"
 #include "EnvData.h"
 #include "FireData.h"
@@ -48,11 +49,12 @@ public:
   void set_state_from_restartdata(const RestartData & rdata);
 
   //bool should_ignite(const int yr, const int midx, const std::string& stage);
-  bool should_ignite(const int yr, const int midx, const std::string& stage, const ModelData* md);// FW_MOD
+  bool should_ignite(const int yr, const int midx, const std::string& stage);// FW_MOD
 
   // not used or fully implemented yet...
   //int lookup_severity(const int yr, const int midx, const std::string& stage);
-  void burn(int year);
+  //void burn(int year);
+  void burn(const Cohort& thisCohort, int year, const int midx);// FW_MOD
 
   std::string report_fire_inputs();
 

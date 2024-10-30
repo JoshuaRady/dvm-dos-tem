@@ -783,7 +783,8 @@ void Cohort::updateMonthly_Fir(const int & year, const int & midx, std::string s
     // Fire!
     //  - Update C/N pools for each pft through 'bd', but not soil structure.
     //  - Soil root fraction also updated through 'cd'.
-    fire.burn(year);
+    //fire.burn(year);
+    fire.burn(*this, year, midx);//FW_MOD
     
     BOOST_LOG_SEV(glg, debug) << "Right after fire.burn(..)  " << ground.layer_report_string();
 

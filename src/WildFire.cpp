@@ -277,15 +277,20 @@ bool WildFire::isFireReturnDate(const int yr, const int midx)
   return false;
 }// FW_MOD_END.
 
-/** Burning vegetation and soil organic C 
+/** Burn vegetation and soil organic carbon.
+ * 
+ * @param thisCohort The cohort object for this site.  FW_NOTE: Added.  Could reorder.
+ * @param year The current year. [Make const for consistancy?]
+ * @param midx The current month index (zero based).  FW_NOTE: Added.
  *
- * @param year The current year.
+ * FW_NOTE: This function is being heavily refactored for the revised wildfire implementation. Work
+ * is ongoing.
  */
-void WildFire::burn(int year) {
+void WildFire::burn(const Cohort& thisCohort, int year, const int midx) {//const ModelData& md
   BOOST_LOG_NAMED_SCOPE("burning");
   BOOST_LOG_SEV(glg, note) << "HELP!! - WILD FIRE!! RUN FOR YOUR LIFE!";
 
-  double burndepth;
+  double burndepth = 0.0;
 
   // FW_DRAFT_COMMENT: Clear the FireData object:
   BOOST_LOG_SEV(glg, debug) << fd->report_to_string("Before WildFire::burn(..)");
@@ -310,8 +315,8 @@ void WildFire::burn(int year) {
   }
   else// if theFireMode == new)
   {
-    //We don't have access to the parent cohort!  We need the model date and month as well.
-    //RevisedFire(thisCohort, const ModelData& md, int monthIndex);
+    //RevisedFire() does a lot more that get the burn depth.  This may not be the best place to call it.
+    RevisedFire(thisCohort, md, midx);
   }
 
   // FW_DRAFT_COMMENT: Update soil layers and carbon based on the burn depth.
