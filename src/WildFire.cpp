@@ -991,6 +991,11 @@ void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
   md = modelDataPointer;
 }
 
+void WildFire::setClimate(Climate* climatePtr)//FW_MOD
+{
+  climate = climatePtr;
+}
+
 int WildFire::getFRI(){
   return fri;
 }

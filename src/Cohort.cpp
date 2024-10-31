@@ -197,6 +197,7 @@ void Cohort::initialize_internal_pointers() {
 
   fire.setFirData(fd);
   fire.setModelData(md);// FW_MOD
+  fire.setClimate(climate);// FW_MOD
 
   //BGC states change integration module pointers
   for (int i=0; i<NUM_PFT; i++) {

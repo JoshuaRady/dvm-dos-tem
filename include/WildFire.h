@@ -12,6 +12,7 @@
 #include "FireData.h"
 #include "BgcData.h"
 #include "ModelData.h"//FW_MOD
+#include "Climate.h"//FW_MOD
 #include "RestartData.h"
 
 #include "errorcode.h"
@@ -45,7 +46,8 @@ public:
   void setBgcData(BgcData* bdp, const int &ip);
   void setFirData(FirData* fdp);
   void setCohortLookup(CohortLookup* chtlup);
-  void setModelData(ModelData* modelData);// FW_MOD
+  void setModelData(ModelData* modelDataPtr);// FW_MOD
+  void setClimate(Climate* climatePtr);// FW_MOD
 
   void initializeParameter();
   void initializeState();
@@ -125,6 +127,7 @@ private:
   BgcData * bd[NUM_PFT];
   BgcData * bdall;
   ModelData * md;// FW_MOD: The revised fire model has input file paths it needs.
+  Climate * climate;// FW_MOD: The revised fire model needs environmental conditions.
 
   bool isFireReturnDate(const int year, const int midx);// FW_MOD
   double getBurnOrgSoilthick(const int year);
