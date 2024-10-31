@@ -89,7 +89,8 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
   //We may also need it for duff moisture soon.
   
-  double windSpeed = GetMidflameWindSpeed(thisCohort);
+  //double windSpeed = GetMidflameWindSpeed(thisCohort);
+  double windSpeed = 3;//Temporary hack!!!!!
   
   //The percent slope is stored in he CohortData object and also in the wildfire object:
   double slopeSteepness = SlopePctToSteepness(thisCohort.cd.cell_slope);

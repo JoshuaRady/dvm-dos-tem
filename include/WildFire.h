@@ -140,7 +140,7 @@ private:
                       double& reta_vegc, double& reta_vegn);// FW_MOD
 
  // FW_MOD_START:
- double WildFire::GetMidflameWindSpeed();
+ double GetMidflameWindSpeed();
  
  // FW_MOD_END:
 
