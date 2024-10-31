@@ -986,6 +986,11 @@ void WildFire::setFirData(FirData* fdp) {
   fd =fdp;
 }
 
+void setModelData(ModelData* modelDataPointer)//FW_MOD
+{
+  md = modelDataPointer;
+}
+
 int WildFire::getFRI(){
   return fri;
 }

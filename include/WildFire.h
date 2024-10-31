@@ -44,6 +44,7 @@ public:
   void setBgcData(BgcData* bdp, const int &ip);
   void setFirData(FirData* fdp);
   void setCohortLookup(CohortLookup* chtlup);
+  void setModelData(ModelData* modelData);// FW_MOD
 
   void initializeParameter();
   void initializeState();
@@ -122,6 +123,7 @@ private:
   EnvData * edall;
   BgcData * bd[NUM_PFT];
   BgcData * bdall;
+  ModelData * md;// FW_MOD: The revised fire model has input file paths it needs.
 
   bool isFireReturnDate(const int year, const int midx);// FW_MOD
   double getBurnOrgSoilthick(const int year);
