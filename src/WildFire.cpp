@@ -121,7 +121,7 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
   fd->fire_a2soi.orgn = rdata.firea2sorgn;
 }
 
-/** Figure out whether or not there should be a fire, based on stage, yr, month.
+/** Figure out whether or not there should be a fire, based on stage, year, and month.
  *
  *  There are two modes of operation: "FRI" (fire recurrence interval) and
  *  "exp". Pre-run, equilibrium, and spin-up stages all use the FRI settings
@@ -138,7 +138,7 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
  *
  *  NOTE: how to handle fire severity, to be determined.
  *
- * @param yr The current year.
+ * @param year The current year.
  * @param midx The current month index (zero based).
  * @param stage The run stage.
  * @param md A pointer to the model data. [Change to a reference?????] FW_NOTE: Addition.
@@ -146,10 +146,10 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
  * @returns Should an wildfire ignition occur at this time?
  */
 //bool WildFire::should_ignite(const int yr, const int midx, const std::string& stage) {
-bool WildFire::should_ignite(const int yr, const int midx, const std::string& stage,
+bool WildFire::should_ignite(const int year, const int midx, const std::string& stage,
                              const ModelData* md) {// FW_MOD
 
-  BOOST_LOG_SEV(glg, note) << "determining fire ignition for yr:" << yr
+  BOOST_LOG_SEV(glg, note) << "determining fire ignition for year:" << year
                            << ", monthidx:" << midx << ", stage:" << stage;
 
   bool ignite = false;
@@ -169,7 +169,7 @@ bool WildFire::should_ignite(const int yr, const int midx, const std::string& st
     this->fri_derived = true;
     BOOST_LOG_SEV(glg, debug) << "Determine fire from FRI.";
 
-    if (this->isFireReturnDate(yr, midx))
+    if (this->isFireReturnDate(year, midx))
     {
       ignite = true;
     }
@@ -197,8 +197,8 @@ bool WildFire::should_ignite(const int yr, const int midx, const std::string& st
         this->fri_derived = false;
         BOOST_LOG_SEV(glg, debug) << "Determine fire from explicit fire regime.";
 
-        if ( this->exp_burn_mask[yr] == 1 ){
-          if ( temutil::doy2month(this->exp_jday_of_burn[yr]) == midx ) {
+        if ( this->exp_burn_mask[year] == 1 ){
+          if ( temutil::doy2month(this->exp_jday_of_burn[year]) == midx ) {
             ignite = true;
           }
           // do nothing: correct year, wrong month
@@ -210,7 +210,7 @@ bool WildFire::should_ignite(const int yr, const int midx, const std::string& st
         this->fri_derived = true;
         BOOST_LOG_SEV(glg, debug) << "Fire ignition mode = 1. Determine fire from FRI.";
 
-        if (this->isFireReturnDate(yr, midx))
+        if (this->isFireReturnDate(year, midx))
         {
           ignite = true;
         }
@@ -252,21 +252,21 @@ bool WildFire::should_ignite(const int yr, const int midx, const std::string& st
 // FW_MOD_START:
 /** Determine if the current date, by year and month (index), aligns with the fire return interval.
  * 
- * @param yr The current year.
+ * @param year The current year.
  * @param midx The current month index (zero based).
  *
  * FW_NOTE: 
  * This code was extracted from should_ignite() to avoid code repetition due to other changes in the
  * function.
  *  Should this be moved?  The private functions don't seem to be in a particular place.*/
-bool WildFire::isFireReturnDate(const int yr, const int midx)
+bool WildFire::isFireReturnDate(const int year, const int midx)
 {
   // The original conditional checks for years that are multiples of the fire return interval:
   // if ((yr % this->fri) == 0 && yr > 0)
   // Year zero is ignored to prevent fires from occurring right at the start of the run.  If FRI = 0
-  // a divide by zero error will result.  It makes sense to all accept 0 values for FRI for locations
+  // a divide by zero error will result.  It makes sense to accept 0 values for FRI for locations
   // where fire should not occur.  The following logic handles this safely:
-  if (yr > 0 && this->fri > 0 && (yr % this->fri) == 0)
+  if (year > 0 && this->fri > 0 && (year % this->fri) == 0)
   {
     if (midx == temutil::doy2month(this->fri_jday_of_burn))
     {
@@ -1029,7 +1029,7 @@ double WildFire::getLitterRawC() const//or GetLitterRawC
  * due to the larde number of return values.
  */
 void WildFire::burnVegetation(int year, double r_burn2bg_cn[NUM_PFT], double& comb_vegc,
-                              double &comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
+                              double& comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
                               double& reta_vegc, double& reta_vegn)//Name? vegMortAndCombustion()
 {
   // The live vegetation mass that combusts, summed for all PFTs:
