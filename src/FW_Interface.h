@@ -14,7 +14,7 @@
 #ifndef FW_INTERFACE_H
 #define FW_INTERFACE_H
 
-#include "Cohort.h"
+//#include "Cohort.h"
 #include "FireweedRAFireSpread.h"
 
 //void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex);//Move to WildFire.
@@ -30,8 +30,8 @@ void CalculateFuelbedDepth(FuelModel& fm, bool dynamic = true);
 
 //double GetMidflameWindSpeed(const Cohort& thisCohort);//Move to WildFire.
 
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const ModelData& md,
-                                           const FuelModel& fm, int monthIndex);
+//std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const ModelData& md,
+//                                           const FuelModel& fm, int monthIndex);//Move to WildFire.
 
 void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed);
 

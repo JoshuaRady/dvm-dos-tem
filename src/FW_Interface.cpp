@@ -81,7 +81,7 @@ void WildFire::RevisedFire(int monthIndex)
 
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
-  CohortStatesToFuelLoading(thisCohort, fm, md->fire_moss_as_dead_fuel);
+  CohortStatesToFuelLoading();//(thisCohort, fm, md->fire_moss_as_dead_fuel);
 
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
@@ -568,16 +568,17 @@ double WildFire::GetMidflameWindSpeed()
  * continuously calculated state.  This would moke more sense if litter existed as a distinct stock
  * as well.
  *
- * @param thisCohort The cohort object for this site.
- * @param md The ModelData object containing configuration data.
+ * [@param thisCohort The cohort object for this site.]
+ * [@param md The ModelData object containing configuration data.]
  * @param fm The fuel model object for this site.
  * @param monthIndex The current month as a zero based index.
  #
  * @returns M_f_ij, the fuel moisture for all fuel classes.  This is not returned in the fuel model
  * passed in because we don't know if curing is being applied.
  */
-std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const ModelData& md,
-                                           const FuelModel& fm, int monthIndex)
+//std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const ModelData& md,
+//                                           const FuelModel& fm, int monthIndex)
+std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int monthIndex)
 {
   //std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
   //We get the number of fuel classes here and then assume the number below.  To handle more than
@@ -600,26 +601,26 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const Model
   //Dead fuel moisture:---------------------------
 
   //Current air temperature:
-  //float tempAir = thisCohort.climate.tair[monthIndex]//Monthly
-  float tempAir = thisCohort.climate.tair_d[dayOfYearIndex];
+  //float tempAir = climate->tair[monthIndex]//Monthly
+  float tempAir = climate->tair_d[dayOfYearIndex];
 
   //Calculate current relative humidity:
 
   //Atmospheric pressure is needed for the the Fireweed code method.
   //Sea level barometric pressure will be available soon but is not currently.  Use this along with
-  //thisCohort.cd.cell_elevation() to get the pressure at this elevation.
+  //cd->cell_elevation() to get the pressure at this elevation.
   //p_hPa = Z;
 
   //Partial pressure of water vapor:
   //This is an input variable.  There has been some discussion recently about the units of this.
   //The docs say it is in hPa but it is used in the code as if it is in in Pa
   //(see Climate.cpp calculate_vpd()).
-  float P_Pa = thisCohort.climate.vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
+  float P_Pa = climate->vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
 
   //Saturated vapor pressure:
   //double P_s_hPa = SaturationVaporPressureBuck(tempAir, p_hPa);//Fireweed method returns hPa.
   //This is a computed climate variable.
-  float P_s_Pa = thisCohort.climate.svp_d[dayOfYearIndex];//From the code this must be in Pa.
+  float P_s_Pa = climate->svp_d[dayOfYearIndex];//From the code this must be in Pa.
 
   //Use the pressures to calculate relative humidity:
   double rhPct = RHfromVP(P_Pa, P_s_Pa);
@@ -630,11 +631,11 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const Model
   int hourOfDay = 15;
 
   //The percent slope is stored in he CohortData object and also in the wildfire object:
-  double slopePct = thisCohort.cd.cell_slope;//Percent
+  double slopePct = cd->cell_slope;//Percent
 
   //Get the aspect:
   //Also duplicated in the Wildfire object.
-  double aspect = thisCohort.cd.cell_aspect;//Degrees
+  double aspect = cd->cell_aspect;//Degrees
 
   //Shading should take into consideration both cloudiness and canopy cover:
   bool shaded = false;
@@ -645,15 +646,15 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const Model
   double fpcWoody = 0;
   for (int i = 0; i < NUM_PFT; i++)
   {
-    if (thisCohort.cd.d_veg.ifwoody[i])
+    if (cd->d_veg.ifwoody[i])
     {
-      fpcWoody += thisCohort.cd.d_veg.fpc[i];
+      fpcWoody += cd->d_veg.fpc[i];
     }
   }
 
   //To combine the cloudiness (expressed as a percentage) and canopy cover (a fraction) we need to
   //invert the the values so the product increases the effect when combined.  We then re-invert:
-  double shadeFrac = 1 - ((1 - (thisCohort.climate.cld_d[dayOfYearIndex] / 100)) * (1 - fpcWoody));
+  double shadeFrac = 1 - ((1 - (climate->cld_d[dayOfYearIndex] / 100)) * (1 - fpcWoody));
 
   if (shadeFrac > 0.5)
   {
@@ -661,8 +662,8 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const Model
   }
 
   //Perform the 1hr moisture look up and derive the rest from that:
-  double oneHrFM = FosbergNWCG_1HrFM(md.fire_fosberg_a_file, md.fire_fosberg_b_file,
-                                     md.fire_fosberg_c_file, md.fire_fosberg_d_file,
+  double oneHrFM = FosbergNWCG_1HrFM(md->fire_fosberg_a_file, md->fire_fosberg_b_file,
+                                     md->fire_fosberg_c_file, md->fire_fosberg_d_file,
                                      tempAir, rhPct, monthOfYear, hourOfDay,
                                      slopePct, aspect, shaded);//Default values for the rest.
 
@@ -680,10 +681,10 @@ std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const Model
   {
     //Minimum and maximum daily temperature are not currently available but will be soon.  We
     //use a hack value for now:
-    float tempCMin = thisCohort.climate.tair_d[i] - 10;
+    float tempCMin = climate->tair_d[i] - 10;
     
     //Get the VPD:
-    float vpdPa = thisCohort.climate.vpd_d[i];
+    float vpdPa = climate->vpd_d[i];
     //Or calculate VPD from mean daily weather values:
     //double p_hPa = ?????;
     //...
