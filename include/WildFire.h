@@ -59,7 +59,8 @@ public:
   // not used or fully implemented yet...
   //int lookup_severity(const int yr, const int midx, const std::string& stage);
   //void burn(int year);
-  void burn(const Cohort& thisCohort, int year, const int midx);// FW_MOD
+  //void burn(const Cohort& thisCohort, int year, const int midx);// FW_MOD
+  void burn(const int year, const int midx);// FW_MOD
 
   std::string report_fire_inputs();
 

@@ -281,14 +281,15 @@ bool WildFire::isFireReturnDate(const int year, const int midx)
 
 /** Burn vegetation and soil organic carbon.
  * 
- * @param thisCohort The cohort object for this site.  FW_NOTE: Added.  Could reorder.
+ * [@param thisCohort The cohort object for this site.]  FW_NOTE: Added.  Could reorder.
  * @param year The current year. [Make const for consistancy?]
  * @param midx The current month index (zero based).  FW_NOTE: Added.
  *
  * FW_NOTE: This function is being heavily refactored for the revised wildfire implementation. Work
  * is ongoing.
  */
-void WildFire::burn(const Cohort& thisCohort, int year, const int midx) {//const ModelData& md
+//void WildFire::burn(const Cohort& thisCohort, int year, const int midx) {//const ModelData& md
+void WildFire::burn(const int year, const int midx) {
   BOOST_LOG_NAMED_SCOPE("burning");
   BOOST_LOG_SEV(glg, note) << "HELP!! - WILD FIRE!! RUN FOR YOUR LIFE!";
 
@@ -988,7 +989,7 @@ void WildFire::setFirData(FirData* fdp) {
 
 void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
 {
-  md = modelDataPointer;
+  md = modelDataPtr;
 }
 
 void WildFire::setClimate(Climate* climatePtr)//FW_MOD
