@@ -219,7 +219,7 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
  *
  * We don't include dead moss as a surface fuel.  We treat that as duff, part of the ground fuels.
  *
- * @param thisCohort The cohort object for this site.
+ * [@param thisCohort The cohort object for this site.]
  * @param fm The fuel model for the site (with default loadings).
  *
  * returns Nothing but the fuel model loadding (w_o_ij) is updated on return.
@@ -229,7 +229,8 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
  * stocks appropriately afterwards.  We have done this to some extend in the calling code.
  * - Deal with wdebrisc.
  */
-void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead)
+//void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead)
+void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
 {
   const double gPerKg = 1000;//Move to FireweedUnits.h?
   
@@ -239,7 +240,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   //double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
   //The WildFire object's bdall member also gives access to layer carbon stocks but is also private.
   //We created a accessor to get the data we need.  This is likely temporary until find a better way.
-  double rawC = thisCohort.fire.getLitterRawC();
+  double rawC = getLitterRawC();//This can be eliminated now!!!!!
 
   //Distribute the rawc to the dead size classes:
 
@@ -278,11 +279,11 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
   //I can't find where the PFT's carbon identifiers and stocks live.  Pseudo-coding for now!:
   for (int pftNum = 0; pftNum < NUM_PFT; pftNum++)
   {
-    if (!thisCohort.cd.d_veg.ifwoody[pftNum])//Or m_veg??????
+    if (!cd->d_veg.ifwoody[pftNum])//Or m_veg??????
     {
       //Put all herbaceous PFTs in the herbaceous:
       //Note: There is currently no way to tell graminoids and forbs appart.
-      if (thisCohort.cd.d_veg.nonvascular[pftNum] == 0)
+      if (cd->d_veg.nonvascular[pftNum] == 0)
       {
         //If the herbaceous class is not present adding carbon to it will not influence the fire
         //behavior.  If herbaceous fuels are not important in this system we could ignore them.
@@ -294,17 +295,17 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         }
 
         //Include aboveground parts:
-        double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
-        double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
+        double leafC = bd[pftNum]->m_vegs.c[I_leaf];
+        double stemC = bd[pftNum]->m_vegs.c[I_stem];
         fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
       }
       else//Mosses:
       {
         //My best reading is that moss is all leaf in DVM-DOS-TEM.  However if they had stems and
         //'roots', i.e. rhizoids = root C, they should burn too.  Include just in case for now:
-        double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
-        double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];//Should be 0.
-        double rootC = thisCohort.bd[pftNum].m_vegs.c[I_root];//Should be 0.
+        double leafC = bd[pftNum]->m_vegs.c[I_leaf];
+        double stemC = bd[pftNum]->m_vegs.c[I_stem];//Should be 0.
+        double rootC = bd[pftNum]->m_vegs.c[I_root];//Should be 0.
         double mossC = (leafC + stemC + rootC) * c2b / gPerKg;
 
         if (treatMossAsDead)
@@ -326,7 +327,7 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
     else//Woody PFTs:
     {
       //Put shrubs in the live woody fuel:
-      if (IsShrub(thisCohort, pftNum))
+      if (IsShrub(&cd, pftNum))
       {
         //If the woody class is not present adding carbon to it will not influence the fire
         //behavior.  See notes for herbaceous fules above.
@@ -336,8 +337,8 @@ void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool tre
         }
 
         //Include aboveground parts:
-        double leafC = thisCohort.bd[pftNum].m_vegs.c[I_leaf];
-        double stemC = thisCohort.bd[pftNum].m_vegs.c[I_stem];
+        double leafC = bd[pftNum]->m_vegs.c[I_leaf];
+        double stemC = bd[pftNum]->m_vegs.c[I_stem];
         fm.w_o_ij[liveWoodyIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
       }
       //Ignore trees.

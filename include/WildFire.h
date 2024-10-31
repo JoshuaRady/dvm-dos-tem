@@ -21,6 +21,8 @@
 
 #include "CohortLookup.h"
 
+#include "FireweedFuelModels.h"
+
 using namespace std;
 
 class WildFire {
@@ -141,6 +143,9 @@ private:
 
  // FW_MOD_START: Functions for the revised wildfire implementation.
  void RevisedFire(int monthIndex);
+ 
+ void CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
+ 
  double GetMidflameWindSpeed();
  
  // FW_MOD_END:

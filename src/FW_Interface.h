@@ -20,7 +20,7 @@
 //void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex);//Move to WildFire.
 
 int GetMatchingFuelModel(int cmt);
-void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead);
+//void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead);//Move to WildFire.
 void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,
                                  std::vector <double>& distribWts);
 bool IsShrub(const Cohort& thisCohort, int pftIdx);
