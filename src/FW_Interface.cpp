@@ -35,14 +35,17 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
  *
  * The function needs the ecosystem state, and meteorology time or year as inputs.
  * 
- * @param thisCohort The cohort object for this site.
+ * [@param thisCohort The cohort object for this site.]
  *   The WildFire object doesn't have all the data we need.  The Cohort gives access to stocks and
  *   meteorology we need.
  *   Note: This is currently const but this will need be to changed when we start updating the
  *   states post-fire.
- * @param md The ModelData object containing configuration data.
+ * [@param md The ModelData object containing configuration data.]
  *   Note: Most of the code above this use a pointer but we should be able to dereference it and
  *   pass it in by reference.
+ 
+ Removing parameters...
+ 
  * @param monthIndex The current month as a zero based index.
  *
 
@@ -55,7 +58,8 @@ ToDo:
  *
  */
 //void RevisedFire(WildFire* wf)//The name will definitely change.
-void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)//thisCohort shouldn't be const????? Also Cohort contains md!
+//void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)//thisCohort shouldn't be const????? Also Cohort contains md!
+void WildFire::RevisedFire(int monthIndex)
 {
   //Determine the fuel model matching the location's CMT:------------------
   
@@ -63,20 +67,21 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   //The CMT number is in the CohortData member of the cohort.  The WildFire object maintains a
   //pointer to it's parent cohort data but it is private.  This code needs to be in the class,
   //a friend or have access to the cohort.
-  int theCMTnumber = thisCohort.cd.cmttype;
+  //int theCMTnumber = thisCohort.cd.cmttype;
+  int theCMTnumber = cd->cmttype;
 
   //Crosswalk from CMT to fuel model:
   int fuelModelNumber = GetMatchingFuelModel(theCMTnumber);
 
   //The fuel model table file needs to be added to the config file and be loaded:
-  FuelModel fm = GetFuelModelFromCSV(md.fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
+  FuelModel fm = GetFuelModelFromCSV(md->fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
 
   //Convert to metric units:
   fm.ConvertUnits(Metric);
 
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
-  CohortStatesToFuelLoading(thisCohort, fm, md.fire_moss_as_dead_fuel);
+  CohortStatesToFuelLoading(thisCohort, fm, md->fire_moss_as_dead_fuel);
 
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
@@ -85,7 +90,8 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   CalculateFuelbedDepth(fm);//Could add a mode switch here!!!!!
   
   //Gather weather and environmental conditions:
-  double tempAir = thisCohort.edall->d_atms.ta;//Daily air temp (at surface).
+  double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
+  //Can we use temperature from climate instead?????
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
   //We may also need it for duff moisture soon.
   
@@ -93,7 +99,7 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   double windSpeed = 3;//Temporary hack!!!!!
   
   //The percent slope is stored in he CohortData object and also in the wildfire object:
-  double slopeSteepness = SlopePctToSteepness(thisCohort.cd.cell_slope);
+  double slopeSteepness = SlopePctToSteepness(cd->cell_slope);
 
   //Shortwave radiation may be needed for more advanced moisture calculations added in the future.
 
@@ -104,7 +110,7 @@ void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)/
   std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, md, fm, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
-  if (md.fire_dynamic_fuel)
+  if (md->fire_dynamic_fuel)
   {
     fm.CalculateDynamicFuelCuring(M_f_ij);
   }

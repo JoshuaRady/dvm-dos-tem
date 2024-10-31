@@ -139,7 +139,8 @@ private:
                       double &comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
                       double& reta_vegc, double& reta_vegn);// FW_MOD
 
- // FW_MOD_START:
+ // FW_MOD_START: Functions for the revised wildfire implementation.
+ void RevisedFire(int monthIndex);
  double GetMidflameWindSpeed();
  
  // FW_MOD_END:

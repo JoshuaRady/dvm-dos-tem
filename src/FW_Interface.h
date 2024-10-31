@@ -17,7 +17,7 @@
 #include "Cohort.h"
 #include "FireweedRAFireSpread.h"
 
-void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex);
+//void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex);//Move to WildFire.
 
 int GetMatchingFuelModel(int cmt);
 void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead);
