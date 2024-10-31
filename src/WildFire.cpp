@@ -38,7 +38,8 @@ WildFire::~WildFire() {}
 WildFire::WildFire(const std::string& fri_fname,
                    const std::string& exp_fname, const double cell_slope,
                    const double cell_aspect, const double cell_elevation,
-                   const int y, const int x) {
+                   const int y, const int x,
+                   const float cell_latitude) {
 
   #pragma omp critical(load_input)
   {
@@ -61,6 +62,7 @@ WildFire::WildFire(const std::string& fri_fname,
   this->slope = cell_slope;
   this->asp = cell_aspect;
   this->elev = cell_elevation;
+  this->lat = cell_latitude;//FW_MOD)
 
   BOOST_LOG_SEV(glg, debug) << "Done making WildFire object.";
   BOOST_LOG_SEV(glg, debug) << this->report_fire_inputs();

@@ -30,7 +30,8 @@ public:
            const double cell_slope,
            const double cell_aspect,
            const double cell_elevation,
-           const int y, const int x);
+           const int y, const int x,
+           const float cell_latitude);//FW_MOD
   
   ~WildFire();
 
@@ -96,6 +97,7 @@ private:
   double slope;
   double asp;
   double elev;
+  float lat;//FW_MOD: Latitude is needed by the revised fire model.
 
   bool fri_derived;
 
