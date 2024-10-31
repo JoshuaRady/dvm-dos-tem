@@ -139,6 +139,11 @@ private:
                       double &comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
                       double& reta_vegc, double& reta_vegn);// FW_MOD
 
+ // FW_MOD_START:
+ double WildFire::GetMidflameWindSpeed();
+ 
+ // FW_MOD_END:
+
   ////////
   // MAYBE get rid of all these???
   //  int firstfireyr;

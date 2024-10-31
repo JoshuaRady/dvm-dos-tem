@@ -12,6 +12,7 @@
  */
 
 #include "FW_Interface.h"
+#include "WildFire.h"
 
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedFuelTools.h"
@@ -527,7 +528,8 @@ void CalculateFuelbedDepth(FuelModel& fm, bool dynamic)
  *
  * @returns The wind speed [at 2 meters] (m/min).
  */
-double GetMidflameWindSpeed(const Cohort& thisCohort)//Could pass in the desired height or time of day?
+//double GetMidflameWindSpeed(const Cohort& thisCohort)//Could pass in the desired height or time of day?
+double WildFire::GetMidflameWindSpeed()
 {
   double windSpeed;//Return value.
   

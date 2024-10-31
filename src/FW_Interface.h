@@ -27,7 +27,7 @@ bool IsShrub(const Cohort& thisCohort, int pftIdx);
 
 void CalculateFuelbedDepth(FuelModel& fm, bool dynamic = true);
 
-double GetMidflameWindSpeed(const Cohort& thisCohort);
+//double GetMidflameWindSpeed(const Cohort& thisCohort);//Move to WildFire.
 
 std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const ModelData& md,
                                            const FuelModel& fm, int monthIndex);
