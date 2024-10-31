@@ -23,7 +23,8 @@ int GetMatchingFuelModel(int cmt);
 //void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead);//Move to WildFire.
 void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,
                                  std::vector <double>& distribWts);
-bool IsShrub(const Cohort& thisCohort, int pftIdx);
+//bool IsShrub(const Cohort& thisCohort, int pftIdx);
+bool IsShrub(const int cmtNumber, const int pftIdx)
 
 void CalculateFuelbedDepth(FuelModel& fm, bool dynamic = true);
 

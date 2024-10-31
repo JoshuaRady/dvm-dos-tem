@@ -327,7 +327,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
     else//Woody PFTs:
     {
       //Put shrubs in the live woody fuel:
-      if (IsShrub(&cd, pftNum))
+      if (IsShrub(cd->cmttype, pftNum))
       {
         //If the woody class is not present adding carbon to it will not influence the fire
         //behavior.  See notes for herbaceous fules above.
@@ -386,17 +386,22 @@ void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& dist
  * could try to used stature to help infer when trees are shrubby in a way that is relevant to fuel
  * models.  That might be getting a bit fancy.
  *
- * @param thisCohort The cohort object for this site.
+ * [@param thisCohort The cohort object for this site.]
  *                   (We could alternatively pass the cohort's CohortData or just the CMT number.)
+ * {@param cd The CohortData for this site.}
+ * @param cmtNumber The CMT number.
  * @param pftIdx The index of the PFT to check.
  *
  * @returns True if this PFT is a shrub. 
  */
-bool IsShrub(const Cohort& thisCohort, int pftIdx)
+//bool IsShrub(const Cohort& thisCohort, int pftIdx)
+//bool IsShrub(const CohortData& cd, const int pftIdx)
+bool IsShrub(const int cmtNumber, const int pftIdx)
 {
   //I believe all the following PFTs are considered shrubs:
   //A few of these CMT cases could be combined but I'm prioritizing readability over compactness.
-  switch (thisCohort.cd.cmttype) {
+  //switch (thisCohort.cd.cmttype) {
+  switch (cmtNumber) {
     case 0://Bare ground, contains junk values.
       break;
 
