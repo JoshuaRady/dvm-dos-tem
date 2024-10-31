@@ -54,13 +54,13 @@ ToDo:
  *
  */
 //void RevisedFire(WildFire* wf)//The name will definitely change.
-void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)//thisCohort shouldn't be const?????
+void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)//thisCohort shouldn't be const????? Also Cohort contains md!
 {
   //Determine the fuel model matching the location's CMT:------------------
   
   //Get the CMT for the grid cell:
   //The CMT number is in the CohortData member of the cohort.  The WildFire object maintains a
-  //pointer to it's parent cohort data but it is  private.  This code needs to be in the class,
+  //pointer to it's parent cohort data but it is private.  This code needs to be in the class,
   //a friend or have access to the cohort.
   int theCMTnumber = thisCohort.cd.cmttype;
 
