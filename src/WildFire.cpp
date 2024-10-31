@@ -986,7 +986,7 @@ void WildFire::setFirData(FirData* fdp) {
   fd =fdp;
 }
 
-void setModelData(ModelData* modelDataPointer)//FW_MOD
+void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
 {
   md = modelDataPointer;
 }
