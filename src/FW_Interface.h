@@ -24,7 +24,7 @@ int GetMatchingFuelModel(int cmt);
 void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,
                                  std::vector <double>& distribWts);
 //bool IsShrub(const Cohort& thisCohort, int pftIdx);
-bool IsShrub(const int cmtNumber, const int pftIdx)
+bool IsShrub(const int cmtNumber, const int pftIdx);
 
 void CalculateFuelbedDepth(FuelModel& fm, bool dynamic = true);
 

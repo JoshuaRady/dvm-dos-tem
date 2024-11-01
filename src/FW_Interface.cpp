@@ -81,7 +81,7 @@ void WildFire::RevisedFire(int monthIndex)
 
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
-  CohortStatesToFuelLoading();//(thisCohort, fm, md->fire_moss_as_dead_fuel);
+  CohortStatesToFuelLoading(fm, md->fire_moss_as_dead_fuel);//(thisCohort, fm, md->fire_moss_as_dead_fuel);
 
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
@@ -107,7 +107,7 @@ void WildFire::RevisedFire(int monthIndex)
   //Calculate fuel moisture:----------------------
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
-  std::vector <double> M_f_ij = CalculateFuelMoisture(thisCohort, md, fm, monthIndex);
+  std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);//(thisCohort, md, fm, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
   if (md->fire_dynamic_fuel)
@@ -691,7 +691,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
     //double vpd_hPa = VPDfromRHBuck(tempAir, rh, p_hPa);
 
     //temutil::length_of_day gives the he day length in hours:
-    float dayLengthSec = temutil::length_of_day(thisCohort.lat, dayOfYearIndex) * 60 * 60;
+    float dayLengthSec = temutil::length_of_day(lat, dayOfYearIndex) * 60 * 60;
 
     double gsi = GrowingSeasonIndex(tempCMin, vpdPa, dayLengthSec);
     herbLFM += HerbaceousLiveFuelMoisture(gsi);
