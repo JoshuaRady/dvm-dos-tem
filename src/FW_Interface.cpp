@@ -9,6 +9,11 @@
  *
  * This is currently a very rough draft, possibly a placeholder.  Everything including the name
  * should be expected to change.
+ * 
+ * All of the functions requiring direct access to WildFire members have been moved into the class
+ * but have left here pending testing so the new code can be more clearly identified.  There are
+ * number of attendant functions. most of which can also be moved into the class but are being left
+ * as is for now to make dependancies stark.
  */
 
 #include "FW_Interface.h"
@@ -31,10 +36,16 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
 
 
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
+ *
  * This is the main entry point for the revised wildfire model.
  *
- * The function needs the ecosystem state, and meteorology time or year as inputs.
+ * The function needs the ecosystem state, meteorology, and time of year as inputs.
+ 
+ * We attempted multiple ways to pass this information in but ultimately found it necessary to
+ * modify WildFire to provide access to most of the necessary inputs.
  * 
+ 
+ Removing the following parameters.  Info is now obtained from the WildFire:
  * [@param thisCohort The cohort object for this site.]
  *   The WildFire object doesn't have all the data we need.  The Cohort gives access to stocks and
  *   meteorology we need.
@@ -43,18 +54,14 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
  * [@param md The ModelData object containing configuration data.]
  *   Note: Most of the code above this use a pointer but we should be able to dereference it and
  *   pass it in by reference.
- 
- Removing parameters...
- 
+
  * @param monthIndex The current month as a zero based index.
  *
 
 Output:
-The output should be stored in the cohort object...
-The soil burn depth should be returned/recorded to take advantage of the existing code.
+Most output should be stored in model object.
+The soil burn depth could be returned/recorded to take advantage of the existing code.
 
-ToDo:
-- Add switch for dynamic moisture?
  *
  */
 //void RevisedFire(WildFire* wf)//The name will definitely change.
@@ -67,7 +74,6 @@ void WildFire::RevisedFire(int monthIndex)
   //The CMT number is in the CohortData member of the cohort.  The WildFire object maintains a
   //pointer to it's parent cohort data but it is private.  This code needs to be in the class,
   //a friend or have access to the cohort.
-  //int theCMTnumber = thisCohort.cd.cmttype;
   int theCMTnumber = cd->cmttype;
 
   //Crosswalk from CMT to fuel model:
@@ -81,7 +87,7 @@ void WildFire::RevisedFire(int monthIndex)
 
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
-  CohortStatesToFuelLoading(fm, md->fire_moss_as_dead_fuel);//(thisCohort, fm, md->fire_moss_as_dead_fuel);
+  CohortStatesToFuelLoading(fm, md->fire_moss_as_dead_fuel);
 
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
@@ -219,8 +225,10 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
  *
  * We don't include dead moss as a surface fuel.  We treat that as duff, part of the ground fuels.
  *
+  Parmater pending elimination !!!!!:
  * [@param thisCohort The cohort object for this site.]
  * @param fm The fuel model for the site (with default loadings).
+ * @param treatMossAsDead Should moss be treated as a fine dead fuel (true) or herbaceous live fuel (false)?
  *
  * returns Nothing but the fuel model loadding (w_o_ij) is updated on return.
  *
@@ -254,7 +262,6 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
 
   //Distribute the litter carbon using the distribution:
   //All carbon stocks are in g/m^2 C and need to be converted to kg/m^2 dry biomass.
-  //std::vector <double> w_o_Dead = DistributeFuel(savsDead, w_o_DeadFM, (rawC * c2b / gPerKg), savsDead);
   std::vector <double> w_o_Dead = DistributeFuel(distribSAVs, distribWts, (rawC * c2b / gPerKg), savsDead);
 
   //Update the loadings (or do below):
@@ -386,9 +393,10 @@ void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& dist
  * could try to used stature to help infer when trees are shrubby in a way that is relevant to fuel
  * models.  That might be getting a bit fancy.
  *
+ Parmaters pending elimination !!!!!:
  * [@param thisCohort The cohort object for this site.]
  *                   (We could alternatively pass the cohort's CohortData or just the CMT number.)
- * {@param cd The CohortData for this site.}
+ * [@param cd The CohortData for this site.]
  * @param cmtNumber The CMT number.
  * @param pftIdx The index of the PFT to check.
  *
@@ -537,22 +545,27 @@ void CalculateFuelbedDepth(FuelModel& fm, bool dynamic)
  *   well predicted by diurnal cycles.
  * - Convert to m/min if needed.
  *
- * @param thisCohort The cohort object for this site.
+Parameter pending elimination !!!!!:
+ * []@param thisCohort The cohort object for this site.]
  *
  * @returns The wind speed [at 2 meters] (m/min).
+ *
+ * @note: We could also pass in the desired height.  We currently need ~2m and will have 2m so
+ * height adjustment is not necessary.  Passing in the time of day would allow us to adjust daily to
+ * sub-daily wind (see above).
  */
-//double GetMidflameWindSpeed(const Cohort& thisCohort)//Could pass in the desired height or time of day?
+//double GetMidflameWindSpeed(const Cohort& thisCohort)
 double WildFire::GetMidflameWindSpeed()
 {
   double windSpeed;//Return value.
   
   //Draft:
   //If this is daily how do we know what day of the month it is?
-  //double u = thisCohort->edall.d_atms.EasternWindSpeed;//Zonal component U.
-  //double v = thisCohort->edall.d_atms.NorthernWindSpeed;//Meridional component V.
+  //double u = edall.d_atms.EasternWindSpeed;//Zonal component U.
+  //double v = edall.d_atms.NorthernWindSpeed;//Meridional component V.
   //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));
 
-  //Convert units...
+  //Convert units if needed...
 
   //Temporary stub, return an arbitrary value!!!!!:
   //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
@@ -568,6 +581,7 @@ double WildFire::GetMidflameWindSpeed()
  * continuously calculated state.  This would moke more sense if litter existed as a distinct stock
  * as well.
  *
+Parameters pending elimination !!!!!:
  * [@param thisCohort The cohort object for this site.]
  * [@param md The ModelData object containing configuration data.]
  * @param fm The fuel model object for this site.
