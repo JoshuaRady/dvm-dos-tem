@@ -353,6 +353,33 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
   }
 }
 
+/** FW_MOD: Get the litter carbon for the site.
+ *
+ * The 'litter' is defined as the rawC componenet of the first non-moss soil layer.  See
+ * CohortStatesToFuelLoading() for more information.
+ * 
+ * @note This started as a hack and could be moved into CohortStatesToFuelLoading().  However, it
+ * does make the code a bit more organized.
+ */
+double WildFire::getLitterRawC() const//or GetLitterRawC
+{
+  int topFibricIndex;
+
+  BOOST_LOG_SEV(glg, debug) << "Getting litter carbon.";
+
+  //Determine the top non-moss layer (fstshlwl in Ground terminology):
+  for (int i = 0; i < cd->m_soil.numsl; i++)//Assumes we are starting at the top layer.
+  {
+    if (cd->m_soil.type[i] == 1)//Shallow organic / peat ~ I_FIB
+    {
+      topFibricIndex = i;
+      break;
+    }
+  }
+
+  return bdall->m_sois.rawc[topFibricIndex];
+}
+
 /** Get the estimated dead fuel size distribution for the site.
  * The distribution is returned via the vectors passed.
  *
@@ -788,30 +815,4 @@ void SimulateGroundFire()
   //the water table.
   
   //return burnDepth;
-}
-
-/** FW_MOD: Get the litter carbon for the site.
- *
- * The 'litter' is defined as the rawC componenet of the first non-moss soil layer.  See
- * CohortStatesToFuelLoading() for more information.
- * 
- * @note This is a temporary hack to get around the fact that bdall is private.
- */
-double WildFire::getLitterRawC() const//or GetLitterRawC
-{
-  int topFibricIndex;
-
-  BOOST_LOG_SEV(glg, debug) << "Getting litter carbon.";
-
-  //Determine the top non-moss layer (fstshlwl in Ground terminology):
-  for (int i = 0; i < cd->m_soil.numsl; i++)//Assumes we are starting at the top layer.
-  {
-    if (cd->m_soil.type[i] == 1)//Shallow organic / peat ~ I_FIB
-    {
-      topFibricIndex = i;
-      break;
-    }
-  }
-
-  return bdall->m_sois.rawc[topFibricIndex];
 }

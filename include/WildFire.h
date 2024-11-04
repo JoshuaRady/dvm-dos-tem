@@ -66,8 +66,6 @@ public:
 
   std::string report_fire_inputs();
 
-  double getLitterRawC() const;// FW_MOD
-
 private:
 
   // There are two distinct types of fire "drivers":
@@ -145,7 +143,8 @@ private:
  void RevisedFire(int monthIndex);
  
  void CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead);
- 
+ double getLitterRawC() const;// FW_MOD
+
  double GetMidflameWindSpeed();
  std::vector <double> CalculateFuelMoisture(const FuelModel& fm, int monthIndex);
  // FW_MOD_END:
