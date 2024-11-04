@@ -101,8 +101,7 @@ void WildFire::RevisedFire(int monthIndex)
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
   //We may also need it for duff moisture soon.
   
-  //double windSpeed = GetMidflameWindSpeed(thisCohort);
-  double windSpeed = 3;//Temporary hack!!!!!
+  double windSpeed = GetMidflameWindSpeed();
   
   //The percent slope is stored in he CohortData object and also in the wildfire object:
   double slopeSteepness = SlopePctToSteepness(cd->cell_slope);
@@ -588,7 +587,7 @@ double WildFire::GetMidflameWindSpeed()
   
   //Draft:
   //If this is daily how do we know what day of the month it is?
-  //double u = edall.d_atms.EasternWindSpeed;//Zonal component U.
+  //double u = edall.d_atms.EasternWindSpeed;//Zonal component U.		Confirm units!!!!!
   //double v = edall.d_atms.NorthernWindSpeed;//Meridional component V.
   //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));
 
