@@ -26,7 +26,7 @@ void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& dist
 //bool IsShrub(const Cohort& thisCohort, int pftIdx);
 bool IsShrub(const int cmtNumber, const int pftIdx);
 
-void CalculateFuelbedDepth(FuelModel& fm, bool dynamic = true);
+void CalculateFuelBedDepth(FuelModel& fm, bool dynamic = true);
 
 //double GetMidflameWindSpeed(const Cohort& thisCohort);//Move to WildFire.
 

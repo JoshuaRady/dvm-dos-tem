@@ -93,7 +93,7 @@ void WildFire::RevisedFire(int monthIndex)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
 
   //Calculate the fuel bed depth:
-  CalculateFuelbedDepth(fm, mf->fire_calculate_delta);
+  CalculateFuelBedDepth(fm, mf->fire_calculate_delta);
   
   //Gather weather and environmental conditions:
   double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
@@ -540,7 +540,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
  *
  * @returns Nothing.  The fuel bed depth is updated in the fuel model passed.
  */
-void CalculateFuelbedDepth(FuelModel& fm, bool dynamic)
+void CalculateFuelBedDepth(FuelModel& fm, bool dynamic)
 {
   //Determine which approach to use based on the fuel model or CMT would be ideal but it will
   //require some research.  For now we use a switch.  If the depth is constant there is nothing to
