@@ -304,9 +304,7 @@ void WildFire::burn(const int year, const int midx) {
 
   // FW_Note:
   // Determine the fire model we are using:
-  //if (theFireMode == classic)// Pseudocode...
-  bool classicFireMode = true;//Temporary until a config switch is in place!!!!!
-  if (classicFireMode)
+  if (!md->fire_process_wildfire)
   {
     // FW_DRAFT_COMMENT: Calculate the burn depth based on the fire severity:
     // for soil part and root burning
@@ -315,8 +313,10 @@ void WildFire::burn(const int year, const int midx) {
     //double burndepth = getBurnOrgSoilthick(year);
     burndepth = getBurnOrgSoilthick(year);
     BOOST_LOG_SEV(glg, debug) << fd->report_to_string("After WildFire::getBurnOrgSoilthick(..)");
+    // FW_NOTE: The only thing that in fd that is updated in getBurnOrgSoilthick() is
+    // fire_soid.burnthick so I'm not much new info here.
   }
-  else// if theFireMode == new)
+  else// Use the revised process based wildfire implemenation:
   {
     //RevisedFire() does a lot more that get the burn depth.  This may not be the best place to call it.
     //RevisedFire(thisCohort, md, midx);
