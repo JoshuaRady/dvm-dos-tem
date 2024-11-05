@@ -93,7 +93,7 @@ void WildFire::RevisedFire(int monthIndex)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
 
   //Calculate the fuel bed depth:
-  CalculateFuelbedDepth(fm);//Could add a mode switch here!!!!!
+  CalculateFuelbedDepth(fm, mf->fire_calculate_delta);
   
   //Gather weather and environmental conditions:
   double tempAir = edall->d_atms.ta;//Daily air temp (at surface).

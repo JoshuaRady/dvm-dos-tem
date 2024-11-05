@@ -128,6 +128,7 @@ public:
   bool fire_process_wildfire;
   bool fire_dynamic_fuel;//Calculate dynamic fuel moisture for dynamic fuel models:
   bool fire_moss_as_dead_fuel;//Should moss be treated as a dead fuel (true) or live fuel (false).
+  bool fire_calculate_delta;//Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false).
   // FW_MOD_END.
 
   bool outSiteDay;

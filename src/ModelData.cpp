@@ -135,6 +135,7 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   fire_process_wildfire = controldata["module_settings"]["dsb"]["fire"]["fire_process_wildfire"].asBool();
   fire_dynamic_fuel = controldata["module_settings"]["dsb"]["fire"]["fire_use_dyn_fuel"].asBool();
   fire_moss_as_dead_fuel = controldata["module_settings"]["dsb"]["fire"]["fire_moss_as_dead_fuel"].asBool();
+  fire_calculate_delta = controldata["module_settings"]["dsb"]["fire"]["fire_calculate_delta"].asBool();
   // FW_MOD_END.
 }
 

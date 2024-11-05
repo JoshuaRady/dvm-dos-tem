@@ -154,7 +154,9 @@
         //Calculate dynamic fuel moisture for dynamic fuel models:
         "fire_dynamic_fuel": false,
         //Should moss be treated as a dead fuel (true) or live fuel (false):
-        "fire_moss_as_dead_fuel": true
+        "fire_moss_as_dead_fuel": true,
+        //Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false):
+        "fire_calculate_delta": false
       },
       // Future disturbances go here...
       //"insect": { ... },
