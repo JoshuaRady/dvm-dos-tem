@@ -1021,7 +1021,7 @@ int WildFire::getFRI(){
  * FW_NOTE: This code was extracted from burn() to make it more modular.  The interface is not ideal
  * due to the large number of return values.  These could be packed into a container object.
  */
-void WildFire::burnVegetation(int year, double r_burn2bg_cn[NUM_PFT], double& comb_vegc,
+void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT], double& comb_vegc,
                               double& comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
                               double& reta_vegc, double& reta_vegn)//Name? vegMortAndCombustion()
 {

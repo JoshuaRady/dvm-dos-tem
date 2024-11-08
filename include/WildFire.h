@@ -135,8 +135,8 @@ private:
   void getBurnAbgVegetation(const int ipft, const int year);
   void updateBurntOrgSoil(double burndepth, double& burnedsolc, double& burnedsoln,
                           double r_burn2bg_cn[NUM_PFT]);// FW_MOD
-  void burnVegetation(int year, double r_burn2bg_cn[NUM_PFT], double& comb_vegc,
-                      double &comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
+  void burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT], double& comb_vegc,
+                      double& comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
                       double& reta_vegc, double& reta_vegn);// FW_MOD
 
  // FW_MOD_START: Functions for the revised wildfire implementation.
