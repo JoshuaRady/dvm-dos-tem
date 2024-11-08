@@ -143,13 +143,14 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
  * @param year The current year.
  * @param midx The current month index (zero based).
  * @param stage The run stage.
- * @param md A pointer to the model data. [Change to a reference?????] FW_NOTE: Addition.
+//Parameter can be removed as md has been added to the class:
+ * [@param md A pointer to the model data. [Change to a reference?????] FW_NOTE: Addition.]
  *
  * @returns Should an wildfire ignition occur at this time?
  */
-//bool WildFire::should_ignite(const int yr, const int midx, const std::string& stage) {
-bool WildFire::should_ignite(const int year, const int midx, const std::string& stage,
-                             const ModelData* md) {// FW_MOD
+bool WildFire::should_ignite(const int yr, const int midx, const std::string& stage) {
+//bool WildFire::should_ignite(const int year, const int midx, const std::string& stage,
+//                             const ModelData* md) {// FW_MOD
 
   BOOST_LOG_SEV(glg, note) << "determining fire ignition for year:" << year
                            << ", monthidx:" << midx << ", stage:" << stage;
