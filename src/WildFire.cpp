@@ -314,7 +314,7 @@ void WildFire::burn(const int year, const int midx) {
     burndepth = getBurnOrgSoilthick(year);
     BOOST_LOG_SEV(glg, debug) << fd->report_to_string("After WildFire::getBurnOrgSoilthick(..)");
     // FW_NOTE: The only thing that in fd that is updated in getBurnOrgSoilthick() is
-    // fire_soid.burnthick so I'm not much new info here.
+    // fire_soid.burnthick so not much new info here.
   }
   else// Use the revised process based wildfire implemenation:
   {
@@ -441,8 +441,8 @@ void WildFire::burn(const int year, const int midx) {
   bdall->m_sois.wdebrisn = 0.0;
 
   // summarize
-  //BOOST_LOG_SEV(glg, note) << "Summarize...?";//FW_Note: This doesn't seem to be acsurate.
-  BOOST_LOG_SEV(glg, note) << "Caluate the fractions of burnt C & N emitted vs. left on site...";
+  //BOOST_LOG_SEV(glg, note) << "Summarize...?";//FW_Note: This doesn't seem to be an accurate description.
+  BOOST_LOG_SEV(glg, note) << "Calcuate the fractions of burnt soil C & N emitted vs. left on site...";
   double vola_solc = burnedsolc * (1.0 - firpar.r_retain_c) + wdebrisc;
   double vola_soln = burnedsoln * (1.0 - firpar.r_retain_n) + wdebrisn;
   double reta_solc = burnedsolc * firpar.r_retain_c;   //together with veg.-burned C return, This will be put into soil later
@@ -649,7 +649,9 @@ void WildFire::burn(const int year, const int midx) {
  * only use transiently.  The member values are only for a single PFT and the PFT in question can
  * only be know from within the calling loop.  Perhaps this an artifact from a time before PFT
  * specific fractions?  In any case it might be better to return the values directly.
- * 
+ *
+ * The function name is a bit unclear.
+ *
  * @param ipft The PFT index.
  * @param year The current year.
  *
@@ -800,7 +802,7 @@ double WildFire::getBurnOrgSoilthick(const int year) {
   }
   BOOST_LOG_SEV(glg, debug) << "Calculated burn thickness using VSM constraint: " << burn_thickness;
 
-
+  //FW_NOTE: These are preexisting commented code blocks.  There status is not known.
 // always burn all moss, even if the severity is really low.
 //  if( burn_thickness < cd->m_soil.mossthick ) {
 //    BOOST_LOG_SEV(glg, debug) << "Whoops! Shallow burn, but we always burn all the moss!";
@@ -1001,8 +1003,12 @@ int WildFire::getFRI(){
   return fri;
 }
 
-/** FW_MOD: Handle vegetation fire mortality and burning of vegetation and standing dead stock (classic).
+/** FW_MOD: Handle vegetation fire mortality and burning of vegetation and standing dead stock (classic method).
  * 
+ * This function takes the previously calculated root burn ratio and calculates the effects of fire
+ * on the abovegournd vegetation.  These fire effects are applied to update PFT states (via bd and
+ * bdall).  The total valuse of C and N for three fluxes are returned (via parameters).
+ *
  * @param year The current year.
  * @param r_burn2bg_cn An array with the ratio of root carbon burned for each PFT.
  * @param comb_vegc On return the total live vegetation carbon that combusts.
@@ -1013,7 +1019,7 @@ int WildFire::getFRI(){
  * @param reta_vegn On return the retained burnt nitrogen.
  * 
  * FW_NOTE: This code was extracted from burn() to make it more modular.  The interface is not ideal
- * due to the larde number of return values.
+ * due to the large number of return values.  These could be packed into a container object.
  */
 void WildFire::burnVegetation(int year, double r_burn2bg_cn[NUM_PFT], double& comb_vegc,
                               double& comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
@@ -1042,13 +1048,14 @@ void WildFire::burnVegetation(int year, double r_burn2bg_cn[NUM_PFT], double& co
     if (cd->m_veg.vegcov[ip] > 0.0) {
       BOOST_LOG_SEV(glg, note) << "Some of PFT" << ip << " exists (coverage > 0). Burn it!";
 
-      // vegetation burning/dead/living fraction for above-ground
+      // Calculate vegetation burnt/dead/living fractions for above-ground components of PFT:
+      // This sets the value of r_live_cn, r_dead2ag_cn, and r_burn2ag_cn for this PFT.
       getBurnAbgVegetation(ip, year);
 
       // root death ratio: must be called after both above-ground and
       // below-ground burning. r_live_cn is same for both above-ground
       // and below-ground
-      double r_dead2bg_cn = 1.0-r_burn2bg_cn[ip]-r_live_cn;
+      double r_dead2bg_cn = 1.0 - r_burn2bg_cn[ip] - r_live_cn;
 
       // Dead veg C, N. Assuming all previous deadc burned.
       comb_deadc += bd[ip]->m_vegs.deadc;
@@ -1056,34 +1063,40 @@ void WildFire::burnVegetation(int year, double r_burn2bg_cn[NUM_PFT], double& co
       comb_deadn += bd[ip]->m_vegs.deadn;
       
       //Zeroing the standing dead pools
+      //FW_NOTE: This is not necissary as this will be overwritten below.
       bd[ip]->m_vegs.deadc0 = 0.0;
       bd[ip]->m_vegs.deadn0 = 0.0;
 
+      //Calculate the standing dead pools:
       veg_2_dead_C = (bd[ip]->m_vegs.c[I_leaf] + bd[ip]->m_vegs.c[I_stem]) * r_dead2ag_cn;
       veg_2_dead_N = (bd[ip]->m_vegs.strn[I_leaf] + bd[ip]->m_vegs.strn[I_stem]) * r_dead2ag_cn;
 
+      //Leaf carbon:
       // Above-ground veg. burning/death during fire
       // when summing, needs adjusting by 'vegcov'
-      comb_vegc += bd[ip]->m_vegs.c[I_leaf] * r_burn2ag_cn;
+      comb_vegc += bd[ip]->m_vegs.c[I_leaf] * r_burn2ag_cn;//Combusted
 
       // We define dead c/n as the not-falling veg (or binding with living veg)
       // during fire,
-      bd[ip]->m_vegs.deadc = bd[ip]->m_vegs.c[I_leaf] * r_dead2ag_cn;
+      bd[ip]->m_vegs.deadc = bd[ip]->m_vegs.c[I_leaf] * r_dead2ag_cn;//Standing dead
       // Which then is the source of ground debris (this is for woody plants
       // only, others could be set deadc/n to zero)
-      bd[ip]->m_vegs.c[I_leaf] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);
+      bd[ip]->m_vegs.c[I_leaf] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//FW_NOTE: How does this sum differ from r_live_cn?????
 
-      comb_vegc += bd[ip]->m_vegs.c[I_stem] * r_burn2ag_cn;
-      bd[ip]->m_vegs.deadc += bd[ip]->m_vegs.c[I_stem] * r_dead2ag_cn;
-      bd[ip]->m_vegs.c[I_stem] *= (1.0 - r_burn2ag_cn-r_dead2ag_cn);
+      //Stem carbon:
+      comb_vegc += bd[ip]->m_vegs.c[I_stem] * r_burn2ag_cn;//Combusted
+      bd[ip]->m_vegs.deadc += bd[ip]->m_vegs.c[I_stem] * r_dead2ag_cn;//Standing dead
+      bd[ip]->m_vegs.c[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remoaining live
 
-      comb_vegn += bd[ip]->m_vegs.strn[I_leaf] * r_burn2ag_cn;
-      bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_leaf] * r_dead2ag_cn;
-      bd[ip]->m_vegs.strn[I_leaf] *= (1.0 - r_burn2ag_cn-r_dead2ag_cn);
+      //Leaf nitrogen:
+      comb_vegn += bd[ip]->m_vegs.strn[I_leaf] * r_burn2ag_cn;//Combusted
+      bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_leaf] * r_dead2ag_cn;//Standing dead
+      bd[ip]->m_vegs.strn[I_leaf] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remoaining live
 
-      comb_vegn += bd[ip]->m_vegs.strn[I_stem] * r_burn2ag_cn;
-      bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_stem] * r_dead2ag_cn;
-      bd[ip]->m_vegs.strn[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);
+      //Stem nitrogen:
+      comb_vegn += bd[ip]->m_vegs.strn[I_stem] * r_burn2ag_cn;//Combusted
+      bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_stem] * r_dead2ag_cn;//Standing dead
+      bd[ip]->m_vegs.strn[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remoaining live
 
       // Below-ground veg. (root) burning/death during fire
       comb_vegc += bd[ip]->m_vegs.c[I_root] * r_burn2bg_cn[ip];
@@ -1140,6 +1153,7 @@ void WildFire::burnVegetation(int year, double r_burn2bg_cn[NUM_PFT], double& co
 
   } // end pft loop
 
+  //The C and N from combustion retained on site:
   reta_vegc = (comb_vegc + comb_deadc) * firpar.r_retain_c;
   reta_vegn = (comb_vegn + comb_deadn) * firpar.r_retain_n;
 }
