@@ -140,7 +140,7 @@ private:
                       double& reta_vegc, double& reta_vegn);// FW_MOD
 
  // FW_MOD_START: Functions for the revised wildfire implementation.
- void RevisedFire(int monthIndex);
+ double RevisedFire(int monthIndex);
  
  void CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead);
  double getLitterRawC() const;// FW_MOD

@@ -34,5 +34,6 @@ void CalculateFuelBedDepth(FuelModel& fm, bool dynamic = true);
 //                                           const FuelModel& fm, int monthIndex);//Move to WildFire.
 
 void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed);
+double SimulateGroundFire();
 
 #endif //FW_INTERFACE_H

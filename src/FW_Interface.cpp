@@ -59,14 +59,18 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
  *
 
 Output:
-Most output should be stored in model object.
-The soil burn depth could be returned/recorded to take advantage of the existing code.
+Most output should be stored in model objects.
 
+ * @returns The soil burn depth from ground fire (confirm units!!!!!).
+ * As discussed in a note in WildFire::burn() the burn depth is stored in the FirData member so the
+ * return value is not strictly needed.  We are keeping this code parallel to getBurnOrgSoilthick()
+ * for now.
  *
  */
 //void RevisedFire(WildFire* wf)//The name will definitely change.
 //void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)//thisCohort shouldn't be const????? Also Cohort contains md!
-void WildFire::RevisedFire(int monthIndex)
+//void WildFire::RevisedFire(int monthIndex)
+double WildFire::RevisedFire(int monthIndex)
 {
   //Determine the fuel model matching the location's CMT:------------------
   
@@ -142,22 +146,25 @@ void WildFire::RevisedFire(int monthIndex)
   //Simulate the combustion of surface fuels:
   SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
 
-
-  //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
-  //the fire air temp (Burnup fire environmental temperature?) as input to the ground fire model:
-  //...
-  
-  //Also pass in the soil profile conditions...
-  
-  //SimulateGroundFire();
-  //wf->fd->fire_soid.burnthick = burnDepth;
-  //Include messaging of original code?????
-
   //Update litter, moss, and soil carbon stocks:
   //Some of this could be done directly here but we could also use parts of the 'original' code like
   // WildFire::updateBurntOrgSoil(), which I split out. 
 
-  //Return anything.
+
+  //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
+  //the fire air temp (Burnup fire environmental temperature?) as input to the ground fire model:
+  //...
+  //Also pass in the soil profile conditions...
+
+  BOOST_LOG_SEV(glg, debug) << "Simulating ground fire...";//Move into SimulateGroundFire()?
+  double burnDepth = SimulateGroundFire();
+
+  //Match messaging of getBurnOrgSoilthick():
+  BOOST_LOG_SEV(glg, debug) << "Setting the burn thickness in FirData...";
+  fd->fire_soid.burnthick = burnDepth;
+
+  BOOST_LOG_SEV(glg, info) << "Final Calculated Organic Burn Thickness: " << burnDepth;
+  return burnDepth;
 }
 
 /** Determine the fuel model (number) matching a given community type:
@@ -800,8 +807,9 @@ void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double t
 
 Burnup produces energy over time so it may be better to link the calculations?
 
+ * @returns The soil burn depth from ground fire (confirm units!!!!!).
  */
-void SimulateGroundFire()
+double SimulateGroundFire()
 {
   double burnDepth = 0;
   
@@ -813,5 +821,5 @@ void SimulateGroundFire()
   //safely assume that the fire will not continue if we reach mineral soil, bedrock, permafrost, or
   //the water table.
   
-  //return burnDepth;
+  return burnDepth;
 }
