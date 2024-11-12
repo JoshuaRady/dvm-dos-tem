@@ -437,11 +437,15 @@ void WildFire::burn(const int year, const int midx) {
 
   //Burning of woody debris:
   BOOST_LOG_SEV(glg, note) << "Handle burnt woody debris...";
+  double wdebrisc = 0.0;
+  double wdebrisn = 0.0;
   if (!md->fire_process_wildfire)// FW_MOD
   {
     // all woody debris will burn out:
-    double wdebrisc = bdall->m_sois.wdebrisc; //
-    double wdebrisn = bdall->m_sois.wdebrisn; //
+    //double wdebrisc = bdall->m_sois.wdebrisc; //
+    //double wdebrisn = bdall->m_sois.wdebrisn; //
+    wdebrisc = bdall->m_sois.wdebrisc;
+    wdebrisn = bdall->m_sois.wdebrisn;
     bdall->m_sois.wdebrisc = 0.0;
     bdall->m_sois.wdebrisn = 0.0;
   }
