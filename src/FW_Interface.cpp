@@ -72,6 +72,8 @@ Most output should be stored in model objects.
 //void WildFire::RevisedFire(int monthIndex)
 double WildFire::RevisedFire(int monthIndex)
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::RevisedFire()...";
+
   //Determine the fuel model matching the location's CMT:------------------
   
   //Get the CMT for the grid cell:
@@ -246,6 +248,8 @@ int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
 //void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead)
 void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::CohortStatesToFuelLoading()...";
+
   const double gPerKg = 1000;//Move to FireweedUnits.h?
   
   //Dead fuels:
@@ -364,6 +368,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
  */
 double WildFire::GetLitterRawC() const
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::GetLitterRawC()...";
+
   int topFibricIndex;
 
   BOOST_LOG_SEV(glg, debug) << "Getting litter carbon.";
@@ -405,6 +411,8 @@ double WildFire::GetLitterRawC() const
 void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,
                                  std::vector <double>& distribWts)
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering GetDeadFuelSizeDistribution()...";
+
   //Copy the appropriate dead members:
   int numDead = fm.NumDeadClasses();
   distribSAVs.assign(fm.SAV_ij.begin(), fm.SAV_ij.begin() + numDead);
@@ -439,6 +447,8 @@ void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& dist
 //bool IsShrub(const CohortData& cd, const int pftIdx)
 bool IsShrub(const int cmtNumber, const int pftIdx)
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering IsShrub()...";
+
   //I believe all the following PFTs are considered shrubs:
   //A few of these CMT cases could be combined but I'm prioritizing readability over compactness.
   //switch (thisCohort.cd.cmttype) {
@@ -549,6 +559,8 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
  */
 void CalculateFuelBedDepth(FuelModel& fm, bool dynamic)
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering CalculateFuelBedDepth()...";
+
   //Determine which approach to use based on the fuel model or CMT would be ideal but it will
   //require some research.  For now we use a switch.  If the depth is constant there is nothing to
   //do.  Otherwise calculate the depth based on constant bulk density:
@@ -628,6 +640,8 @@ Parameters pending elimination !!!!!:
 //                                           const FuelModel& fm, int monthIndex)
 std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int monthIndex)
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::CalculateFuelMoisture()...";
+
   //std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
   //We get the number of fuel classes here and then assume the number below.  To handle more than
   //the standard five fuel types we need additional tools to undestand what they are.
