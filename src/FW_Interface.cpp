@@ -802,10 +802,18 @@ void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double t
   //return -1;//Note sure what to return yet.
 }
 
-/** Simulate ground fire returning or updating the burn depth...
+/** Simulate ground fire returning the burn depth.
+ * 
+ * This effectively replaces the functionality of WildFire::getBurnOrgSoilthick() in the original
+ * wildfire implementation.
  *
+ * This is currently a stub and a place to work out how this simulation phase connects to the other
+ * phases of fire.  The ground fire model is currently under development elsewhere.
 
-Burnup produces energy over time so it may be better to link the calculations?
+ Inputs:
+ - The structure and state of the soil column.
+ - Energy inputs from aboveground fire components.
+ Burnup produces energy over time so it may be better to link the calculations?
 
  * @returns The soil burn depth from ground fire (confirm units!!!!!).
  */
@@ -817,7 +825,7 @@ double SimulateGroundFire()
   //If not record that ignition failed and return.
   
   //Otherwise continue to calculate progressive smoldering downward.
-  //This is the same problem of dying and heating to combustion as we move down.  However, we can
+  //This is the same problem of drying and heating to combustion as we move down.  However, we can
   //safely assume that the fire will not continue if we reach mineral soil, bedrock, permafrost, or
   //the water table.
   
