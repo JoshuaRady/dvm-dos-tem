@@ -33,7 +33,7 @@ $(shell mkdir -p obj)
 
 APPNAME=dvmdostem
 LIBDIR=$(SITE_SPECIFIC_LIBS)
-INCLUDES=$(SITE_SPECIFIC_INCLUDES)
+INCLUDES=$(SITE_SPECIFIC_INCLUDES) -I external/Fireweed/C++
 SOURCES= 	src/TEM.o \
 		src/TEMLogger.o \
 		src/CalController.o \
