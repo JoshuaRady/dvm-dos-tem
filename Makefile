@@ -78,7 +78,17 @@ SOURCES= 	src/TEM.o \
 		src/OrganicLayer.o \
 		src/ParentLayer.o \
 		src/SnowLayer.o \
-		src/SoilLayer.o
+		src/SoilLayer.o \
+		external/Fireweed/C++/FireweedDeadFuelMoistureFosberg.o \
+		external/Fireweed/C++/FireweedFuelModels.o \
+		external/Fireweed/C++/FireweedFuelTools.o \
+		external/Fireweed/C++/FireweedLiveFuelMoistureGSI.o \
+		external/Fireweed/C++/FireweedMessaging.o \
+		external/Fireweed/C++/FireweedMetUtils.o \
+		external/Fireweed/C++/FireweedRAFireSpread.o \
+		external/Fireweed/C++/FireweedStringUtils.o \
+		external/Fireweed/C++/FireweedUnits.o \
+		external/Fireweed/C++/FireweedUtils.o
 
 OBJECTS =	ArgHandler.o \
 		TEMLogger.o \
@@ -123,7 +133,17 @@ OBJECTS =	ArgHandler.o \
 		ParentLayer.o \
 		SnowLayer.o \
 		SoilLayer.o \
-		TemperatureUpdator.o
+		TemperatureUpdator.o \
+		FireweedDeadFuelMoistureFosberg.o \
+		FireweedFuelModels.o \
+		FireweedFuelTools.o \
+		FireweedLiveFuelMoistureGSI.o \
+		FireweedMessaging.o \
+		FireweedMetUtils.o \
+		FireweedRAFireSpread.o \
+		FireweedStringUtils.o \
+		FireweedUnits.o \
+		FireweedUtils.o \
 
 
 GIT_SHA := $(shell git describe --abbrev=6 --dirty --always --tags)
