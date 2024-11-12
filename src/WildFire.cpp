@@ -702,8 +702,10 @@ void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
 *   3. should not burn into "wet" organic soil layers
 
  * @param year The current year.
-
-*/
+ *
+ * @returns The soil burn depth from ground fire (meters).
+ *
+ */
 double WildFire::getBurnOrgSoilthick(const int year) {
 
 
@@ -837,7 +839,7 @@ double WildFire::getBurnOrgSoilthick(const int year) {
  * @param burndepth The calculated soil burn depth.
  *   As mentioned elsewhere the burn depth doesn't have to be passed in since it is stored in fd by
  *   getBurnOrgSoilthick().  I is clearer though as is more similar to the code prior to refactor.
- * @param burnedsolc On return the amount of organic soil carbon burned. (units?)
+ * @param burnedsolc On return the amount of organic soil carbon burned (meters).
  * @param burnedsoln On return the amount of soil nitroget burned.
  * @param r_burn2bg_cn On return an array with the ratio of root carbon burned for each PFT.
  *

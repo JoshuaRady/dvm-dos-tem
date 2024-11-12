@@ -61,7 +61,7 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
 Output:
 Most output should be stored in model objects.
 
- * @returns The soil burn depth from ground fire (confirm units!!!!!).
+ * @returns The soil burn depth from ground fire (meters).
  * As discussed in a note in WildFire::burn() the burn depth is stored in the FirData member so the
  * return value is not strictly needed.  We are keeping this code parallel to getBurnOrgSoilthick()
  * for now.
@@ -815,7 +815,7 @@ void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double t
  - Energy inputs from aboveground fire components.
  Burnup produces energy over time so it may be better to link the calculations?
 
- * @returns The soil burn depth from ground fire (confirm units!!!!!).
+ * @returns The soil burn depth from ground fire (meters).
  */
 double SimulateGroundFire()
 {
