@@ -143,7 +143,7 @@ private:
  double RevisedFire(int monthIndex);
  
  void CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead);
- double getLitterRawC() const;// FW_MOD
+ double GetLitterRawC() const;
 
  double GetMidflameWindSpeed();
  std::vector <double> CalculateFuelMoisture(const FuelModel& fm, int monthIndex);

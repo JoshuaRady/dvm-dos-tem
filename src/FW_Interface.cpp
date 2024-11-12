@@ -24,7 +24,7 @@
 #include "FireweedLiveFuelMoistureGSI.h"
 #include "FireweedMetUtils.h"
 
-#include "Layer.h"
+//#include "Layer.h"
 #include "../include/TEMLogger.h"
 #include "TEMUtilityFunctions.h"//For length_of_day().
 
@@ -249,12 +249,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
   const double gPerKg = 1000;//Move to FireweedUnits.h?
   
   //Dead fuels:
-  //The following approach won't work since the Ground object is private to the parent Soil_Bgc object:
-  //Layer* topFibric = thisCohort.soilbgc.ground->fstshlwl;//Get the top non-moss layer.
-  //double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
-  //The WildFire object's bdall member also gives access to layer carbon stocks but is also private.
-  //We created a accessor to get the data we need.  This is likely temporary until find a better way.
-  double rawC = getLitterRawC();//This can be eliminated now!!!!!
+  double rawC = GetLitterRawC();//Get the total litter carbon.
 
   //Distribute the rawc to the dead size classes:
 
@@ -367,13 +362,18 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
  * @note This started as a hack and could be moved into CohortStatesToFuelLoading().  However, it
  * does make the code a bit more organized.
  */
-double WildFire::getLitterRawC() const//or GetLitterRawC
+double WildFire::GetLitterRawC() const
 {
   int topFibricIndex;
 
   BOOST_LOG_SEV(glg, debug) << "Getting litter carbon.";
 
   //Determine the top non-moss layer (fstshlwl in Ground terminology):
+  //The site's Ground object is a private member of the parent cohort's Soil_Bgc object.  If we
+  //could access this we wouldn't have to search the soil layers:
+  //Layer* topFibric = thisCohort.soilbgc.ground->fstshlwl;//Get the top non-moss layer.
+  //double rawC = topFibric->rawc;//Get the total 'litter' carbon mass.
+
   for (int i = 0; i < cd->m_soil.numsl; i++)//Assumes we are starting at the top layer.
   {
     if (cd->m_soil.type[i] == 1)//Shallow organic / peat ~ I_FIB
