@@ -301,7 +301,6 @@ void WildFire::burn(const int year, const int midx) {
   BOOST_LOG_SEV(glg, note) << "Burning (simply clearing?) the 'FireData object...";
   fd->burn();
   BOOST_LOG_SEV(glg, debug) << fd->report_to_string("After FirData::burn(..)");
-  
 
   // FW_Note:
   // Determine the fire model we are using:
@@ -319,11 +318,12 @@ void WildFire::burn(const int year, const int midx) {
   }
   else// Use the revised process based wildfire implemenation:
   {
-    //RevisedFire() does a lot more that get the burn depth.  This may not be the best place to call it.
-    //RevisedFire(thisCohort, md, midx);
+    // FW_NOTE: RevisedFire() does a lot more that get the burn depth.  This may not be the best place to call it.
+    burndepth = RevisedFire(midx);
   }
 
-  // FW_DRAFT_COMMENT: Update soil layers and carbon based on the burn depth.
+  // FW_DRAFT_COMMENT: Update soil layers and carbon based on the burn depth:
+  // Calcuations are the same for both models.
   // FW_NOTE: The following code has been moved to WildFire::updateBurntOrgSoil().
 //   BOOST_LOG_SEV(glg, note) << "Setup some temporary pools for tracking various burn related attributes (depths, C, N)";
 //   double totbotdepth = 0.0;
@@ -434,12 +434,21 @@ void WildFire::burn(const int year, const int midx) {
   double r_burn2bg_cn[NUM_PFT];
   updateBurntOrgSoil(burndepth, burnedsolc, burnedsoln, r_burn2bg_cn);
 
-  // all woody debris will burn out
+  //Burning of woody debris:
   BOOST_LOG_SEV(glg, note) << "Handle burnt woody debris...";
-  double wdebrisc = bdall->m_sois.wdebrisc; //
-  double wdebrisn = bdall->m_sois.wdebrisn; //
-  bdall->m_sois.wdebrisc = 0.0;
-  bdall->m_sois.wdebrisn = 0.0;
+  if (!md->fire_process_wildfire)// FW_MOD
+  {
+    // all woody debris will burn out:
+    double wdebrisc = bdall->m_sois.wdebrisc; //
+    double wdebrisn = bdall->m_sois.wdebrisn; //
+    bdall->m_sois.wdebrisc = 0.0;
+    bdall->m_sois.wdebrisn = 0.0;
+  }
+  else
+  {
+    // FW_Note: The revised wildfire model does not yet handle the wood debris pool.
+    BOOST_LOG_SEV(glg, note) << "Revised wildfire model ignores wood debris for now.";
+  }
 
   // summarize
   //BOOST_LOG_SEV(glg, note) << "Summarize...?";//FW_Note: This doesn't seem to be an accurate description.
@@ -449,8 +458,8 @@ void WildFire::burn(const int year, const int midx) {
   double reta_solc = burnedsolc * firpar.r_retain_c;   //together with veg.-burned C return, This will be put into soil later
   double reta_soln = burnedsoln * firpar.r_retain_n;   //together with veg.-burned N return, This will be put into soil later
 
-  BOOST_LOG_SEV(glg, note) << "Handle Vegetation burning and mortality...";//Move into burnVegetation()?????
-  // FW_NOTE: The following code has been moved to WildFire::burnVegetation().
+  BOOST_LOG_SEV(glg, note) << "Handle Vegetation burning and mortality...";//Move message into burnVegetation()?????
+  // FW_NOTE: The following commeted ode has been moved to WildFire::burnVegetation().
 //   //The live vegetation mass that combusts, summed for all PFTs:
   double comb_vegc = 0.0;
   double comb_vegn = 0.0;
@@ -572,6 +581,7 @@ void WildFire::burn(const int year, const int midx) {
 //   double reta_vegc = (comb_vegc + comb_deadc) * firpar.r_retain_c;
 //   double reta_vegn = (comb_vegn + comb_deadn) * firpar.r_retain_n;
 
+  // FW_NOTE: The follow blocks of code where already commented out and moved into the above.
   //Writing out initial standing dead pools. These values will be
   //used to compute the rate of decomposition of the standing dead - 
   //1/9th of the original value per year.
@@ -584,10 +594,15 @@ void WildFire::burn(const int year, const int midx) {
   //bdall->m_vegs.deadc = veg_2_dead_C;
   //bdall->m_vegs.deadn = veg_2_dead_N;
 
-  double reta_vegc;
-  double reta_vegn;
-  burnVegetation(year, r_burn2bg_cn, comb_vegc, comb_vegn, dead_bg_vegc, dead_bg_vegn, reta_vegc, reta_vegn);
+  double reta_vegc = 0.0;
+  double reta_vegn = 0.0;
+  if (!md->fire_process_wildfire)
+  {
+    burnVegetation(year, r_burn2bg_cn, comb_vegc, comb_vegn, dead_bg_vegc, dead_bg_vegn, reta_vegc, reta_vegn);
+  }
+  // FW_NOTE: In future the revised wildfire model while also return these 6 quantities.
 
+  // Emissions calculations are the same for both models:
   BOOST_LOG_SEV(glg, note) << "Save the fire emission and return data into 'fd'...";
   //Summing the PFT specific fluxes to dead standing
   for(int ip=0; ip<NUM_PFT; ip++){
@@ -612,7 +627,8 @@ void WildFire::burn(const int year, const int midx) {
   //This should occur every month post-fire. FIX
   fd->fire_a2soi.orgn = (fd->fire_soi2a.orgn + fd->fire_v2a.orgn) / this->fri;
 
-
+  // Retained calcuations are the same for both models:
+  BOOST_LOG_SEV(glg, note) << "Handle retained combustion products...";// FW_MOD
   //put the retained C/N into the first unburned soil layer's
   //  chemically-resistant SOMC pool
   // Note - this 'retained C' could be used as char-coal, if need to do so.
