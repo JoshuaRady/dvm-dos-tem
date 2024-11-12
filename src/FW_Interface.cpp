@@ -581,7 +581,7 @@ void CalculateFuelBedDepth(FuelModel& fm, bool dynamic)
 Parameter pending elimination !!!!!:
  * []@param thisCohort The cohort object for this site.]
  *
- * @returns The wind speed [at 2 meters] (m/min).
+ * @returns The wind speed at 2 meters height (m/min).
  *
  * @note: We could also pass in the desired height.  We currently need ~2m and will have 2m so
  * height adjustment is not necessary.  Passing in the time of day would allow us to adjust daily to
@@ -594,11 +594,12 @@ double WildFire::GetMidflameWindSpeed()
   
   //Draft:
   //If this is daily how do we know what day of the month it is?
+  //The wind speed will be provided as directional components in m/s at 2 meters.
   //double u = edall.d_atms.EasternWindSpeed;//Zonal component U.		Confirm units!!!!!
   //double v = edall.d_atms.NorthernWindSpeed;//Meridional component V.
-  //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));
-
-  //Convert units if needed...
+  //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));//Get the vector wind speed.
+  //windSpeed *= 60;//Convert from m/s to m/min.
+  //This a daily average value.  An afternoon value would probably be better.
 
   //Temporary stub, return an arbitrary value!!!!!:
   //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
