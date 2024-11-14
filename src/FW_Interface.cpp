@@ -16,8 +16,8 @@
  * as is for now to make dependancies stark.
  */
 
-#include "FW_Interface.h"
-#include "WildFire.h"
+#include "../include/FW_Interface.h"
+#include "../include/WildFire.h"
 
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedFuelTools.h"
@@ -26,7 +26,7 @@
 
 //#include "Layer.h"
 #include "../include/TEMLogger.h"
-#include "TEMUtilityFunctions.h"//For length_of_day().
+#include "../include/TEMUtilityFunctions.h"//For length_of_day().
 
 extern src::severity_logger< severity_level > glg;
 
