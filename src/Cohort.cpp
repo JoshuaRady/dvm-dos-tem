@@ -83,7 +83,7 @@ Cohort::Cohort(int y, int x, ModelData* modeldatapointer):
   BOOST_LOG_SEV(glg, debug) << "Setup the fire information, defaulting to HISTORIC explicit data.";
   this->fire = WildFire(modeldatapointer->fri_fire_file, modeldatapointer->hist_exp_fire_file,
                         this->cd.cell_slope, this->cd.cell_aspect, this->cd.cell_elevation, y, x,
-                        this.lat);//FW_MOD
+                        this->lat);//FW_MOD
 
 
   this->soilenv = Soil_Env();
@@ -197,7 +197,7 @@ void Cohort::initialize_internal_pointers() {
 
   fire.setFirData(fd);
   fire.setModelData(md);// FW_MOD
-  fire.setClimate(climate);// FW_MOD
+  fire.setClimate(&climate);// FW_MOD
 
   //BGC states change integration module pointers
   for (int i=0; i<NUM_PFT; i++) {
