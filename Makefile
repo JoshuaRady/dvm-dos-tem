@@ -79,6 +79,7 @@ SOURCES= 	src/TEM.o \
 		src/ParentLayer.o \
 		src/SnowLayer.o \
 		src/SoilLayer.o \
+		src/FW_Interface.o \
 		external/Fireweed/C++/FireweedDeadFuelMoistureFosberg.o \
 		external/Fireweed/C++/FireweedFuelModels.o \
 		external/Fireweed/C++/FireweedFuelTools.o \
@@ -134,6 +135,7 @@ OBJECTS =	ArgHandler.o \
 		SnowLayer.o \
 		SoilLayer.o \
 		TemperatureUpdator.o \
+		FW_Interface.o \
 		FireweedDeadFuelMoistureFosberg.o \
 		FireweedFuelModels.o \
 		FireweedFuelTools.o \
