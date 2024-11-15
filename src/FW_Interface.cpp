@@ -177,21 +177,21 @@ double WildFire::RevisedFire(int monthIndex)
  *
  * @param cmt The number of the CMT for this location.
  *
- * @returns The fuel model number matching the CMT input.	STUB!!!!!
+ * @returns The fuel model number (not the index) matching the CMT input.	STUB!!!!!
  */
-//FuelModel GetMatchingFuelModel(int cmt)
-int GetMatchingFuelModel(int cmt)//Or could return fuel model code.
+int GetMatchingFuelModel(int cmt)
 {
   //Get the number of the fuel model from the crosswalk in the parameter files.
   //This crosswalk needs to be made!!!!!
-  int fuelModelNumber = 1;//Temporarily hardwired.  Need to change to a more robust model!!!!!
+  int fuelModelNumber = 161;//Temporarily hardwired.
+  //We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
   
+  //There is a bare land fuel model by number but it doesn't have parameters.  Do we need to provide
+  //a bare land parameter set or can we just signal the calling code that it should skip fire
+  //calculations.
   
   //If no match either throw an error or warn and return a default fuel model.
-  
-  //Get the fuel model data:
-  //fuelModel = GetFuelModel(fuelModelNumber);
-  //return fuelModel;
+
   return fuelModelNumber;
 }
 
