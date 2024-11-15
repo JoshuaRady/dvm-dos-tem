@@ -307,6 +307,8 @@ void WildFire::burn(const int year, const int midx) {
   // Determine the fire model we are using:
   if (!md->fire_process_wildfire)
   {
+    BOOST_LOG_SEV(glg, info) << "Using the old/original/classic wildfire model.";//This could be moved before this function.
+
     // FW_DRAFT_COMMENT: Calculate the burn depth based on the fire severity:
     // for soil part and root burning
     // FIX: there isn't really a reason for getBurnOrgSoilthick to return a value
@@ -319,6 +321,8 @@ void WildFire::burn(const int year, const int midx) {
   }
   else// Use the revised process based wildfire implemenation:
   {
+    BOOST_LOG_SEV(glg, info) << "Using the new/revised/process wildfire model.";
+
     // FW_NOTE: RevisedFire() does a lot more that get the burn depth.  This may not be the best place to call it.
     burndepth = RevisedFire(midx);
   }
