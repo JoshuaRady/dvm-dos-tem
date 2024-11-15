@@ -144,6 +144,7 @@ double WildFire::RevisedFire(int monthIndex)
                                                       //false,//useWindLimit
                                                       //FALSE);//debug
 
+  BOOST_LOG_SEV(glg, debug) << "WildFire::RevisedFire() Spread rate calculation R = " << raData.R;
 
   //Simulate the combustion of surface fuels:
   SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
