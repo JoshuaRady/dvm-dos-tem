@@ -18,11 +18,11 @@
     "hist_exp_fire_file": "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/historic-explicit-fire.nc",
     "proj_exp_fire_file": "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/projected-explicit-fire.nc",
     "topo_file":          "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/topo.nc",
-    "fire_fuel_model_file" "external/Fireweed/Standard_Fuel_Models_Table.csv",
-    "fire_fosberg_a_file" "external/Fireweed/NWGC_Fosberg_Table_A.txt",
-    "fire_fosberg_b_file" "external/Fireweed/NWGC_Fosberg_Table_B.txt",
-    "fire_fosberg_c_file" "external/Fireweed/NWGC_Fosberg_Table_C.txt",
-    "fire_fosberg_d_file" "external/Fireweed/NWGC_Fosberg_Table_D_.txt",
+    "fire_fuel_model_file": "external/Fireweed/Standard_Fuel_Models_Table.csv",
+    "fire_fosberg_a_file": "external/Fireweed/NWGC_Fosberg_Table_A.txt",
+    "fire_fosberg_b_file": "external/Fireweed/NWGC_Fosberg_Table_B.txt",
+    "fire_fosberg_c_file": "external/Fireweed/NWGC_Fosberg_Table_C.txt",
+    "fire_fosberg_d_file": "external/Fireweed/NWGC_Fosberg_Table_D_.txt",
     "output_dir":         "output/",
     "output_spec_file":   "config/output_spec.csv",
     "output_monthly":     1, //JSON specific
@@ -130,7 +130,7 @@
 
   },
 
-  "module_settings" {
+  "module_settings": {
     "dsb": {
       "fire": {
         // Wildfire ignitions modes: [Note: In development.  Numbers may change!]
@@ -157,7 +157,7 @@
         "fire_moss_as_dead_fuel": true,
         //Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false):
         "fire_calculate_delta": false
-      },
+      }
       // Future disturbances go here...
       //"insect": { ... },
       //"thermokarst":{ ... },
