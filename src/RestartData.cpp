@@ -551,7 +551,9 @@ void RestartData::verify_logical_values(){
 
 /** Read single values for variables have dimensions (Y, X).*/
 void RestartData::read_px_vars(const std::string& fname, const int rowidx, const int colidx) {
-  
+ 
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
+ 
   int ncid;
   temutil::nc( nc_open(fname.c_str(), NC_NOWRITE, &ncid) );
 
@@ -608,6 +610,8 @@ void RestartData::read_px_vars(const std::string& fname, const int rowidx, const
 
 /** Reads arrays of values for variables that have dimensions (Y, X, pft). */
 void RestartData::read_px_pft_vars(const std::string& fname, const int rowidx, const int colidx) {
+
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
 
   int ncid;
   temutil::nc( nc_open(fname.c_str(), NC_NOWRITE, &ncid) );
@@ -671,6 +675,8 @@ void RestartData::read_px_pft_vars(const std::string& fname, const int rowidx, c
 /** Read arrays for variables that have dimensions (Y, X, pftpart, pft). */
 void RestartData::read_px_pftpart_pft_vars(const std::string& fname, const int rowidx, const int colidx) {
 
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
+
   int ncid;
   temutil::nc( nc_open(fname.c_str(), NC_NOWRITE, &ncid) );
 
@@ -703,6 +709,8 @@ void RestartData::read_px_pftpart_pft_vars(const std::string& fname, const int r
 
 /**  Reads arrays for variables with dimensions (Y, X, snowlayer) */
 void RestartData::read_px_snow_vars(const std::string& fname, const int rowidx, const int colidx) {
+
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
 
   int ncid;
   temutil::nc( nc_open(fname.c_str(), NC_NOWRITE, &ncid) );
@@ -740,6 +748,9 @@ void RestartData::read_px_snow_vars(const std::string& fname, const int rowidx, 
 
 /**  Reads arrays for variables with dimensions (Y, X, rootlayer, pft) */
 void RestartData::read_px_root_pft_vars(const std::string& fname, const int rowidx, const int colidx) {
+
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
+
   int ncid;
   temutil::nc( nc_open(fname.c_str(), NC_NOWRITE, &ncid) );
 
@@ -766,6 +777,8 @@ void RestartData::read_px_root_pft_vars(const std::string& fname, const int rowi
 
 /**  Reads arrays for variables with dimensions (Y, X, soillayer) */
 void RestartData::read_px_soil_vars(const std::string& fname, const int rowidx, const int colidx) {
+
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
 
   int ncid;
   temutil::nc( nc_open(fname.c_str(), NC_NOWRITE, &ncid) );
@@ -818,6 +831,8 @@ void RestartData::read_px_soil_vars(const std::string& fname, const int rowidx, 
 /**  Reads arrays of values for variables that have dimensions (Y, X, rocklayer). */
 void RestartData::read_px_rock_vars(const std::string& fname, const int rowidx, const int colidx) {
 
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
+
   int ncid;
   temutil::nc( nc_open(fname.c_str(), NC_NOWRITE, &ncid) );
 
@@ -846,6 +861,8 @@ void RestartData::read_px_rock_vars(const std::string& fname, const int rowidx, 
 
 /**  Reads arrays of values for variables that have dimensions (Y, X, fronts). */
 void RestartData::read_px_front_vars(const std::string& fname, const int rowidx, const int colidx) {
+
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
 
   int ncid;
   temutil::nc( nc_open(fname.c_str(), NC_NOWRITE, &ncid) );
@@ -879,6 +896,9 @@ void RestartData::read_px_front_vars(const std::string& fname, const int rowidx,
 * soil variable!
 */
 void RestartData::read_px_prev_pft_vars(const std::string& fname, const int rowidx, const int colidx) {
+
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
+
   int ncid;
   temutil::nc( nc_open(fname.c_str(), NC_NOWRITE, &ncid) );
 
@@ -972,12 +992,12 @@ void RestartData::create_empty_file(const std::string& fname,
   temutil::nc( nc_def_dim(ncid, "prevten", 10, &prevtenD) );
   temutil::nc( nc_def_dim(ncid, "prevtwelve", 12, &prevtwelveD) );
 
-//  BOOST_LOG_SEV(glg, fatal) << " NUM_PFT = " << NUM_PFT ;
-//  BOOST_LOG_SEV(glg, fatal) << " NUM_PFT_PART = " << NUM_PFT_PART ;
-//  BOOST_LOG_SEV(glg, fatal) << " MAX_ROT_LAY = " << MAX_ROT_LAY ;
-//  BOOST_LOG_SEV(glg, fatal) << " MAX_SNW_LAY = " << MAX_SNW_LAY ;
-//  BOOST_LOG_SEV(glg, fatal) << " MAX_SOI_LAY = " << MAX_SOI_LAY ;
-//  BOOST_LOG_SEV(glg, fatal) << " MAX_ROC_LAY = " << MAX_ROC_LAY ;
+//  BOOST_LOG_SEV(glg, monitor) << " NUM_PFT = " << NUM_PFT ;
+//  BOOST_LOG_SEV(glg, monitor) << " NUM_PFT_PART = " << NUM_PFT_PART ;
+//  BOOST_LOG_SEV(glg, monitor) << " MAX_ROT_LAY = " << MAX_ROT_LAY ;
+//  BOOST_LOG_SEV(glg, monitor) << " MAX_SNW_LAY = " << MAX_SNW_LAY ;
+//  BOOST_LOG_SEV(glg, monitor) << " MAX_SOI_LAY = " << MAX_SOI_LAY ;
+//  BOOST_LOG_SEV(glg, monitor) << " MAX_ROC_LAY = " << MAX_ROC_LAY ;
 
 
   // Setup arrays holding dimids for different "types" of variables
@@ -1260,7 +1280,8 @@ void RestartData::create_empty_file(const std::string& fname,
   temutil::nc( nc_def_var(ncid, "prvltrfcnA", NC_DOUBLE, 4, vartype4D_dimids, &prvltrfcnAV) );
   temutil::nc( nc_put_att_double(ncid, prvltrfcnAV, "_FillValue", NC_DOUBLE, 1, &MISSING_D) );
 
-  /* Create Attributes?? */
+  /* Global Attributes */
+  temutil::nc( nc_put_att_text(ncid, NC_GLOBAL, "Git_SHA", strlen(GIT_SHA), GIT_SHA ) );
 
   /* End Define Mode (not strictly necessary for netcdf 4) */
   BOOST_LOG_SEV(glg, debug) << "Leaving 'define mode'...";
@@ -1276,6 +1297,7 @@ void RestartData::create_empty_file(const std::string& fname,
 /** Writes single values for variables have dimensions (Y, X).*/
 void RestartData::write_px_vars(const std::string& fname, const int rowidx, const int colidx) {
   
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
   int ncid;
 
 #ifdef WITHMPI
@@ -1338,6 +1360,7 @@ void RestartData::write_px_vars(const std::string& fname, const int rowidx, cons
 /** Writes arrays of values for variables that have dimensions (Y, X, pft). */
 void RestartData::write_px_pft_vars(const std::string& fname, const int rowidx, const int colidx) {
 
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
   int ncid;
 
 #ifdef WITHMPI
@@ -1405,6 +1428,7 @@ void RestartData::write_px_pft_vars(const std::string& fname, const int rowidx, 
 /** Writes arrays for variables that have dimensions (Y, X, pftpart, pft). */
 void RestartData::write_px_pftpart_pft_vars(const std::string& fname, const int rowidx, const int colidx) {
 
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
   int ncid;
 
 #ifdef WITHMPI
@@ -1443,6 +1467,7 @@ void RestartData::write_px_pftpart_pft_vars(const std::string& fname, const int 
 /** Writes arrays for variables with dimensions (Y, X, snowlayer) */
 void RestartData::write_px_snow_vars(const std::string& fname, const int rowidx, const int colidx) {
 
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
   int ncid;
 
 #ifdef WITHMPI
@@ -1484,6 +1509,8 @@ void RestartData::write_px_snow_vars(const std::string& fname, const int rowidx,
 
 /** Writes arrays for variables with dimensions (Y, X, rootlayer, pft) */
 void RestartData::write_px_root_pft_vars(const std::string& fname, const int rowidx, const int colidx) {
+
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
   int ncid;
 
 #ifdef WITHMPI
@@ -1516,6 +1543,7 @@ void RestartData::write_px_root_pft_vars(const std::string& fname, const int row
 /** Writes arrays for variables with dimensions (Y, X, soillayer) */
 void RestartData::write_px_soil_vars(const std::string& fname, const int rowidx, const int colidx) {
 
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
   int ncid;
 
 #ifdef WITHMPI
@@ -1572,6 +1600,7 @@ void RestartData::write_px_soil_vars(const std::string& fname, const int rowidx,
 /** Writes arrays of values for variables that have dimensions (Y, X, rocklayer). */
 void RestartData::write_px_rock_vars(const std::string& fname, const int rowidx, const int colidx) {
 
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
   int ncid;
 
 #ifdef WITHMPI
@@ -1606,6 +1635,7 @@ void RestartData::write_px_rock_vars(const std::string& fname, const int rowidx,
 /** Writes arrays of values for variables that have dimensions (Y, X, fronts). */
 void RestartData::write_px_front_vars(const std::string& fname, const int rowidx, const int colidx) {
 
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
   int ncid;
 
 #ifdef WITHMPI
@@ -1643,6 +1673,8 @@ void RestartData::write_px_front_vars(const std::string& fname, const int rowidx
 * variable!
 */
 void RestartData::write_px_prev_pft_vars(const std::string& fname, const int rowidx, const int colidx) {
+
+  BOOST_LOG_SEV(glg, debug) << "Opening restart: " << fname;
   int ncid;
 
 #ifdef WITHMPI

@@ -17,7 +17,6 @@
     "fri_fire_file":      "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/fri-fire.nc",
     "hist_exp_fire_file": "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/historic-explicit-fire.nc",
     "proj_exp_fire_file": "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/projected-explicit-fire.nc",
-    "topo_file":          "demo-data/cru-ts40_ar5_rcp85_ncar-ccsm4_toolik_field_station_10x10/topo.nc",
     "fire_fuel_model_file": "external/Fireweed/Standard_Fuel_Models_Table.csv",
     "fire_fosberg_a_file": "external/Fireweed/NWGC_Fosberg_Table_A.txt",
     "fire_fosberg_b_file": "external/Fireweed/NWGC_Fosberg_Table_B.txt",
@@ -27,7 +26,7 @@
     "output_spec_file":   "config/output_spec.csv",
     "output_monthly":     1, //JSON specific
     "output_nc_eq":       0,
-    "output_nc_sp":       1,
+    "output_nc_sp":       0,
     "output_nc_tr":       1,
     "output_nc_sc":       1, 
     "output_interval":    1 
