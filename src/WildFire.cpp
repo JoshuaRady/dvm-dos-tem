@@ -406,11 +406,11 @@ void WildFire::burn(const int year, const int midx) {
 //         }
 //       }
 //     } else {   //Mineral soil layers
-//       BOOST_LOG_SEV(glg, note) << "Layer type:" << cd->m_soil.type[il] << ". Should be a non-organic soil layer? (greater than type 2)";
-//       BOOST_LOG_SEV(glg, note) << "Not much to do here. Can't really burn non-organic layers.";
+//       BOOST_LOG_SEV(glg, info) << "Layer type:" << cd->m_soil.type[il] << ". Should be a non-organic soil layer? (greater than type 2)";
+//       BOOST_LOG_SEV(glg, info) << "Not much to do here. Can't really burn non-organic layers.";
 // 
 //       if(totbotdepth <= burndepth) { //may not be needed, but just in case
-//         BOOST_LOG_SEV(glg, note) << "For some reason totbotdepth <= burndepth, so we are setting fd->fire_soid.burnthick = totbotdepth??";
+//         BOOST_LOG_SEV(glg, info) << "For some reason totbotdepth <= burndepth, so we are setting fd->fire_soid.burnthick = totbotdepth??";
 //         fd->fire_soid.burnthick = totbotdepth;
 //       }
 //     }
@@ -421,7 +421,7 @@ void WildFire::burn(const int year, const int midx) {
 // 
 //   // needs to re-do the soil rootfrac for each pft which was modified above
 //   //   (in burn soil layer)
-//   BOOST_LOG_SEV(glg, note) << "Re-do the soil root fraction for each PFT modified by burning?";
+//   BOOST_LOG_SEV(glg, info) << "Re-do the soil root fraction for each PFT modified by burning?";
 //   for (int ip = 0; ip < NUM_PFT; ip++) {
 //     double rootfracsum = 0.0;
 // 
@@ -456,7 +456,7 @@ void WildFire::burn(const int year, const int midx) {
   else
   {
     // FW_Note: The revised wildfire model does not yet handle the wood debris pool.
-    BOOST_LOG_SEV(glg, note) << "Revised wildfire model ignores wood debris for now.";
+    BOOST_LOG_SEV(glg, info) << "Revised wildfire model ignores wood debris for now.";
   }
 
   // summarize
@@ -487,7 +487,7 @@ void WildFire::burn(const int year, const int midx) {
 //   for (int ip = 0; ip < NUM_PFT; ip++) {
 // 
 //     if (cd->m_veg.vegcov[ip] > 0.0) {
-//       BOOST_LOG_SEV(glg, note) << "Some of PFT"<<ip<<" exists (coverage > 0). Burn it!";
+//       BOOST_LOG_SEV(glg, info) << "Some of PFT"<<ip<<" exists (coverage > 0). Burn it!";
 // 
 //       // vegetation burning/dead/living fraction for above-ground
 //       getBurnAbgVegetation(ip, year);
@@ -637,7 +637,7 @@ void WildFire::burn(const int year, const int midx) {
   fd->fire_a2soi.orgn = (fd->fire_soi2a.orgn + fd->fire_v2a.orgn) / this->fri;
 
   // Retained calcuations are the same for both models:
-  BOOST_LOG_SEV(glg, note) << "Handle retained combustion products...";// FW_MOD
+  BOOST_LOG_SEV(glg, info) << "Handle retained combustion products...";// FW_MOD
   //put the retained C/N into the first unburned soil layer's
   //  chemically-resistant SOMC pool
   // Note - this 'retained C' could be used as char-coal, if need to do so.
@@ -981,7 +981,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
 
   // needs to re-do the soil rootfrac for each pft which was modified above
   //   (in burn soil layer)
-  BOOST_LOG_SEV(glg, note) << "Re-do the soil root fraction for each PFT modified by burning?";
+  BOOST_LOG_SEV(glg, info) << "Re-do the soil root fraction for each PFT modified by burning?";
   for (int ip = 0; ip < NUM_PFT; ip++)
   {
     double rootfracsum = 0.0;
