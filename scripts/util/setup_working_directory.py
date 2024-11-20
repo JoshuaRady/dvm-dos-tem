@@ -192,7 +192,12 @@ def cmdline_run(args):
     "fri_fire_file",
     "hist_exp_fire_file",
     "proj_exp_fire_file",
-    "topo_file",
+    #"topo_file",
+    "fire_fuel_model_file",
+    "fire_fosberg_a_file".
+    "fire_fosberg_b_file",
+    "fire_fosberg_c_file",
+    "fire_fosberg_d_file",
     "runmask_file",
 
     "output_dir",
