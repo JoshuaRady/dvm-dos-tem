@@ -230,7 +230,7 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
       }
       default:
       {
-        BOOST_LOG_SEV(glg, err) << "Undefined ignition mode! (" << stage << ")";
+        BOOST_LOG_SEV(glg, fatal) << "Undefined ignition mode! (" << stage << ")";
         break;
       }
     }
@@ -400,8 +400,8 @@ void WildFire::burn(const int year, const int midx) {
 //           }
 //         } else {
 //           // should never get here??
-//           BOOST_LOG_SEV(glg, err) << "The remaining soil after a burn is greater than the thickness of this layer. Something is wrong??";
-//           BOOST_LOG_SEV(glg, err) << "partleft: " << partleft << "cd->m_soil.dz["<<il<<"]: " << cd->m_soil.dz[il];
+//           BOOST_LOG_SEV(glg, warn) << "The remaining soil after a burn is greater than the thickness of this layer. Something is wrong??";
+//           BOOST_LOG_SEV(glg, warn) << "partleft: " << partleft << "cd->m_soil.dz["<<il<<"]: " << cd->m_soil.dz[il];
 //           break;
 //         }
 //       }
@@ -960,8 +960,8 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
           }
         } else {
           // should never get here??
-          BOOST_LOG_SEV(glg, err) << "The remaining soil after a burn is greater than the thickness of this layer. Something is wrong??";
-          BOOST_LOG_SEV(glg, err) << "partleft: " << partleft << "cd->m_soil.dz["<<il<<"]: " << cd->m_soil.dz[il];
+          BOOST_LOG_SEV(glg, warn) << "The remaining soil after a burn is greater than the thickness of this layer. Something is wrong??";
+          BOOST_LOG_SEV(glg, warn) << "partleft: " << partleft << "cd->m_soil.dz["<<il<<"]: " << cd->m_soil.dz[il];
           break;
         }
       }
