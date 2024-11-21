@@ -194,7 +194,7 @@ def cmdline_run(args):
     "proj_exp_fire_file",
     #"topo_file",
     "fire_fuel_model_file",
-    "fire_fosberg_a_file".
+    "fire_fosberg_a_file",
     "fire_fosberg_b_file",
     "fire_fosberg_c_file",
     "fire_fosberg_d_file",
