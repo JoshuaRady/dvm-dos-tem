@@ -148,7 +148,7 @@
 
         //Turn on the revised process based wildfire model:
         //The fire settings that follow only pertain if this is switch is set to true.
-        "fire_process_wildfire": true,//True for testing.  Should default to false.
+        "fire_process_wildfire": false,
 
         //Calculate dynamic fuel moisture for dynamic fuel models:
         "fire_dynamic_fuel": false,
