@@ -1019,7 +1019,13 @@ void WildFire::setFirData(FirData* fdp) {
 
 void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
 {
-  md = modelDataPtr;
+  //md = modelDataPtr;
+
+  // FW_NOTE: I'm having an issue with the strings in md becoming invalid.  The following is an
+  //attempt at a workaround until I get that figuted out.  Make a copy and point to that rather
+  //than the original.
+  mdCopy = *modelDataPtr;
+  md = &mdCopy;
 }
 
 void WildFire::setClimate(Climate* climatePtr)//FW_MOD

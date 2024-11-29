@@ -128,6 +128,7 @@ private:
   BgcData * bd[NUM_PFT];
   BgcData * bdall;
   ModelData * md;// FW_MOD: The revised fire model has input file paths it needs.
+  ModelData mdCopy;// FW_MOD: Temp!!!!!
   Climate * climate;// FW_MOD: The revised fire model needs environmental conditions.
 
   bool isFireReturnDate(const int year, const int midx);// FW_MOD
