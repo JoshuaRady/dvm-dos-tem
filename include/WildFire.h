@@ -35,7 +35,7 @@ public:
            const double cell_aspect,
            const double cell_elevation,
            const int y, const int x,
-           const float cell_latitude);//FW_MOD
+           const float cell_latitude, ModelData* modelDataPtr);//FW_MOD
   
   ~WildFire();
 
@@ -129,7 +129,7 @@ private:
   BgcData * bdall;
   ModelData * md;// FW_MOD: The revised fire model has input file paths it needs.
   ModelData mdCopy;// FW_MOD: Temp!!!!!
-  bool mdCopied = false;// FW_MOD: Temp!!!!!
+  //bool mdCopied = false;// FW_MOD: Temp!!!!!
   std::string fire_fuel_model_file;// FW_MOD: Temp!!!!!
   Climate * climate;// FW_MOD: The revised fire model needs environmental conditions.
 

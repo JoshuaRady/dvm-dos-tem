@@ -39,7 +39,7 @@ WildFire::WildFire(const std::string& fri_fname,
                    const std::string& exp_fname, const double cell_slope,
                    const double cell_aspect, const double cell_elevation,
                    const int y, const int x,
-                   const float cell_latitude) {
+                   const float cell_latitude, ModelData* modelDataPtr) {
 
   #pragma omp critical(load_input)
   {
@@ -62,7 +62,8 @@ WildFire::WildFire(const std::string& fri_fname,
   this->slope = cell_slope;
   this->asp = cell_aspect;
   this->elev = cell_elevation;
-  this->lat = cell_latitude;//FW_MOD)
+  this->lat = cell_latitude;// FW_MOD
+  setModelData(modelDataPtr);// FW_MOD
 
   BOOST_LOG_SEV(glg, debug) << "Done making WildFire object.";
   BOOST_LOG_SEV(glg, debug) << this->report_fire_inputs();
@@ -1024,12 +1025,12 @@ void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
   // FW_NOTE: I'm having an issue with the strings in md becoming invalid.  The following is an
   //attempt at a workaround until I get that figuted out.  Make a copy and point to that rather
   //than the original.
-  if (!mdCopied)
-  {
+//  if (!mdCopied)
+//  {
     mdCopy = *modelDataPtr;
     md = &mdCopy;
-    mdCopied = true;
-  }
+//    mdCopied = true;
+//  }
   //fire_fuel_model_file = modelDataPtr->fire_fuel_model_file;
 }
 
