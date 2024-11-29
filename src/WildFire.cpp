@@ -1026,6 +1026,7 @@ void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
   //than the original.
   mdCopy = *modelDataPtr;
   md = &mdCopy;
+  fire_fuel_model_file = modelDataPtr->fire_fuel_model_file;
 }
 
 void WildFire::setClimate(Climate* climatePtr)//FW_MOD
