@@ -86,8 +86,8 @@ double WildFire::RevisedFire(int monthIndex)
   int fuelModelNumber = GetMatchingFuelModel(theCMTnumber);
 
   //The fuel model table file needs to be added to the config file and be loaded:
-  //FuelModel fm = GetFuelModelFromCSV(md->fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
-  FuelModel fm = GetFuelModelFromCSV(fire_fuel_model_file, fuelModelNumber);//Debugging!!!!!
+  FuelModel fm = GetFuelModelFromCSV(md->fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
+  //FuelModel fm = GetFuelModelFromCSV(fire_fuel_model_file, fuelModelNumber);//Debugging!!!!!
 
   //Convert to metric units:
   fm.ConvertUnits(Metric);
