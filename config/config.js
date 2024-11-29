@@ -21,7 +21,7 @@
     "fire_fosberg_a_file": "external/Fireweed/Input_Files/NWGC_Fosberg_Table_A.txt",
     "fire_fosberg_b_file": "external/Fireweed/Input_Files/NWGC_Fosberg_Table_B.txt",
     "fire_fosberg_c_file": "external/Fireweed/Input_Files/NWGC_Fosberg_Table_C.txt",
-    "fire_fosberg_d_file": "external/Fireweed/Input_Files/NWGC_Fosberg_Table_D_.txt",
+    "fire_fosberg_d_file": "external/Fireweed/Input_Files/NWGC_Fosberg_Table_D.txt",
     "output_dir":         "output/",
     "output_spec_file":   "config/output_spec.csv",
     "output_monthly":     1, //JSON specific
