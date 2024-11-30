@@ -86,21 +86,24 @@ double WildFire::RevisedFire(int monthIndex)
   int fuelModelNumber = GetMatchingFuelModel(theCMTnumber);
 
   //The fuel model table file needs to be added to the config file and be loaded:
-  FuelModel fm = GetFuelModelFromCSV(md->fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
+  //FuelModel fm = GetFuelModelFromCSV(md->fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
   //FuelModel fm = GetFuelModelFromCSV(fire_fuel_model_file, fuelModelNumber);//Debugging!!!!!
+  FuelModel fm = GetFuelModelFromCSV(mdCopy.fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
 
   //Convert to metric units:
   fm.ConvertUnits(Metric);
 
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
-  CohortStatesToFuelLoading(fm, md->fire_moss_as_dead_fuel);
+  //CohortStatesToFuelLoading(fm, md->fire_moss_as_dead_fuel);
+  CohortStatesToFuelLoading(fm, mdCopy.fire_moss_as_dead_fuel);
 
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
 
   //Calculate the fuel bed depth:
-  CalculateFuelBedDepth(fm, md->fire_calculate_delta);
+  //CalculateFuelBedDepth(fm, md->fire_calculate_delta);
+  CalculateFuelBedDepth(fm, mdCopy.fire_calculate_delta);
   
   //Gather weather and environmental conditions:
   double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
@@ -122,7 +125,8 @@ double WildFire::RevisedFire(int monthIndex)
   std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);//(thisCohort, md, fm, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
-  if (md->fire_dynamic_fuel)
+  //if (md->fire_dynamic_fuel)
+  if (mdCopy.fire_dynamic_fuel)
   {
     fm.CalculateDynamicFuelCuring(M_f_ij);
   }
@@ -726,8 +730,10 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
   }
 
   //Perform the 1hr moisture look up and derive the rest from that:
-  double oneHrFM = FosbergNWCG_1HrFM(md->fire_fosberg_a_file, md->fire_fosberg_b_file,
-                                     md->fire_fosberg_c_file, md->fire_fosberg_d_file,
+  //double oneHrFM = FosbergNWCG_1HrFM(md->fire_fosberg_a_file, md->fire_fosberg_b_file,
+  //                                   md->fire_fosberg_c_file, md->fire_fosberg_d_file,
+  double oneHrFM = FosbergNWCG_1HrFM(mdCopy.fire_fosberg_a_file, mdCopy.fire_fosberg_b_file,
+                                     mdCopy.fire_fosberg_c_file, mdCopy.fire_fosberg_d_file,
                                      tempAir, rhPct, monthOfYear, hourOfDay,
                                      slopePct, aspect, shaded);//Default values for the rest.
 
