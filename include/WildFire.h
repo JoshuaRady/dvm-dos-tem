@@ -127,8 +127,9 @@ private:
   EnvData * edall;
   BgcData * bd[NUM_PFT];
   BgcData * bdall;
-  ModelData * md;// FW_MOD: The revised fire model has input file paths it needs.
-  ModelData mdCopy;// FW_MOD: Temp!!!!!
+  //ModelData * md;// FW_MOD: The revised fire model has input file paths it needs.
+  ModelData md;// FW_MOD: The revised fire model has input file paths it needs.
+  //ModelData mdCopy;// FW_MOD: Temp!!!!!
   //bool mdCopied = false;// FW_MOD: Temp!!!!!
   std::string fire_fuel_model_file;// FW_MOD: Temp!!!!!
   Climate * climate;// FW_MOD: The revised fire model needs environmental conditions.

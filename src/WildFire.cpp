@@ -164,8 +164,8 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
   // FW_MOD_START:
   // Check that fire is on for the current run stage:
   if ( stage.compare("pre-run") == 0 ||
-       (stage.compare("eq-run") == 0  && md->fire_on_EQ) ||
-       (stage.compare("sp-run") == 0  && md->fire_on_SP) )
+       (stage.compare("eq-run") == 0  && md.fire_on_EQ) ||
+       (stage.compare("sp-run") == 0  && md.fire_on_SP) )
   {
     // Currently for the PR, EQ, and SP stages only fire return interval based fire is implemented
     // so there is no need to check te fire ignition mode.  If fire is on it is FRI based.
@@ -181,18 +181,18 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
 
   //} else if ( stage.compare("tr-run") == 0 || stage.compare("sc-run") == 0 ) {
   }
-  else if ( (stage.compare("tr-run") == 0 && md->fire_on_TR) ||
-            (stage.compare("sc-run") == 0 && md->fire_on_SC) )
+  else if ( (stage.compare("tr-run") == 0 && md.fire_on_TR) ||
+            (stage.compare("sc-run") == 0 && md.fire_on_SC) )
   {
     int fire_ignition_mode;
 
     if (stage.compare("tr-run"))
     {
-      fire_ignition_mode = md->fire_ignition_tr;
+      fire_ignition_mode = md.fire_ignition_tr;
     }
     else
     {
-      fire_ignition_mode = md->fire_ignition_sc;
+      fire_ignition_mode = md.fire_ignition_sc;
     }
 
     switch (fire_ignition_mode)
@@ -306,7 +306,7 @@ void WildFire::burn(const int year, const int midx) {
 
   // FW_Note:
   // Determine the fire model we are using:
-  if (!md->fire_process_wildfire)
+  if (!md.fire_process_wildfire)
   {
     BOOST_LOG_SEV(glg, info) << "Using the old/original/classic wildfire model.";//This could be moved before this function.
 
@@ -444,7 +444,7 @@ void WildFire::burn(const int year, const int midx) {
   BOOST_LOG_SEV(glg, info) << "Handle burnt woody debris...";
   double wdebrisc = 0.0;
   double wdebrisn = 0.0;
-  if (!md->fire_process_wildfire)// FW_MOD
+  if (!md.fire_process_wildfire)// FW_MOD
   {
     // all woody debris will burn out:
     //double wdebrisc = bdall->m_sois.wdebrisc; //
@@ -606,7 +606,7 @@ void WildFire::burn(const int year, const int midx) {
 
   double reta_vegc = 0.0;
   double reta_vegn = 0.0;
-  if (!md->fire_process_wildfire)
+  if (!md.fire_process_wildfire)
   {
     burnVegetation(year, r_burn2bg_cn, comb_vegc, comb_vegn, dead_bg_vegc, dead_bg_vegn, reta_vegc, reta_vegn);
   }
@@ -1027,11 +1027,12 @@ void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
   //than the original.
 //  if (!mdCopied)
 //  {
-    mdCopy = *modelDataPtr;
-    md = &mdCopy;
+    //mdCopy = *modelDataPtr;
+    //md = &mdCopy;
 //    mdCopied = true;
 //  }
   //fire_fuel_model_file = modelDataPtr->fire_fuel_model_file;
+  md = *modelDataPtr;
 }
 
 void WildFire::setClimate(Climate* climatePtr)//FW_MOD
