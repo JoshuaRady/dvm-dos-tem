@@ -760,7 +760,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
     //...
     //double vpd_hPa = VPDfromRHBuck(tempAir, rh, p_hPa);
 
-    //temutil::length_of_day gives the he day length in hours:
+    //temutil::length_of_day gives the day length in hours:
     float dayLengthSec = temutil::length_of_day(lat, dayOfYearIndex) * 60 * 60;
 
     double gsi = GrowingSeasonIndex(tempCMin, vpdPa, dayLengthSec);
@@ -775,11 +775,12 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
   //Combine the live and dead moisture:-----------
   //This makes assumption that the order is that of a standard fuel model.
   //It would be better to inform the numbers using information from the fuel model.  See above.
-  M_f_ij[0] = oneHrFM;
-  M_f_ij[1] = tenHrFM;
-  M_f_ij[2] = hundredHrFM;
-  M_f_ij[3] = herbLFM;
-  M_f_ij[4] = woodyLFM;
+  //The units need to change from percent moisture to moisture fraction.
+  M_f_ij[0] = oneHrFM / 100;
+  M_f_ij[1] = tenHrFM / 100;
+  M_f_ij[2] = hundredHrFM / 100;
+  M_f_ij[3] = herbLFM / 100;
+  M_f_ij[4] = woodyLFM / 100;
 
   return M_f_ij;
 }
