@@ -28,6 +28,8 @@
 #include "../include/TEMLogger.h"
 #include "../include/TEMUtilityFunctions.h"//For length_of_day().
 
+#include <cmath.h>//Temporary for isnan().
+
 extern src::severity_logger< severity_level > glg;
 
 //Constants:
@@ -138,6 +140,9 @@ double WildFire::RevisedFire(int monthIndex)
 
   //Feed fuels and weather conditions into surface fire models:
 
+  //Dump the fuel model.  This may be temporary?:
+  BOOST_LOG_SEV(glg, debug) << fm;
+
   //First to Rothermel & Albini.  We use the calculations to get some component values.
   //This interface is under development.  It takes a fuel model (and attendant data) and returns the
   //calculation details.
@@ -149,7 +154,13 @@ double WildFire::RevisedFire(int monthIndex)
                                                       //false,//useWindLimit
                                                       //FALSE);//debug
 
-  BOOST_LOG_SEV(glg, debug) << "WildFire::RevisedFire() Spread rate calculation R = " << raData.R;
+  //Dump the output:
+  //Currently we are getting bad output so we need to check it to avoid a crash.
+  BOOST_LOG_SEV(glg, debug) << raData;
+  if (!isnan(raData.R))
+  {
+  	BOOST_LOG_SEV(glg, debug) << "WildFire::RevisedFire() Spread rate calculation R = " << raData.R;
+  }
 
   //Simulate the combustion of surface fuels:
   SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
