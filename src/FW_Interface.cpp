@@ -141,7 +141,8 @@ double WildFire::RevisedFire(int monthIndex)
   //Feed fuels and weather conditions into surface fire models:
 
   //Dump the fuel model.  This may be temporary?:
-  BOOST_LOG_SEV(glg, debug) << fm;
+  //BOOST_LOG_SEV(glg, debug) << fm;//<< may be a problem.
+  fm.Print(std::cout);
 
   //First to Rothermel & Albini.  We use the calculations to get some component values.
   //This interface is under development.  It takes a fuel model (and attendant data) and returns the
@@ -156,7 +157,8 @@ double WildFire::RevisedFire(int monthIndex)
 
   //Dump the output:
   //Currently we are getting bad output so we need to check it to avoid a crash.
-  BOOST_LOG_SEV(glg, debug) << raData;
+  //BOOST_LOG_SEV(glg, debug) << raData;//<< is not working!
+  raData.Print(std::cout);
   if (!isnan(raData.R))
   {
   	BOOST_LOG_SEV(glg, debug) << "WildFire::RevisedFire() Spread rate calculation R = " << raData.R;
