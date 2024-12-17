@@ -28,7 +28,7 @@
 #include "../include/TEMLogger.h"
 #include "../include/TEMUtilityFunctions.h"//For length_of_day().
 
-#include <cmath.h>//Temporary for isnan().
+#include <cmath>//Temporary for isnan().
 
 extern src::severity_logger< severity_level > glg;
 
