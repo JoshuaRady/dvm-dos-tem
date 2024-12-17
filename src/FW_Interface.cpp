@@ -141,7 +141,7 @@ double WildFire::RevisedFire(int monthIndex)
   //First to Rothermel & Albini.  We use the calculations to get some component values.
   //This interface is under development.  It takes a fuel model (and attendant data) and returns the
   //calculation details.
-  //M_f_ij does not need to be included if it is adde to the fuel model object above.
+  //M_f_ij does not need to be included if it is added to the fuel model object above.
   SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm,
                                                       windSpeed,//U
                                                       slopeSteepness);
