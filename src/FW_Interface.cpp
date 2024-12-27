@@ -127,6 +127,7 @@ double WildFire::RevisedFire(int monthIndex)
   std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);//(thisCohort, md, fm, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
+  BOOST_LOG_SEV(glg, debug) << "Apply fuel moisture to fuel model...";
   if (md.fire_dynamic_fuel)
   //if (mdCopy.fire_dynamic_fuel)
   {
@@ -141,6 +142,7 @@ double WildFire::RevisedFire(int monthIndex)
   //Feed fuels and weather conditions into surface fire models:
 
   //Dump the fuel model.  This may be temporary?:
+  BOOST_LOG_SEV(glg, debug) << "Dump the fuel model?????";
   BOOST_LOG_SEV(glg, debug) << fm;//<< may be a problem.
   //fm.Print(std::cout);
 
@@ -148,6 +150,7 @@ double WildFire::RevisedFire(int monthIndex)
   //This interface is under development.  It takes a fuel model (and attendant data) and returns the
   //calculation details.
   //M_f_ij does not need to be included if it is added to the fuel model object above.
+  BOOST_LOG_SEV(glg, debug) << "Perform surface file spread rate calculations...";
   SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm,
                                                       windSpeed,//U
                                                       slopeSteepness);
@@ -157,6 +160,7 @@ double WildFire::RevisedFire(int monthIndex)
 
   //Dump the output:
   //Currently we are getting bad output so we need to check it to avoid a crash.
+  BOOST_LOG_SEV(glg, debug) << "Dump the spread calculation?????";
   BOOST_LOG_SEV(glg, debug) << raData;
   //raData.Print(std::cout);//<< was not working due to mismatched repos?
   if (!isnan(raData.R))
@@ -809,6 +813,8 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
  */
 void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed)//CalculateSurfaceCombustion?
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering SimulateSurfaceCombustion()... [Stub]";
+  
   //Burnup takes a number of parameters:
   
   //Wind and air temperature are needed (passed in):
@@ -856,6 +862,8 @@ void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double t
  */
 double SimulateGroundFire()
 {
+  //BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()... [Stub]";
+
   double burnDepth = 0;
   
   //Calculate if the energy output is sufficiency to ignite the surface layer.
