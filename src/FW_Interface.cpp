@@ -684,6 +684,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
 
 
   //Dead fuel moisture:---------------------------
+  BOOST_LOG_SEV(glg, debug) << "Calculating dead fuel moisture:";//Temp?????
 
   //Current air temperature:
   //float tempAir = climate->tair[monthIndex]//Monthly
@@ -747,6 +748,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
   }
 
   //Perform the 1hr moisture look up and derive the rest from that:
+  BOOST_LOG_SEV(glg, debug) << "Calling FosbergNWCG_1HrFM()";//Temp?????
   double oneHrFM = FosbergNWCG_1HrFM(md.fire_fosberg_a_file, md.fire_fosberg_b_file,
                                      md.fire_fosberg_c_file, md.fire_fosberg_d_file,
   //double oneHrFM = FosbergNWCG_1HrFM(mdCopy.fire_fosberg_a_file, mdCopy.fire_fosberg_b_file,
@@ -761,6 +763,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
   //The GSI based fuel moistures should be averages of the 21 days up to today:
   //Monthly values /might work but I suspect minimum daily temp could cause big departures at some
   //times of the year.
+  BOOST_LOG_SEV(glg, debug) << "Calculating live fuel moisture:";//Temp?????
 
   double herbLFM = 0;
   double woodyLFM = 0;
@@ -790,6 +793,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
 
 
   //Combine the live and dead moisture:-----------
+  BOOST_LOG_SEV(glg, debug) << "Setting M_f_ij:";//Temp?????
   //This makes assumption that the order is that of a standard fuel model.
   //It would be better to inform the numbers using information from the fuel model.  See above.
   //The units need to change from percent moisture to moisture fraction.
