@@ -390,8 +390,8 @@ double WildFire::GetLitterRawC() const
  * lookup process using the CMT of fuel model number to get the estimate that is calculated or
  * supplied via an input file.
  * 
- * @param fm A fuel model to base the distribution on. [Temporary!!!!!];
- * @param distribSAVs An empty vector to return the SAVs of the distribution in. =
+ * @param fm A fuel model to base the distribution on. [Temporary!!!!!]
+ * @param distribSAVs An empty vector to return the SAVs of the distribution in.
  * @param distribWts An empty vector to return the weights of the distribution in.
  * 
  * @returns Nothing.  Parameters are updated instead.
@@ -422,24 +422,17 @@ void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& dist
  * could try to used stature to help infer when trees are shrubby in a way that is relevant to fuel
  * models.  That might be getting a bit fancy.
  *
- Parmaters pending elimination !!!!!:
- * [@param thisCohort The cohort object for this site.]
- *                   (We could alternatively pass the cohort's CohortData or just the CMT number.)
- * [@param cd The CohortData for this site.]
  * @param cmtNumber The CMT number.
  * @param pftIdx The index of the PFT to check.
  *
  * @returns True if this PFT is a shrub. 
  */
-//bool IsShrub(const Cohort& thisCohort, int pftIdx)
-//bool IsShrub(const CohortData& cd, const int pftIdx)
 bool IsShrub(const int cmtNumber, const int pftIdx)
 {
   BOOST_LOG_SEV(glg, debug) << "Entering IsShrub()...";
 
   //I believe all the following PFTs are considered shrubs:
   //A few of these CMT cases could be combined but I'm prioritizing readability over compactness.
-  //switch (thisCohort.cd.cmttype) {
   switch (cmtNumber) {
     case 0://Bare ground, contains junk values.
       break;
@@ -569,7 +562,7 @@ void CalculateFuelBedDepth(FuelModel& fm, bool dynamic)
  *
  * We need a sub-daily value ~ daily value?
  * The code has to do the following:
- * - Get the daily windspeed from the host model
+ * - Get the daily windspeed from the host model.
  *   Note: Windspeed is not yet available in DVM-DOS-TEM, but it should be soon.
  * - Calculate the windspeed at ~2m if the provided wind speed is at another height.
  * - Possibly: Estimate a sub-daily from a daily mean value.  The fire may occur on timescale where
@@ -578,16 +571,12 @@ void CalculateFuelBedDepth(FuelModel& fm, bool dynamic)
  *   well predicted by diurnal cycles.
  * - Convert to m/min if needed.
  *
-Parameter pending elimination !!!!!:
- * []@param thisCohort The cohort object for this site.]
- *
  * @returns The wind speed at 2 meters height (m/min).
  *
- * @note: We could also pass in the desired height.  We currently need ~2m and will have 2m so
- * height adjustment is not necessary.  Passing in the time of day would allow us to adjust daily to
- * sub-daily wind (see above).
+ * @note: We could also pass in the desired height.  We currently need ~2m and will have 2m wind
+ * input so height adjustment is not necessary.  Passing in the time of day would allow us to adjust
+ * daily to sub-daily wind (see above).
  */
-//double GetMidflameWindSpeed(const Cohort& thisCohort)
 double WildFire::GetMidflameWindSpeed()
 {
   double windSpeed;//Return value.
@@ -615,22 +604,16 @@ double WildFire::GetMidflameWindSpeed()
  * continuously calculated state.  This would moke more sense if litter existed as a distinct stock
  * as well.
  *
-Parameters pending elimination !!!!!:
- * [@param thisCohort The cohort object for this site.]
- * [@param md The ModelData object containing configuration data.]
  * @param fm The fuel model object for this site.
  * @param monthIndex The current month as a zero based index.
  #
  * @returns M_f_ij, the fuel moisture for all fuel classes.  This is not returned in the fuel model
  * passed in because we don't know if curing is being applied.
  */
-//std::vector <double> CalculateFuelMoisture(const Cohort& thisCohort, const ModelData& md,
-//                                           const FuelModel& fm, int monthIndex)
 std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int monthIndex)
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::CalculateFuelMoisture()...";
 
-  //std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
   //We get the number of fuel classes here and then assume the number below.  To handle more than
   //the standard five fuel types we need additional tools to undestand what they are.
   std::vector <double> M_f_ij(fm.numClasses, 0);//Return value.
@@ -649,7 +632,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
 
 
   //Dead fuel moisture:---------------------------
-  BOOST_LOG_SEV(glg, debug) << "Calculating dead fuel moisture:";//Temp?????
+  BOOST_LOG_SEV(glg, debug) << "Calculating dead fuel moisture:";//Temporary?????
 
   //Current air temperature:
   //float tempAir = climate->tair[monthIndex]//Monthly
@@ -664,7 +647,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
 
   //Partial pressure of water vapor:
   //This is an input variable.  There has been some discussion recently about the units of this.
-  //The docs say it is in hPa but it is used in the code as if it is in in Pa
+  //The docs say it is in hPa but it is used in the code as if it is in Pa
   //(see Climate.cpp calculate_vpd()).
   float P_Pa = climate->vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
 
@@ -685,7 +668,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
   double slopePct = cd->cell_slope;//Percent
 
   //Get the aspect:
-  //Also duplicated in the Wildfire object.
+  //Slope is also duplicated in the Wildfire object.
   double aspect = cd->cell_aspect;//Degrees
 
   //Shading should take into consideration both cloudiness and canopy cover:
@@ -713,11 +696,9 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
   }
 
   //Perform the 1hr moisture look up and derive the rest from that:
-  BOOST_LOG_SEV(glg, debug) << "Calling FosbergNWCG_1HrFM()";//Temp?????
+  BOOST_LOG_SEV(glg, debug) << "Calling FosbergNWCG_1HrFM()";//Temporary?????
   double oneHrFM = FosbergNWCG_1HrFM(md.fire_fosberg_a_file, md.fire_fosberg_b_file,
                                      md.fire_fosberg_c_file, md.fire_fosberg_d_file,
-  //double oneHrFM = FosbergNWCG_1HrFM(mdCopy.fire_fosberg_a_file, mdCopy.fire_fosberg_b_file,
-  //                                   mdCopy.fire_fosberg_c_file, mdCopy.fire_fosberg_d_file,
                                      tempAir, rhPct, monthOfYear, hourOfDay,
                                      slopePct, aspect, shaded);//Default values for the rest.
 
@@ -726,9 +707,9 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
 
   //Live fuel moisture:---------------------------
   //The GSI based fuel moistures should be averages of the 21 days up to today:
-  //Monthly values /might work but I suspect minimum daily temp could cause big departures at some
+  //Monthly values might work but I suspect minimum daily temp could cause big departures at some
   //times of the year.
-  BOOST_LOG_SEV(glg, debug) << "Calculating live fuel moisture:";//Temp?????
+  BOOST_LOG_SEV(glg, debug) << "Calculating live fuel moisture:";//Temporary?????
 
   double herbLFM = 0;
   double woodyLFM = 0;
@@ -758,7 +739,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
 
 
   //Combine the live and dead moisture:-----------
-  BOOST_LOG_SEV(glg, debug) << "Setting M_f_ij:";//Temp?????
+  BOOST_LOG_SEV(glg, debug) << "Setting M_f_ij:";//Temporary?????
   //This makes assumption that the order is that of a standard fuel model.
   //It would be better to inform the numbers using information from the fuel model.  See above.
   //The units need to change from percent moisture to moisture fraction.
@@ -774,6 +755,8 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
 /** Simulate combustion of surface fuels.
  *
  * We simulate surface fuel combustion with the Burnup model of Albini 1995?????.
+ *
+ * This is currently a placeholder for future integration of Burnup.
  *
  * @param fm The fuel model for the site.
  * @param raData The results of a Rothermel Albini spread model calculation for the site.
@@ -821,12 +804,12 @@ void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double t
  *
  * This is currently a stub and a place to work out how this simulation phase connects to the other
  * phases of fire.  The ground fire model is currently under development elsewhere.
-
- Inputs:
- - The structure and state of the soil column.
- - Energy inputs from aboveground fire components.
- Burnup produces energy over time so it may be better to link the calculations?
-
+ *
+ * Inputs (proposed):
+ * - The structure and state of the soil column.
+ * - Energy inputs from aboveground fire components.
+ * Burnup produces energy over time so it may be better to link the calculations?
+ *
  * @returns The soil burn depth from ground fire (meters).
  */
 double SimulateGroundFire()
