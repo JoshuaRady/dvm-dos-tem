@@ -98,7 +98,7 @@ double WildFire::RevisedFire(int monthIndex)//Name could change.
   //Calculate fuel moisture:
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
-  std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);//(thisCohort, md, fm, monthIndex);
+  std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);
 
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
   BOOST_LOG_SEV(glg, debug) << "Apply fuel moisture to fuel model...";
@@ -142,6 +142,8 @@ double WildFire::RevisedFire(int monthIndex)//Name could change.
   //Some of this could be done directly here but we could also use parts of the 'original' code like
   // WildFire::updateBurntOrgSoil(), which I split out.
 
+
+  //Add crown fire!!!!!
 
   //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
   //the fire air temp (Burnup fire environmental temperature?) as input to the ground fire model:
