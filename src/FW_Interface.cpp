@@ -170,7 +170,7 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
  *
  * @returns The fuel model number (not the index) matching the CMT input.	STUB!!!!!
  */
-int GetMatchingFuelModel(cont int cmt)
+int GetMatchingFuelModel(const int cmt)
 {
   //Get the number of the fuel model from the crosswalk in the parameter files.
   //This crosswalk needs to be made!!!!!
