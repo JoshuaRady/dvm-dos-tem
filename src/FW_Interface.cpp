@@ -13,20 +13,19 @@
  * All of the functions requiring direct access to WildFire members have been moved into the class
  * but have left here pending testing so the new code can be more clearly identified.  There are
  * number of attendant functions. most of which can also be moved into the class but are being left
- * as is for now to make dependancies stark.
+ * as is for now to make dependancies stark, i.e. they do not need access to member data or
+ * functions.
  */
 
 #include "../include/FW_Interface.h"
+#include "../include/TEMLogger.h"
+#include "../include/TEMUtilityFunctions.h"//For length_of_day().
 #include "../include/WildFire.h"
 
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedFuelTools.h"
 #include "FireweedLiveFuelMoistureGSI.h"
 #include "FireweedMetUtils.h"
-
-//#include "Layer.h"
-#include "../include/TEMLogger.h"
-#include "../include/TEMUtilityFunctions.h"//For length_of_day().
 
 #include <cmath>//Temporary for isnan().
 
@@ -40,72 +39,47 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
  *
  * This is the main entry point for the revised wildfire model.
- *
  * The function needs the ecosystem state, meteorology, and time of year as inputs.
- 
- * We attempted multiple ways to pass this information in but ultimately found it necessary to
+ *
+ * JMR_NOTE: I attempted multiple ways to pass this information in but ultimately found it necessary to
  * modify WildFire to provide access to most of the necessary inputs.
  * 
- 
- Removing the following parameters.  Info is now obtained from the WildFire:
- * [@param thisCohort The cohort object for this site.]
- *   The WildFire object doesn't have all the data we need.  The Cohort gives access to stocks and
- *   meteorology we need.
- *   Note: This is currently const but this will need be to changed when we start updating the
- *   states post-fire.
- * [@param md The ModelData object containing configuration data.]
- *   Note: Most of the code above this use a pointer but we should be able to dereference it and
- *   pass it in by reference.
-
  * @param monthIndex The current month as a zero based index.
  *
-
-Output:
-Most output should be stored in model objects.
-
- * @returns The soil burn depth from ground fire (meters).
- * As discussed in a note in WildFire::burn() the burn depth is stored in the FirData member so the
+ * @returns The soil burn depth from ground fire (meters).  Other output are stored in model objects.
+ * 
+ * @note As discussed in a note in WildFire::burn() the burn depth is stored in the FirData member so the
  * return value is not strictly needed.  We are keeping this code parallel to getBurnOrgSoilthick()
  * for now.
- *
  */
-//void RevisedFire(WildFire* wf)//The name will definitely change.
-//void RevisedFire(const Cohort& thisCohort, const ModelData& md, int monthIndex)//thisCohort shouldn't be const????? Also Cohort contains md!
-//void WildFire::RevisedFire(int monthIndex)
-double WildFire::RevisedFire(int monthIndex)
+double WildFire::RevisedFire(int monthIndex)//Name could change.
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::RevisedFire()...";
 
   //Determine the fuel model matching the location's CMT:------------------
   
   //Get the CMT for the grid cell:
-  //The CMT number is in the CohortData member of the cohort.  The WildFire object maintains a
+  //JMR_NOTE: The CMT number is in the CohortData member of the cohort.  The WildFire object maintains a
   //pointer to it's parent cohort data but it is private.  This code needs to be in the class,
   //a friend or have access to the cohort.
   int theCMTnumber = cd->cmttype;
 
-  //Crosswalk from CMT to fuel model:
+  //Crosswalk from CMT to the matching fuel model:
   int fuelModelNumber = GetMatchingFuelModel(theCMTnumber);
 
-  //The fuel model table file needs to be added to the config file and be loaded:
+  //Load the fuel model from the fuel model table file:
   FuelModel fm = GetFuelModelFromCSV(md.fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
-  //FuelModel fm = GetFuelModelFromCSV(fire_fuel_model_file, fuelModelNumber);//Debugging!!!!!
-  //FuelModel fm = GetFuelModelFromCSV(mdCopy.fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
-
-  //Convert to metric units:
-  fm.ConvertUnits(Metric);
+  fm.ConvertUnits(Metric);//Convert to metric units.
 
   //Determine the surface fuels from the model vegetation and soil states and update the fuel
   //loadings from their default values:
   CohortStatesToFuelLoading(fm, md.fire_moss_as_dead_fuel);
-  //CohortStatesToFuelLoading(fm, mdCopy.fire_moss_as_dead_fuel);
 
   //Save the fuel loading prior to fire: (will be compared below...)
   std::vector <double> fuelLoadingBefore = fm.w_o_ij;
 
   //Calculate the fuel bed depth:
   CalculateFuelBedDepth(fm, md.fire_calculate_delta);
-  //CalculateFuelBedDepth(fm, mdCopy.fire_calculate_delta);
   
   //Gather weather and environmental conditions:
   double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
@@ -115,7 +89,7 @@ double WildFire::RevisedFire(int monthIndex)
   
   double windSpeed = GetMidflameWindSpeed();
   
-  //The percent slope is stored in he CohortData object and also in the wildfire object:
+  //The percent slope is stored in the CohortData object and also in the wildfire object:
   double slopeSteepness = SlopePctToSteepness(cd->cell_slope);
 
   //Shortwave radiation may be needed for more advanced moisture calculations added in the future.
@@ -129,7 +103,6 @@ double WildFire::RevisedFire(int monthIndex)
   //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
   BOOST_LOG_SEV(glg, debug) << "Apply fuel moisture to fuel model...";
   if (md.fire_dynamic_fuel)
-  //if (mdCopy.fire_dynamic_fuel)
   {
     fm.CalculateDynamicFuelCuring(M_f_ij);
   }
@@ -138,35 +111,29 @@ double WildFire::RevisedFire(int monthIndex)
     fm.SetFuelMoisture(M_f_ij);
   }
 
+  //Feed fuels and weather conditions into the surface fire models:
 
-  //Feed fuels and weather conditions into surface fire models:
+  //Dump the fuel model if debugging:  This may be temporary?????
+  BOOST_LOG_SEV(glg, debug) << "Dumping the fuel model prior to fire:";
+  BOOST_LOG_SEV(glg, debug) << fm;
 
-  //Dump the fuel model.  This may be temporary?:
-  BOOST_LOG_SEV(glg, debug) << "Dump the fuel model?????";
-  BOOST_LOG_SEV(glg, debug) << fm;//<< may be a problem.
-  //fm.Print(std::cout);
-
-  //First to Rothermel & Albini.  We use the calculations to get some component values.
-  //This interface is under development.  It takes a fuel model (and attendant data) and returns the
-  //calculation details.
-  //M_f_ij does not need to be included if it is added to the fuel model object above.
+  //First to Rothermel & Albini spread rate model:
+  //It takes a fuel model (and attendant data) and returns the calculation details.
+  //M_f_ij does not need to be included since it is added to the fuel model object above.
   BOOST_LOG_SEV(glg, debug) << "Perform surface file spread rate calculations...";
-  SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm,
-                                                      windSpeed,//U
-                                                      slopeSteepness);
+  SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm, windSpeed, slopeSteepness);
                                                       //M_f_ij,//fuel moisture
                                                       //false,//useWindLimit
                                                       //FALSE);//debug
 
-  //Dump the output:
-  //Currently we are getting bad output so we need to check it to avoid a crash.
-  BOOST_LOG_SEV(glg, debug) << "Dump the spread calculation?????";
+  //Dump the output of the spread rate calculations if debugging:
+  //JMR_NOTE: This may be overkill?????
+  BOOST_LOG_SEV(glg, debug) << "Dump the spread calculations:";
   BOOST_LOG_SEV(glg, debug) << raData;
-  //raData.Print(std::cout);//<< was not working due to mismatched repos?
-  if (!isnan(raData.R))
-  {
-  	BOOST_LOG_SEV(glg, debug) << "WildFire::RevisedFire() Spread rate calculation R = " << raData.R;
-  }
+//   {
+//   	BOOST_LOG_SEV(glg, debug) << "WildFire::RevisedFire() Spread rate calculation R = " << raData.R;
+//   }
+
 
   //Simulate the combustion of surface fuels:
   SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
@@ -210,7 +177,7 @@ int GetMatchingFuelModel(int cmt)
   
   //There is a bare land fuel model by number but it doesn't have parameters.  Do we need to provide
   //a bare land parameter set or can we just signal the calling code that it should skip fire
-  //calculations.
+  //calculations?
   
   //If no match either throw an error or warn and return a default fuel model.
 
@@ -219,11 +186,11 @@ int GetMatchingFuelModel(int cmt)
 
 /** Determine fuel loadings based on the cohorts states and store then in the sites' fuel model:
  *
- * This process is a theory what represent fuels in DVM-DOS-TEM.  Once the mapping is defined
+ * This process is a theory of what represent fuels in DVM-DOS-TEM.  Once the mapping is defined
  * the fuel loadings are know, since model states are clearly defined.  Since the mapping itself is
  * a theory it represets a place where assumptions could change.  The current fuel mapping is:
  *
- * Dead fuels:
+ * @par Dead fuels:
  * Dead surface fuels include litter and fallen debris.  In DVM-DOS-TEM these are represented by:
  * - Litter: The rawc component of the first non-moss soil layer.  rawc is part of the 'soil' but
  * is where all aboveground litter-fall ends up.  We assume this is not yet buried.
@@ -237,12 +204,12 @@ int GetMatchingFuelModel(int cmt)
  * fuel models.
  * - Possibly live moss (see below).
  *
- * Live fuels:
+ * @par Live fuels:
  * Live fuels include graminoids, forbs, shrubs, and moss (see below).  We convert PFT aboveground
  * carbon stocks to biomass and sort into herbaceous (graminoids & forbs) and woody (shrubs) size
  * classes.
  *
- * Moss:
+ * @par Moss:
  * Moss is tricky.  It is a live fuel that can act like a dead fuel, with highly dynamic moisture.
  * The standard fuel models were developed with a focus on the lower 48 so the authors were not
  * thinking a lot about moss.  Moss is hoever an important driver of fire behavior in the north and
@@ -256,19 +223,16 @@ int GetMatchingFuelModel(int cmt)
  *
  * We don't include dead moss as a surface fuel.  We treat that as duff, part of the ground fuels.
  *
-  Parmater pending elimination !!!!!:
- * [@param thisCohort The cohort object for this site.]
  * @param fm The fuel model for the site (with default loadings).
  * @param treatMossAsDead Should moss be treated as a fine dead fuel (true) or herbaceous live fuel (false)?
  *
- * returns Nothing but the fuel model loadding (w_o_ij) is updated on return.
+ * @returns Nothing but the fuel model loadding (w_o_ij) is updated on return.
  *
  * ToDo:
  * - Record the mapping of stocks to fuels in some way record the value before fire so we can update
  * stocks appropriately afterwards.  We have done this to some extend in the calling code.
  * - Deal with wdebrisc.
  */
-//void CohortStatesToFuelLoading(const Cohort& thisCohort, FuelModel& fm, bool treatMossAsDead)
 void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::CohortStatesToFuelLoading()...";
@@ -278,7 +242,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
   //Dead fuels:
   double rawC = GetLitterRawC();//Get the total litter carbon.
 
-  //Distribute the rawc to the dead size classes:
+  //Distribute the rawc among the dead fuel size classes:
 
   //Get the dead fuel SAVs:
   int numDead = fm.NumDeadClasses();
@@ -311,7 +275,6 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
   fm.w_o_ij[liveHerbIndex] = 0;
   fm.w_o_ij[liveWoodyIndex] = 0;
   
-  //I can't find where the PFT's carbon identifiers and stocks live.  Pseudo-coding for now!:
   for (int pftNum = 0; pftNum < NUM_PFT; pftNum++)
   {
     if (!cd->d_veg.ifwoody[pftNum])//Or m_veg??????
@@ -341,7 +304,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
         double leafC = bd[pftNum]->m_vegs.c[I_leaf];
         double stemC = bd[pftNum]->m_vegs.c[I_stem];//Should be 0.
         double rootC = bd[pftNum]->m_vegs.c[I_root];//Should be 0.
-        double mossC = (leafC + stemC + rootC) * c2b / gPerKg;
+        double mossC = (leafC + stemC + rootC) * c2b / gPerKg;//Convert to dry biomass.
 
         if (treatMossAsDead)
         {
@@ -355,7 +318,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
             BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";
           }
 
-          fm.w_o_ij[liveHerbIndex] += mossC;//Convert to dry biomass.
+          fm.w_o_ij[liveHerbIndex] += mossC;
         }
       }
     }
