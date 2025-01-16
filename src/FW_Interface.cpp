@@ -56,8 +56,22 @@ double WildFire::RevisedFire(int monthIndex)//Name could change.
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::RevisedFire()...";
 
-  //Determine the fuel model matching the location's CMT:------------------
+  //Gather weather and environmental conditions:---------------------------
+  double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
+  //Can we use temperature from climate instead?????
+  //Current humidity is needed for calculating fuel moisture but that code handles it itself.
+  //We may also need it for duff moisture soon.
   
+  double windSpeed = GetMidflameWindSpeed();
+  
+  //The percent slope is stored in the CohortData object and also in the wildfire object:
+  double slopeSteepness = SlopePctToSteepness(cd->cell_slope);
+
+  //Shortwave radiation may be needed for more advanced moisture calculations added in the future.
+
+
+  //Determine the fuel model for the location and set its parameters:------
+
   //Get the CMT for the grid cell:
   //JMR_NOTE: The CMT number is in the CohortData member of the cohort.  The WildFire object maintains a
   //pointer to it's parent cohort data but it is private.  This code needs to be in the class,
@@ -80,22 +94,8 @@ double WildFire::RevisedFire(int monthIndex)//Name could change.
 
   //Calculate the fuel bed depth:
   CalculateFuelBedDepth(fm, md.fire_calculate_delta);
-  
-  //Gather weather and environmental conditions:
-  double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
-  //Can we use temperature from climate instead?????
-  //Current humidity is needed for calculating fuel moisture but that code handles it itself.
-  //We may also need it for duff moisture soon.
-  
-  double windSpeed = GetMidflameWindSpeed();
-  
-  //The percent slope is stored in the CohortData object and also in the wildfire object:
-  double slopeSteepness = SlopePctToSteepness(cd->cell_slope);
 
-  //Shortwave radiation may be needed for more advanced moisture calculations added in the future.
-
-
-  //Calculate fuel moisture:----------------------
+  //Calculate fuel moisture:
   //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
   //might change the fuel sizes.
   std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);//(thisCohort, md, fm, monthIndex);
@@ -111,7 +111,7 @@ double WildFire::RevisedFire(int monthIndex)//Name could change.
     fm.SetFuelMoisture(M_f_ij);
   }
 
-  //Feed fuels and weather conditions into the surface fire models:
+  //Feed fuels and weather conditions into the surface fire models:--------
 
   //Dump the fuel model if debugging:  This may be temporary?????
   BOOST_LOG_SEV(glg, debug) << "Dumping the fuel model prior to fire:";
@@ -135,12 +135,12 @@ double WildFire::RevisedFire(int monthIndex)//Name could change.
 //   }
 
 
-  //Simulate the combustion of surface fuels:
+  //Simulate the combustion of surface fuels:------------------------------
   SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
 
   //Update litter, moss, and soil carbon stocks:
   //Some of this could be done directly here but we could also use parts of the 'original' code like
-  // WildFire::updateBurntOrgSoil(), which I split out. 
+  // WildFire::updateBurntOrgSoil(), which I split out.
 
 
   //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
