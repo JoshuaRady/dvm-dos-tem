@@ -196,7 +196,6 @@ void Cohort::initialize_internal_pointers() {
   }
 
   fire.setFirData(fd);
-  //fire.setModelData(md);// FW_MOD
   fire.setClimate(&climate);// FW_MOD
 
   //BGC states change integration module pointers
@@ -779,14 +778,12 @@ void Cohort::updateMonthly_Fir(const int & year, const int & midx, std::string s
 
   // see if it is an appropriate time to burn
   if ( fire.should_ignite(year, midx, stage) ) {
-  //if ( fire.should_ignite(year, midx, stage, md) ) {//FW_MOD.
 
     BOOST_LOG_SEV(glg, debug) << "Right before fire.burn(..)  " << ground.layer_report_string();
 
     // Fire!
     //  - Update C/N pools for each pft through 'bd', but not soil structure.
     //  - Soil root fraction also updated through 'cd'.
-    //fire.burn(year);
     fire.burn(year, midx);//FW_MOD
     
     BOOST_LOG_SEV(glg, debug) << "Right after fire.burn(..)  " << ground.layer_report_string();

@@ -141,17 +141,12 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
  *
  *  NOTE: how to handle fire severity, to be determined.
  *
- * @param year The current year.
+ * @param year The current year.  FW_MOD: Was 'yr'.
  * @param midx The current month index (zero based).
  * @param stage The run stage.
-//Parameter can be removed as md has been added to the class:
- * [@param md A pointer to the model data. [Change to a reference?????] FW_NOTE: Addition.]
  *
  * @returns Should an wildfire ignition occur at this time?
  */
-//bool WildFire::should_ignite(const int yr, const int midx, const std::string& stage) {
-//bool WildFire::should_ignite(const int year, const int midx, const std::string& stage,
-//                             const ModelData* md) {// FW_MOD
 bool WildFire::should_ignite(const int year, const int midx, const std::string& stage) {// FW_MOD
 
   BOOST_LOG_SEV(glg, info) << "determining fire ignition for year:" << year
@@ -263,7 +258,7 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
  * FW_NOTE: 
  * This code was extracted from should_ignite() to avoid code repetition due to other changes in the
  * function.
- *  Should this be moved?  The private functions don't seem to be in a particular place.*/
+ * Should this be moved?  The private functions don't seem to be in a particular place.*/
 bool WildFire::isFireReturnDate(const int year, const int midx)
 {
   // The original conditional checks for years that are multiples of the fire return interval:
@@ -284,14 +279,13 @@ bool WildFire::isFireReturnDate(const int year, const int midx)
 
 /** Burn vegetation and soil organic carbon.
  * 
- * [@param thisCohort The cohort object for this site.]  FW_NOTE: Added.  Could reorder.
  * @param year The current year. [Make const for consistancy?]
  * @param midx The current month index (zero based).  FW_NOTE: Added.
  *
- * FW_NOTE: This function is being heavily refactored for the revised wildfire implementation. Work
- * is ongoing.
+ * FW_NOTE: This function has been heavily refactored for the revised wildfire implementation. Work
+ * is ongoing.  Code moved out of this fucntion remains temoraily in comments because I think it is
+ * helpful, but it may just make things more confusing.
  */
-//void WildFire::burn(const Cohort& thisCohort, int year, const int midx) {//const ModelData& md
 void WildFire::burn(const int year, const int midx) {
   BOOST_LOG_NAMED_SCOPE("burning");
   BOOST_LOG_SEV(glg, info) << "HELP!! - WILD FIRE!! RUN FOR YOUR LIFE!";
@@ -314,10 +308,9 @@ void WildFire::burn(const int year, const int midx) {
     // for soil part and root burning
     // FIX: there isn't really a reason for getBurnOrgSoilthick to return a value
     // as it has already set the "burn thickness" value in FirData...
-    //double burndepth = getBurnOrgSoilthick(year);
     burndepth = getBurnOrgSoilthick(year);
     BOOST_LOG_SEV(glg, debug) << fd->report_to_string("After WildFire::getBurnOrgSoilthick(..)");
-    // FW_NOTE: The only thing that in fd that is updated in getBurnOrgSoilthick() is
+    // FW_NOTE: The only thing thing in fd that is updated in getBurnOrgSoilthick() is
     // fire_soid.burnthick so not much new info here.
   }
   else// Use the revised process based wildfire implemenation:
@@ -470,7 +463,7 @@ void WildFire::burn(const int year, const int midx) {
 
   BOOST_LOG_SEV(glg, info) << "Handle Vegetation burning and mortality...";//Move message into burnVegetation()?????
   // FW_NOTE: The following commeted ode has been moved to WildFire::burnVegetation().
-//   //The live vegetation mass that combusts, summed for all PFTs:
+  //The live vegetation mass that combusts, summed for all PFTs:
   double comb_vegc = 0.0;
   double comb_vegn = 0.0;
 //   //(Standing) dead vegetation mass that combusts:
@@ -875,19 +868,18 @@ double WildFire::getBurnOrgSoilthick(const int year) {
  and comments.
  
  FW_NOTE: We need to separate out the "litter" to make the following work for both approaches,
- otherwise it may get double counted.
+ otherwise it may get double counted.  The revised wildfire model burns the "litter" in an earlier
+ stage.
  *
  */
 void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& burnedsoln,
-                                  double r_burn2bg_cn[NUM_PFT])//Name?????
+                                  double r_burn2bg_cn[NUM_PFT])
 {
   BOOST_LOG_SEV(glg, info) << "Setup some temporary pools for tracking various burn related attributes (depths, C, N)";
   double totbotdepth = 0.0;
-  //double burnedsolc = 0.0;
-  //double burnedsoln = 0.0;
   burnedsolc = 0.0;
   burnedsoln = 0.0;
-  //double r_burn2bg_cn[NUM_PFT]; // ratio of dead veg. after burning
+  
   for (int ip=0; ip<NUM_PFT; ip++) {
     r_burn2bg_cn[ip] = 0.; //  used for vegetation below-ground (root) loss,
                            //  and calculated below
@@ -1020,18 +1012,8 @@ void WildFire::setFirData(FirData* fdp) {
 
 void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
 {
-  //md = modelDataPtr;
-
-  // FW_NOTE: I'm having an issue with the strings in md becoming invalid.  The following is an
-  //attempt at a workaround until I get that figuted out.  Make a copy and point to that rather
-  //than the original.
-//  if (!mdCopied)
-//  {
-    //mdCopy = *modelDataPtr;
-    //md = &mdCopy;
-//    mdCopied = true;
-//  }
-  //fire_fuel_model_file = modelDataPtr->fire_fuel_model_file;
+  // FW_NOTE: The parental copy of md becomes is dealoacated or somethign before we are able to use
+  // it and the strings in md becoming invalid.  Copy the data so we can use it later:
   md = *modelDataPtr;
 }
 

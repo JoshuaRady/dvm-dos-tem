@@ -11,8 +11,8 @@
 #include "EnvData.h"
 #include "FireData.h"
 #include "BgcData.h"
-#include "ModelData.h"//FW_MOD
-#include "Climate.h"//FW_MOD
+#include "ModelData.h"//FW_MOD: Added
+#include "Climate.h"//FW_MOD: Added
 #include "RestartData.h"
 
 #include "errorcode.h"
@@ -55,13 +55,10 @@ public:
   void initializeState();
   void set_state_from_restartdata(const RestartData & rdata);
 
-  bool should_ignite(const int year, const int midx, const std::string& stage);
-  //bool should_ignite(const int year, const int midx, const std::string& stage, const ModelData* md);// FW_MOD
+  bool should_ignite(const int year, const int midx, const std::string& stage);// FW_MOD
 
   // not used or fully implemented yet...
   //int lookup_severity(const int yr, const int midx, const std::string& stage);
-  //void burn(int year);
-  //void burn(const Cohort& thisCohort, int year, const int midx);// FW_MOD
   void burn(const int year, const int midx);// FW_MOD
 
   std::string report_fire_inputs();
@@ -127,11 +124,7 @@ private:
   EnvData * edall;
   BgcData * bd[NUM_PFT];
   BgcData * bdall;
-  //ModelData * md;// FW_MOD: The revised fire model has input file paths it needs.
   ModelData md;// FW_MOD: The revised fire model has input file paths it needs.
-  //ModelData mdCopy;// FW_MOD: Temp!!!!!
-  //bool mdCopied = false;// FW_MOD: Temp!!!!!
-  std::string fire_fuel_model_file;// FW_MOD: Temp!!!!!
   Climate * climate;// FW_MOD: The revised fire model needs environmental conditions.
 
   bool isFireReturnDate(const int year, const int midx);// FW_MOD
@@ -144,6 +137,7 @@ private:
                       double& reta_vegc, double& reta_vegn);// FW_MOD
 
  // FW_MOD_START: Functions for the revised wildfire implementation.
+ // FW_NOTE: These functions are defined in FW_Interface.cpp for now.
  double RevisedFire(int monthIndex);
  
  void CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead);
@@ -151,7 +145,7 @@ private:
 
  double GetMidflameWindSpeed();
  std::vector <double> CalculateFuelMoisture(const FuelModel& fm, int monthIndex);
- // FW_MOD_END:
+ // FW_MOD_END.
 
   ////////
   // MAYBE get rid of all these???
