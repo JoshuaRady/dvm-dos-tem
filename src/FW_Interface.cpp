@@ -145,12 +145,12 @@ double WildFire::RevisedFire(int monthIndex)//Name could change.
 
   //Add crown fire!!!!!
 
+  //Simulate ground fire:--------------------------------------------------
   //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
   //the fire air temp (Burnup fire environmental temperature?) as input to the ground fire model:
   //...
   //Also pass in the soil profile conditions...
 
-  BOOST_LOG_SEV(glg, debug) << "Simulating ground fire...";//Move into SimulateGroundFire()?
   double burnDepth = SimulateGroundFire();
 
   //Match messaging of getBurnOrgSoilthick():
@@ -814,7 +814,7 @@ void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double t
  */
 double SimulateGroundFire()
 {
-  //BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()... [Stub]";
+  BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()... [Stub]";
 
   double burnDepth = 0;
   
