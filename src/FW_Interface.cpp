@@ -306,11 +306,11 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
         double leafC = bd[pftNum]->m_vegs.c[I_leaf];
         double stemC = bd[pftNum]->m_vegs.c[I_stem];//Should be 0.
         double rootC = bd[pftNum]->m_vegs.c[I_root];//Should be 0.
-        double mossC = (leafC + stemC + rootC) * c2b / gPerKg;//Convert to dry biomass.
+        double mossBiomass = (leafC + stemC + rootC) * c2b / gPerKg;//Convert to dry biomass.
 
         if (treatMossAsDead)
         {
-          fm.w_o_ij[1] += mossC;//Assumes fine fuel is first, which is pretty safe.
+          fm.w_o_ij[1] += mossBiomass;//Assumes fine fuel is first, which is pretty safe.
         }
         else
         {
@@ -320,7 +320,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
             BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";
           }
 
-          fm.w_o_ij[liveHerbIndex] += mossC;
+          fm.w_o_ij[liveHerbIndex] += mossBiomass;
         }
       }
     }
