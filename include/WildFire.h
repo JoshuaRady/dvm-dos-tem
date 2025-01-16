@@ -138,13 +138,13 @@ private:
 
  // FW_MOD_START: Functions for the revised wildfire implementation.
  // FW_NOTE: These functions are defined in FW_Interface.cpp for now.
- double RevisedFire(int monthIndex);
+ double RevisedFire(const int monthIndex);
  
- void CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead);
+ void CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDead);
  double GetLitterRawC() const;
 
- double GetMidflameWindSpeed();
- std::vector <double> CalculateFuelMoisture(const FuelModel& fm, int monthIndex);
+ double GetMidflameWindSpeed() const;
+ std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
  // FW_MOD_END.
 
   ////////

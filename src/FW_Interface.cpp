@@ -44,7 +44,7 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
  * JMR_NOTE: I attempted multiple ways to pass this information in but ultimately found it necessary to
  * modify WildFire to provide access to most of the necessary inputs.
  * 
- * @param monthIndex The current month as a zero based index.
+ * @param[in] monthIndex The current month as a zero based index.
  *
  * @returns The soil burn depth from ground fire (meters).  Other output are stored in model objects.
  * 
@@ -52,7 +52,7 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
  * return value is not strictly needed.  We are keeping this code parallel to getBurnOrgSoilthick()
  * for now.
  */
-double WildFire::RevisedFire(int monthIndex)//Name could change.
+double WildFire::RevisedFire(const int monthIndex)//Name could change.
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::RevisedFire()...";
 
@@ -166,11 +166,11 @@ double WildFire::RevisedFire(int monthIndex)//Name could change.
  * Each CMT has [will have] a predetermined fuel model assigned to it via a parameter file.
  * It needs to be determined if this will be the CMT parmameter file or an additional lookup table.
  *
- * @param cmt The number of the CMT for this location.
+ * @param[in] cmt The number of the CMT for this location.
  *
  * @returns The fuel model number (not the index) matching the CMT input.	STUB!!!!!
  */
-int GetMatchingFuelModel(int cmt)
+int GetMatchingFuelModel(cont int cmt)
 {
   //Get the number of the fuel model from the crosswalk in the parameter files.
   //This crosswalk needs to be made!!!!!
@@ -225,8 +225,8 @@ int GetMatchingFuelModel(int cmt)
  *
  * We don't include dead moss as a surface fuel.  We treat that as duff, part of the ground fuels.
  *
- * @param fm The fuel model for the site (with default loadings).
- * @param treatMossAsDead Should moss be treated as a fine dead fuel (true) or herbaceous live fuel (false)?
+ * @param[in,out] fm The fuel model for the site (with default loadings).
+ * @param[in] treatMossAsDead Should moss be treated as a fine dead fuel (true) or herbaceous live fuel (false)?
  *
  * @returns Nothing but the fuel model loadding (w_o_ij) is updated on return.
  *
@@ -235,7 +235,7 @@ int GetMatchingFuelModel(int cmt)
  * stocks appropriately afterwards.  We have done this to some extend in the calling code.
  * - Deal with wdebrisc.
  */
-void WildFire::CohortStatesToFuelLoading(FuelModel& fm, bool treatMossAsDead)
+void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDead)
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::CohortStatesToFuelLoading()...";
 
@@ -390,9 +390,9 @@ double WildFire::GetLitterRawC() const
  * lookup process using the CMT of fuel model number to get the estimate that is calculated or
  * supplied via an input file.
  * 
- * @param fm A fuel model to base the distribution on. [Temporary!!!!!]
- * @param distribSAVs An empty vector to return the SAVs of the distribution in.
- * @param distribWts An empty vector to return the weights of the distribution in.
+ * @param[in] fm A fuel model to base the distribution on. [Temporary!!!!!]
+ * @param[out] distribSAVs An empty vector to return the SAVs of the distribution in.
+ * @param[out] distribWts An empty vector to return the weights of the distribution in.
  * 
  * @returns Nothing.  Parameters are updated instead.
  */ 
@@ -422,8 +422,8 @@ void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& dist
  * could try to used stature to help infer when trees are shrubby in a way that is relevant to fuel
  * models.  That might be getting a bit fancy.
  *
- * @param cmtNumber The CMT number.
- * @param pftIdx The index of the PFT to check.
+ * @param[in] cmtNumber The CMT number.
+ * @param[in] pftIdx The index of the PFT to check.
  *
  * @returns True if this PFT is a shrub. 
  */
@@ -533,12 +533,12 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
  *
  * The reality is likely more complicated but we will build our approach around these for now.
  *
- * @param fm The fuel model for the site (with default fuel bed depth and updated fuel loadings).
- * @param dynamic Temporary: Should the fuel bed depth be treated as changing with fuel amounts?
+ * @param[in,out] fm The fuel model for the site (with default fuel bed depth and updated fuel loadings).
+ * @param[in] dynamic Temporary: Should the fuel bed depth be treated as changing with fuel amounts?
  *
  * @returns Nothing.  The fuel bed depth is updated in the fuel model passed.
  */
-void CalculateFuelBedDepth(FuelModel& fm, bool dynamic)
+void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
 {
   BOOST_LOG_SEV(glg, debug) << "Entering CalculateFuelBedDepth()...";
 
@@ -577,7 +577,7 @@ void CalculateFuelBedDepth(FuelModel& fm, bool dynamic)
  * input so height adjustment is not necessary.  Passing in the time of day would allow us to adjust
  * daily to sub-daily wind (see above).
  */
-double WildFire::GetMidflameWindSpeed()
+double WildFire::GetMidflameWindSpeed() const
 {
   double windSpeed;//Return value.
   
@@ -604,13 +604,13 @@ double WildFire::GetMidflameWindSpeed()
  * continuously calculated state.  This would moke more sense if litter existed as a distinct stock
  * as well.
  *
- * @param fm The fuel model object for this site.
- * @param monthIndex The current month as a zero based index.
+ * @param[in] fm The fuel model object for this site.
+ * @param[in] monthIndex The current month as a zero based index.
  #
  * @returns M_f_ij, the fuel moisture for all fuel classes.  This is not returned in the fuel model
  * passed in because we don't know if curing is being applied.
  */
-std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int monthIndex)
+std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::CalculateFuelMoisture()...";
 
@@ -758,12 +758,15 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, int mo
  *
  * This is currently a placeholder for future integration of Burnup.
  *
- * @param fm The fuel model for the site.
- * @param raData The results of a Rothermel Albini spread model calculation for the site.
+ * @param[in] fm The fuel model for the site.		Could change to in,out!!!!!
+ * @param[in] raData The results of a Rothermel Albini spread model calculation for the site.
+ * @param[in] tempAir The ambient air temperature (C).
+ * @param[in] windSpeed The wind speed at 2 meters height (m/min).
  *
  * @returns ?????
  */
-void SimulateSurfaceCombustion(const FuelModel& fm, SpreadCalcs raData, double tempAir, double windSpeed)//CalculateSurfaceCombustion?
+void SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raData, const double tempAir,
+                               const double windSpeed)//CalculateSurfaceCombustion?
 {
   BOOST_LOG_SEV(glg, debug) << "Entering SimulateSurfaceCombustion()... [Stub]";
   
