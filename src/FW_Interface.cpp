@@ -796,9 +796,9 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
   //double fireIntensity = fm.I_R / 60;//Convert kJ/m^2/min -> kW/m^2 kJ/m^2/min
   //kJ/m^2/min = kJ/min/m^2 = kJ/(60 * s) /m^2 =  kJ/s / 60 /m^2 = kW / 60 /m^2 = (kW/m^2) / 60
   //The heat source takes the propagating flux ratio, wind, and slope into consideration:
-  double fireIntensity = fm.heatSource / 60;//Convert kJ/m^2/min -> kW/m^2 kJ/m^2/min
+  double fireIntensity = raData.heatSource / 60;//Convert kJ/m^2/min -> kW/m^2 kJ/m^2/min
 
-  double t_r = ResidenceTime(fm.cSAV, Metric) * 60;//Convert minutes -> seconds.
+  double t_r = ResidenceTime(raData.cSAV, Metric) * 60;//Convert minutes -> seconds.  Or fm.cSAV
 
   //Simulation settings:
   //Start with example settings from FOFEM examples.  We can experiment with these.  Leave other at
