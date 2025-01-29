@@ -89,7 +89,9 @@ SOURCES= 	src/TEM.o \
 		external/Fireweed/C++/FireweedRAFireSpread.o \
 		external/Fireweed/C++/FireweedStringUtils.o \
 		external/Fireweed/C++/FireweedUnits.o \
-		external/Fireweed/C++/FireweedUtils.o
+		external/Fireweed/C++/FireweedUtils.o \
+		external/Burnup/C++/BurnupCore.o \
+		external/Burnup/C++/BurnupFuelModelInterface.o
 
 OBJECTS =	ArgHandler.o \
 		TEMLogger.o \
