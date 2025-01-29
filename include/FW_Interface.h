@@ -15,6 +15,7 @@
 #define FW_INTERFACE_H
 
 #include "FireweedRAFireSpread.h"
+#include "BurnupFuelModelInterface.h"
 
 int GetMatchingFuelModel(const int cmt);
 void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,

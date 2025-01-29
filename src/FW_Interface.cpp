@@ -27,8 +27,6 @@
 #include "FireweedLiveFuelMoistureGSI.h"
 #include "FireweedMetUtils.h"
 
-#include "BurnupFuelModelInterface.h"
-
 #include <cmath>//Temporary for isnan().
 
 extern src::severity_logger< severity_level > glg;
