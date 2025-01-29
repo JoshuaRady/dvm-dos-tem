@@ -138,7 +138,9 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
 
 
   //Simulate the combustion of surface fuels:------------------------------
-  SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
+  BurnupSim = SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
+  BOOST_LOG_SEV(glg, debug) << "Dump the combustion calculations:";
+  BOOST_LOG_SEV(glg, debug) << BurnupSim;
 
   //Update litter, moss, and soil carbon stocks:
   //Some of this could be done directly here but we could also use parts of the 'original' code like
