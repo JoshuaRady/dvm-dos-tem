@@ -141,11 +141,11 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
  *
  *  NOTE: how to handle fire severity, to be determined.
  *
- * @param year The current year.  FW_MOD: Was 'yr'.
- * @param midx The current month index (zero based).
- * @param stage The run stage.
+ * @param[in] year The current year.  FW_MOD: Was 'yr'.
+ * @param[in] midx The current month index (zero based).
+ * @param[in] stage The run stage.
  *
- * @returns Should an wildfire ignition occur at this time?
+ * @returns Should a wildfire ignition occur at this time?
  */
 bool WildFire::should_ignite(const int year, const int midx, const std::string& stage) {// FW_MOD
 
@@ -252,13 +252,16 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
 // FW_MOD_START:
 /** Determine if the current date, by year and month (index), aligns with the fire return interval.
  * 
- * @param year The current year.
- * @param midx The current month index (zero based).
+ * @param[in] year The current year.
+ * @param[in] midx The current month index (zero based).
+ *
+ * @returns Is it the fire return interval?
  *
  * FW_NOTE: 
  * This code was extracted from should_ignite() to avoid code repetition due to other changes in the
  * function.
- * Should this be moved?  The private functions don't seem to be in a particular place.*/
+ * Should this be moved?  The private functions don't seem to be in a particular place.
+ */
 bool WildFire::isFireReturnDate(const int year, const int midx)
 {
   // The original conditional checks for years that are multiples of the fire return interval:
@@ -279,8 +282,10 @@ bool WildFire::isFireReturnDate(const int year, const int midx)
 
 /** Burn vegetation and soil organic carbon.
  * 
- * @param year The current year. [Make const for consistancy?]
- * @param midx The current month index (zero based).  FW_NOTE: Added.
+ * @param[in] year The current year. [Make const for consistancy?]
+ * @param[in] midx The current month index (zero based).  FW_NOTE: Added.
+ *
+ * @returns Nothing.
  *
  * FW_NOTE: This function has been heavily refactored for the revised wildfire implementation. Work
  * is ongoing.  Code moved out of this fucntion remains temoraily in comments because I think it is
@@ -670,11 +675,12 @@ void WildFire::burn(const int year, const int midx) {
  * only be know from within the calling loop.  Perhaps this an artifact from a time before PFT
  * specific fractions?  In any case it might be better to return the values directly.
  *
- * The function name is a bit unclear.
+ * @param[in] ipft The PFT index.
+ * @param[in] year The current year.
  *
- * @param ipft The PFT index.
- * @param year The current year.
+ * @returns Nothing.  Class members are updated.
  *
+ * @note The function name is a bit unclear.
  */
 void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
   
@@ -720,7 +726,7 @@ void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
 *   2. can't exceed a pixel specified 'max burn thickness'
 *   3. should not burn into "wet" organic soil layers
 
- * @param year The current year.
+ * @param[in] year The current year.
  *
  * @returns The soil burn depth from ground fire (meters).
  *
@@ -855,21 +861,23 @@ double WildFire::getBurnOrgSoilthick(const int year) {
  * - Set the relative organic layer burn (rolb) value (via fd).
  * - The root fractions for each PFT / layer are updated (via cd).
  *
- * @param burndepth The calculated soil burn depth.
+ * @param[in] burndepth The calculated soil burn depth.
  *   As mentioned elsewhere the burn depth doesn't have to be passed in since it is stored in fd by
  *   getBurnOrgSoilthick().  I is clearer though as is more similar to the code prior to refactor.
- * @param burnedsolc On return the amount of organic soil carbon burned (meters).
- * @param burnedsoln On return the amount of soil nitroget burned.
- * @param r_burn2bg_cn On return an array with the ratio of root carbon burned for each PFT.
+ * @param[out] burnedsolc On return the amount of organic soil carbon burned (meters).
+ * @param[out] burnedsoln On return the amount of soil nitroget burned.
+ * @param[out] r_burn2bg_cn On return an array with the ratio of root carbon burned for each PFT.
  *
  * Togeather these values are used to calculate fire fluxes.
+ *
+ * @returns Nothing.  Parameters are uodated.
  
- FW_MOD: The following code was moved out of WildFire::burn().  Changes are primarily in formatting
- and comments.
- 
- FW_NOTE: We need to separate out the "litter" to make the following work for both approaches,
- otherwise it may get double counted.  The revised wildfire model burns the "litter" in an earlier
- stage.
+ * FW_MOD: The following code was moved out of WildFire::burn().  Changes are primarily in
+ * formatting and comments.
+ *
+ * FW_NOTE: We need to separate out the "litter" to make the following work for both approaches,
+ * otherwise it may get double counted.  The revised wildfire model burns the "litter" in an earlier
+ * stage.
  *
  */
 void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& burnedsoln,
@@ -1032,15 +1040,17 @@ int WildFire::getFRI(){
  * on the abovegournd vegetation.  These fire effects are applied to update PFT states (via bd and
  * bdall).  The total valuse of C and N for three fluxes are returned (via parameters).
  *
- * @param year The current year.
- * @param r_burn2bg_cn An array with the ratio of root carbon burned for each PFT.
- * @param comb_vegc On return the total live vegetation carbon that combusts.
- * @param comb_vegn On return the total live vegetation nitrogen that combusts.
- * @param dead_bg_vegc On return the dead root carbon from fire.
- * @param dead_bg_vegn On return the dead root nitrogen from fire.
- * @param reta_vegc On return the retained burnt carbon.
- * @param reta_vegn On return the retained burnt nitrogen.
+ * @param[in] year The current year.
+ * @param[in] r_burn2bg_cn An array with the ratio of root carbon burned for each PFT.
+ * @param[out] comb_vegc On return the total live vegetation carbon that combusts.
+ * @param[out] comb_vegn On return the total live vegetation nitrogen that combusts.
+ * @param[out] dead_bg_vegc On return the dead root carbon from fire.
+ * @param[out] dead_bg_vegn On return the dead root nitrogen from fire.
+ * @param[out] reta_vegc On return the retained burnt carbon.
+ * @param[out] reta_vegn On return the retained burnt nitrogen.
  * 
+ * @returns Nothing.  Parameters are uodated.
+ *
  * FW_NOTE: This code was extracted from burn() to make it more modular.  The interface is not ideal
  * due to the large number of return values.  These could be packed into a container object.
  */
