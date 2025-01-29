@@ -462,7 +462,7 @@ void WildFire::burn(const int year, const int midx) {
   double reta_soln = burnedsoln * firpar.r_retain_n;   //together with veg.-burned N return, This will be put into soil later
 
   BOOST_LOG_SEV(glg, info) << "Handle Vegetation burning and mortality...";//Move message into burnVegetation()?????
-  // FW_NOTE: The following commeted ode has been moved to WildFire::burnVegetation().
+  // FW_NOTE: The following commeted code has been moved to WildFire::burnVegetation().
   //The live vegetation mass that combusts, summed for all PFTs:
   double comb_vegc = 0.0;
   double comb_vegn = 0.0;
@@ -1109,17 +1109,17 @@ void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT]
       //Stem carbon:
       comb_vegc += bd[ip]->m_vegs.c[I_stem] * r_burn2ag_cn;//Combusted
       bd[ip]->m_vegs.deadc += bd[ip]->m_vegs.c[I_stem] * r_dead2ag_cn;//Standing dead
-      bd[ip]->m_vegs.c[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remoaining live
+      bd[ip]->m_vegs.c[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remaining live
 
       //Leaf nitrogen:
       comb_vegn += bd[ip]->m_vegs.strn[I_leaf] * r_burn2ag_cn;//Combusted
       bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_leaf] * r_dead2ag_cn;//Standing dead
-      bd[ip]->m_vegs.strn[I_leaf] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remoaining live
+      bd[ip]->m_vegs.strn[I_leaf] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remaining live
 
       //Stem nitrogen:
       comb_vegn += bd[ip]->m_vegs.strn[I_stem] * r_burn2ag_cn;//Combusted
       bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_stem] * r_dead2ag_cn;//Standing dead
-      bd[ip]->m_vegs.strn[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remoaining live
+      bd[ip]->m_vegs.strn[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remaining live
 
       // Below-ground veg. (root) burning/death during fire
       comb_vegc += bd[ip]->m_vegs.c[I_root] * r_burn2bg_cn[ip];
