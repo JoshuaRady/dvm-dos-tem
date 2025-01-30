@@ -33,7 +33,7 @@ $(shell mkdir -p obj)
 
 APPNAME=dvmdostem
 LIBDIR=$(SITE_SPECIFIC_LIBS)
-INCLUDES=$(SITE_SPECIFIC_INCLUDES) -I external/Fireweed/C++
+INCLUDES=$(SITE_SPECIFIC_INCLUDES) -I external/Fireweed/C++  -I external/Burnup/C++
 SOURCES= 	src/TEM.o \
 		src/TEMLogger.o \
 		src/CalController.o \
@@ -148,6 +148,8 @@ OBJECTS =	ArgHandler.o \
 		FireweedStringUtils.o \
 		FireweedUnits.o \
 		FireweedUtils.o \
+		BurnupCore.o \
+		BurnupFuelModelInterface.o
 
 
 GIT_SHA := $(shell git describe --abbrev=6 --dirty --always --tags)
