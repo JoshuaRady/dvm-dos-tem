@@ -815,7 +815,7 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
   return output;
 }
 
-//Place after WildFire::getBurnAbgVegetation()?
+//Place after WildFire::getBurnAbgVegetation().
 /** Calculate the fate of aboveground vegetation after fire using the process based wildfire model.
  *
  * This function determines the fractions of a given PFT that are combusted, are killed but are not
@@ -827,13 +827,120 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
  *
  * @returns Nothing.  Class members are updated.
  *
- * @note ...
+ * @note We need access to the current fuel model and BurnupSim
  */
 void WildFire::getAbgVegetationBurntFractionsProcess(const int ipft)//Name is a bit long!
 {
+  //FuelModel fm;
+  //BurnupSim burnupOutput; buData
   
+  bool treatMossAsDead = md.fire_moss_as_dead_fuel;
 
+  //Where do we get the fuel model info from?
+  int liveHerbIndex = fm.LiveHerbaceousIndex();
+  int liveWoodyIndex = fm.LiveWoodyIndex();
+  int deadHerbIndex = fm.DeadHerbaceousIndex();
 
+  //Reset rates to zero::
+  this->r_burn2ag_cn = 0;
+  this->r_dead2ag_cn = 0;
+
+  //Fuel types may contain one or more PFTs but since we are calculating rates we don't need to
+  //separate them out.  The rate for all will apply to each.  Likewise the carbon to biomass
+  //conversion cancels out so can be ignored.
+
+  //Parallel the PFT decision tree in CohortStatesToFuelLoading():
+  if (!cd->d_veg.ifwoody[pftNum])
+  {
+    if (cd->d_veg.nonvascular[pftNum] == 0)//Herbaceous PFTs:
+    {
+      //Herbs map to one fuel or two if dynamic moisture is on:
+      if (fm.type != Dynamic)
+      {
+        if (buData.w_o_ij_Initial[liveHerbIndex] > 0.0)
+        {
+          this->r_burn2ag_cn = buData.combustion_ij[liveHerbIndex] / buData.w_o_ij_Initial[liveHerbIndex];
+        }
+      }
+      else//Dynamic fuel moisture:
+      {
+        //Dynamic live moss maps to the live herbaceous fuel and cured herbaceous fuel:
+        double totalInitialLoading = buData.w_o_ij_Initial[deadHerbIndex] + buData.w_o_ij_Initial[liveHerbIndex];
+        if (totalInitialLoading > 0.0)
+        {
+            this->r_burn2ag_cn = (buData.combustion_ij[deadHerbIndex] +
+                                  buData.combustion_ij[liveHerbIndex]) / totalInitialLoading;
+        }
+      }
+    }
+    else//Mosses:
+    {
+      //Moss: Maps to either one (fine) dead fuel OR one live (herbaceous) fuel OR a mix of both:
+      //int deadMossIndex = 0;//Assumes moss is in the finest dead fuel class.
+      //int deadMossIndex = deadHerbIndex;
+      //int liveMossIndex = liveHerbIndex;
+
+      if (treatMossAsDead)
+      {
+        int deadMossIndex = 0;//Assumes moss is in the finest dead fuel class.
+
+        //this->r_burn2ag_cn = buData.combustion_ij[deadMossIndex] / buData.w_o_ij_Initial[deadMossIndex];
+        if (buData.w_o_ij_Initial[deadMossIndex] > 0.0)
+        {
+          this->r_burn2ag_cn = buData.combustion_ij[deadMossIndex] / buData.w_o_ij_Initial[deadMossIndex];
+        }
+      }
+      else//Treat moss as a live fuel:
+      {
+        if (fm.type != Dynamic)
+        {
+          //Live moss maps to the live herbaceous fuel:
+
+          //this->r_burn2ag_cn = buData.combustion_ij[liveMossIndex] / buData.w_o_ij_Initial[liveMossIndex];
+          //Do we also need to check LiveHerbaceousPresent()?
+          if (buData.w_o_ij_Initial[liveHerbIndex] > 0.0)
+          {
+            this->r_burn2ag_cn = buData.combustion_ij[liveHerbIndex] / buData.w_o_ij_Initial[liveHerbIndex];
+          }
+        }
+        else//Dynamic fuel moisture:
+        {
+          //Dynamic live moss maps to the live herbaceous fuel and cured herbaceous fuel:
+          
+          //this->r_burn2ag_cn = (buData.combustion_ij[deadMossIndex] +
+          //                      buData.combustion_ij[liveHerbIndex]) /
+          //                     (buData.w_o_ij_Initial[deadMossIndex] +
+          //                      buData.w_o_ij_Initial[liveHerbIndex]);
+
+          double totalInitialLoading = buData.w_o_ij_Initial[deadMossIndex] + buData.w_o_ij_Initial[liveHerbIndex];
+          if (totalInitialLoading > 0.0)
+          {
+            this->r_burn2ag_cn = (buData.combustion_ij[deadMossIndex] +
+                                  buData.combustion_ij[liveHerbIndex]) / totalInitialLoading;
+          }
+        }
+      }
+
+      this->r_dead2ag_cn = 0;//Currently there is not mortality besides combustion.
+    }
+  }
+  else//Woody PFTs:
+  {
+    if (IsShrub(cd->cmttype, pftNum))
+    {
+      //Shrubs map to the live woody fuel:
+      this->r_burn2ag_cn = buData.combustion_ij[liveWoodyIndex] / buData.w_o_ij_Initial[liveWoodyIndex];
+      this->r_dead2ag_cn = 0;//Currently there is not mortality besides combustion.
+    }
+    else//Trees:
+    {
+      //Ignore trees for now.  Their burning will be added with crown fire:
+      this->r_burn2ag_cn = 0;
+      this->r_dead2ag_cn = 0;
+    }
+  }
+
+  this->r_live_cn = 1.0 - this->r_burn2ag_cn - this->r_dead2ag_cn;
 }
 
 /** Simulate ground fire returning the burn depth.
