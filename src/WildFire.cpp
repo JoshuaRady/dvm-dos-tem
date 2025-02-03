@@ -1114,22 +1114,22 @@ void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT]
       bd[ip]->m_vegs.deadc = bd[ip]->m_vegs.c[I_leaf] * r_dead2ag_cn;//Standing dead
       // Which then is the source of ground debris (this is for woody plants
       // only, others could be set deadc/n to zero)
-      bd[ip]->m_vegs.c[I_leaf] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//FW_NOTE: How does this sum differ from r_live_cn?????
+      bd[ip]->m_vegs.c[I_leaf] *= r_live_cn;//Remaining live
 
       //Stem carbon:
       comb_vegc += bd[ip]->m_vegs.c[I_stem] * r_burn2ag_cn;//Combusted
       bd[ip]->m_vegs.deadc += bd[ip]->m_vegs.c[I_stem] * r_dead2ag_cn;//Standing dead
-      bd[ip]->m_vegs.c[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remaining live
+      bd[ip]->m_vegs.c[I_stem] *= r_live_cn;//Remaining live
 
       //Leaf nitrogen:
       comb_vegn += bd[ip]->m_vegs.strn[I_leaf] * r_burn2ag_cn;//Combusted
       bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_leaf] * r_dead2ag_cn;//Standing dead
-      bd[ip]->m_vegs.strn[I_leaf] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remaining live
+      bd[ip]->m_vegs.strn[I_leaf] *= r_live_cn;//Remaining live
 
       //Stem nitrogen:
       comb_vegn += bd[ip]->m_vegs.strn[I_stem] * r_burn2ag_cn;//Combusted
       bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_stem] * r_dead2ag_cn;//Standing dead
-      bd[ip]->m_vegs.strn[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);//Remaining live
+      bd[ip]->m_vegs.strn[I_stem] *= r_live_cn;//Remaining live
 
       // Below-ground veg. (root) burning/death during fire
       comb_vegc += bd[ip]->m_vegs.c[I_root] * r_burn2bg_cn[ip];
