@@ -815,6 +815,27 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
   return output;
 }
 
+//Place after WildFire::getBurnAbgVegetation()?
+/** Calculate the fate of aboveground vegetation after fire using the process based wildfire model.
+ *
+ * This function determines the fractions of a given PFT that are combusted, are killed but are not
+ * combusted, and that survive fire based on the revised process based wildfire model.
+ *
+ * The fractions are returned via class data members.  (See notes in getBurnAbgVegetation)
+ *
+ * @param[in] ipft The PFT index.
+ *
+ * @returns Nothing.  Class members are updated.
+ *
+ * @note ...
+ */
+void WildFire::getAbgVegetationBurntFractionsProcess(const int ipft)//Name is a bit long!
+{
+  
+
+
+}
+
 /** Simulate ground fire returning the burn depth.
  * 
  * This effectively replaces the functionality of WildFire::getBurnOrgSoilthick() in the original

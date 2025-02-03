@@ -1083,13 +1083,13 @@ void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT]
 
       // Calculate vegetation burnt/dead/living fractions for above-ground components of PFT:
       // This sets the value of r_live_cn, r_dead2ag_cn, and r_burn2ag_cn for this PFT.
-      if (!md.fire_process_wildfire)//Calculate the rates based on the fire severity:
+      if (!md.fire_process_wildfire)// Calculate the rates based on the fire severity:
       {
         getBurnAbgVegetation(ip, year);
       }
       else// Use the revised process based wildfire implemenation:
       {
-        
+        getAbgVegetationBurntFractionsProcess(const int ipft);
       }
 
       // root death ratio: must be called after both above-ground and
