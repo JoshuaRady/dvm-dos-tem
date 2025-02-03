@@ -312,7 +312,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
 
         if (treatMossAsDead)
         {
-          fm.w_o_ij[1] += mossBiomass;//Assumes fine fuel is first, which is pretty safe.
+          fm.w_o_ij[0] += mossBiomass;//Assumes fine fuel is first, which is pretty safe.
         }
         else
         {
