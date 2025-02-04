@@ -140,6 +140,9 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
   BOOST_LOG_SEV(glg, debug) << "Dump the combustion calculations:";
   BOOST_LOG_SEV(glg, debug) << burnupOutput;
 
+  siteFM = fm;//Save input for use in getAbgVegetationBurntFractionsProcess().
+  siteBU = BurnupSim;//Save the output for use in getAbgVegetationBurntFractionsProcess().
+
   //Update litter, moss, and soil carbon stocks:
   //Some of this could be done directly here but we could also use parts of the 'original' code like
   // WildFire::updateBurntOrgSoil(), which I split out.
@@ -827,19 +830,17 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
  *
  * @returns Nothing.  Class members are updated.
  *
- * @note We need access to the current fuel model and BurnupSim
+ * @note This function needs access to the current fuel model and data output from Burnup.  For now
+ *       those are stored a private data members.
  */
 void WildFire::getAbgVegetationBurntFractionsProcess(const int ipft)//Name is a bit long!
 {
-  //FuelModel fm;
-  //BurnupSim burnupOutput; buData
-  
   bool treatMossAsDead = md.fire_moss_as_dead_fuel;
 
   //Where do we get the fuel model info from?
-  int liveHerbIndex = fm.LiveHerbaceousIndex();
-  int liveWoodyIndex = fm.LiveWoodyIndex();
-  int deadHerbIndex = fm.DeadHerbaceousIndex();
+  int liveHerbIndex = siteFM.LiveHerbaceousIndex();
+  int liveWoodyIndex = siteFM.LiveWoodyIndex();
+  int deadHerbIndex = siteFM.DeadHerbaceousIndex();
 
   //Reset rates to zero::
   this->r_burn2ag_cn = 0;
@@ -855,21 +856,21 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int ipft)//Name is a 
     if (cd->d_veg.nonvascular[pftNum] == 0)//Herbaceous PFTs:
     {
       //Herbs map to one fuel or two if dynamic moisture is on:
-      if (fm.type != Dynamic)
+      if (siteFM.type != Dynamic)
       {
-        if (buData.w_o_ij_Initial[liveHerbIndex] > 0.0)
+        if (siteBU.w_o_ij_Initial[liveHerbIndex] > 0.0)
         {
-          this->r_burn2ag_cn = buData.combustion_ij[liveHerbIndex] / buData.w_o_ij_Initial[liveHerbIndex];
+          this->r_burn2ag_cn = siteBU.combustion_ij[liveHerbIndex] / siteBU.w_o_ij_Initial[liveHerbIndex];
         }
       }
       else//Dynamic fuel moisture:
       {
         //Dynamic live moss maps to the live herbaceous fuel and cured herbaceous fuel:
-        double totalInitialLoading = buData.w_o_ij_Initial[deadHerbIndex] + buData.w_o_ij_Initial[liveHerbIndex];
+        double totalInitialLoading = siteBU.w_o_ij_Initial[deadHerbIndex] + siteBU.w_o_ij_Initial[liveHerbIndex];
         if (totalInitialLoading > 0.0)
         {
-            this->r_burn2ag_cn = (buData.combustion_ij[deadHerbIndex] +
-                                  buData.combustion_ij[liveHerbIndex]) / totalInitialLoading;
+            this->r_burn2ag_cn = (siteBU.combustion_ij[deadHerbIndex] +
+                                  siteBU.combustion_ij[liveHerbIndex]) / totalInitialLoading;
         }
       }
     }
@@ -884,39 +885,39 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int ipft)//Name is a 
       {
         int deadMossIndex = 0;//Assumes moss is in the finest dead fuel class.
 
-        //this->r_burn2ag_cn = buData.combustion_ij[deadMossIndex] / buData.w_o_ij_Initial[deadMossIndex];
-        if (buData.w_o_ij_Initial[deadMossIndex] > 0.0)
+        //this->r_burn2ag_cn = siteBU.combustion_ij[deadMossIndex] / siteBU.w_o_ij_Initial[deadMossIndex];
+        if (siteBU.w_o_ij_Initial[deadMossIndex] > 0.0)
         {
-          this->r_burn2ag_cn = buData.combustion_ij[deadMossIndex] / buData.w_o_ij_Initial[deadMossIndex];
+          this->r_burn2ag_cn = siteBU.combustion_ij[deadMossIndex] / siteBU.w_o_ij_Initial[deadMossIndex];
         }
       }
       else//Treat moss as a live fuel:
       {
-        if (fm.type != Dynamic)
+        if (siteFM.type != Dynamic)
         {
           //Live moss maps to the live herbaceous fuel:
 
-          //this->r_burn2ag_cn = buData.combustion_ij[liveMossIndex] / buData.w_o_ij_Initial[liveMossIndex];
+          //this->r_burn2ag_cn = siteBU.combustion_ij[liveMossIndex] / siteBU.w_o_ij_Initial[liveMossIndex];
           //Do we also need to check LiveHerbaceousPresent()?
-          if (buData.w_o_ij_Initial[liveHerbIndex] > 0.0)
+          if (siteBU.w_o_ij_Initial[liveHerbIndex] > 0.0)
           {
-            this->r_burn2ag_cn = buData.combustion_ij[liveHerbIndex] / buData.w_o_ij_Initial[liveHerbIndex];
+            this->r_burn2ag_cn = siteBU.combustion_ij[liveHerbIndex] / siteBU.w_o_ij_Initial[liveHerbIndex];
           }
         }
         else//Dynamic fuel moisture:
         {
           //Dynamic live moss maps to the live herbaceous fuel and cured herbaceous fuel:
           
-          //this->r_burn2ag_cn = (buData.combustion_ij[deadMossIndex] +
-          //                      buData.combustion_ij[liveHerbIndex]) /
-          //                     (buData.w_o_ij_Initial[deadMossIndex] +
-          //                      buData.w_o_ij_Initial[liveHerbIndex]);
+          //this->r_burn2ag_cn = (siteBU.combustion_ij[deadMossIndex] +
+          //                      siteBU.combustion_ij[liveHerbIndex]) /
+          //                     (siteBU.w_o_ij_Initial[deadMossIndex] +
+          //                      siteBU.w_o_ij_Initial[liveHerbIndex]);
 
-          double totalInitialLoading = buData.w_o_ij_Initial[deadMossIndex] + buData.w_o_ij_Initial[liveHerbIndex];
+          double totalInitialLoading = siteBU.w_o_ij_Initial[deadMossIndex] + siteBU.w_o_ij_Initial[liveHerbIndex];
           if (totalInitialLoading > 0.0)
           {
-            this->r_burn2ag_cn = (buData.combustion_ij[deadMossIndex] +
-                                  buData.combustion_ij[liveHerbIndex]) / totalInitialLoading;
+            this->r_burn2ag_cn = (siteBU.combustion_ij[deadMossIndex] +
+                                  siteBU.combustion_ij[liveHerbIndex]) / totalInitialLoading;
           }
         }
       }
@@ -929,7 +930,7 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int ipft)//Name is a 
     if (IsShrub(cd->cmttype, pftNum))
     {
       //Shrubs map to the live woody fuel:
-      this->r_burn2ag_cn = buData.combustion_ij[liveWoodyIndex] / buData.w_o_ij_Initial[liveWoodyIndex];
+      this->r_burn2ag_cn = siteBU.combustion_ij[liveWoodyIndex] / siteBU.w_o_ij_Initial[liveWoodyIndex];
       this->r_dead2ag_cn = 0;//Currently there is not mortality besides combustion.
     }
     else//Trees:

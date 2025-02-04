@@ -127,6 +127,13 @@ private:
   ModelData md;// FW_MOD: The revised fire model has input file paths it needs.
   Climate * climate;// FW_MOD: The revised fire model needs environmental conditions.
 
+  //FW_NOTE:
+  // The following are only used in the process based wildfire mode and will only be valid after
+  // RevisedFire() is called.  This is an initial implementation and we may find a different way to
+  // pass to functions that need them.  The names may change.
+  FuelModel siteFM;// FW_MOD
+  BurnupSim siteBU;// FW_MOD
+
   bool isFireReturnDate(const int year, const int midx);// FW_MOD
   double getBurnOrgSoilthick(const int year);
   void getBurnAbgVegetation(const int ipft, const int year);
