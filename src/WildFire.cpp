@@ -1073,6 +1073,7 @@ void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT]
   double veg_2_dead_C = 0.0;
   double veg_2_dead_N = 0.0;
 
+  // FW_NOTE: I'm not sure what happens to this total.  It doesn't seem to get filled later.
   bdall->m_vegs.deadc0 = 0.0;//Zeroing the standing dead pools
   bdall->m_vegs.deadn0 = 0.0;
 
@@ -1102,41 +1103,41 @@ void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT]
       // Assuming all previous deadn burned
       comb_deadn += bd[ip]->m_vegs.deadn;
       
-      //Zeroing the standing dead pools
-      //FW_NOTE: This is not necissary as this will be overwritten below.
+      // Zeroing the standing dead pools:
+      // FW_NOTE: This is not strictly necissary as these will be overwritten below.
       bd[ip]->m_vegs.deadc0 = 0.0;
       bd[ip]->m_vegs.deadn0 = 0.0;
 
-      //Calculate the standing dead pools:
+      // Calculate the standing dead pools:
       veg_2_dead_C = (bd[ip]->m_vegs.c[I_leaf] + bd[ip]->m_vegs.c[I_stem]) * r_dead2ag_cn;
       veg_2_dead_N = (bd[ip]->m_vegs.strn[I_leaf] + bd[ip]->m_vegs.strn[I_stem]) * r_dead2ag_cn;
 
-      //Leaf carbon:
+      // Leaf carbon:
       // Above-ground veg. burning/death during fire
       // when summing, needs adjusting by 'vegcov'
-      comb_vegc += bd[ip]->m_vegs.c[I_leaf] * r_burn2ag_cn;//Combusted
+      comb_vegc += bd[ip]->m_vegs.c[I_leaf] * r_burn2ag_cn;// Combusted
 
       // We define dead c/n as the not-falling veg (or binding with living veg)
       // during fire,
       bd[ip]->m_vegs.deadc = bd[ip]->m_vegs.c[I_leaf] * r_dead2ag_cn;//Standing dead
       // Which then is the source of ground debris (this is for woody plants
       // only, others could be set deadc/n to zero)
-      bd[ip]->m_vegs.c[I_leaf] *= r_live_cn;//Remaining live
+      bd[ip]->m_vegs.c[I_leaf] *= r_live_cn;// Remaining live
 
-      //Stem carbon:
-      comb_vegc += bd[ip]->m_vegs.c[I_stem] * r_burn2ag_cn;//Combusted
+      // Stem carbon:
+      comb_vegc += bd[ip]->m_vegs.c[I_stem] * r_burn2ag_cn;// Combusted
       bd[ip]->m_vegs.deadc += bd[ip]->m_vegs.c[I_stem] * r_dead2ag_cn;//Standing dead
-      bd[ip]->m_vegs.c[I_stem] *= r_live_cn;//Remaining live
+      bd[ip]->m_vegs.c[I_stem] *= r_live_cn;// Remaining live
 
-      //Leaf nitrogen:
-      comb_vegn += bd[ip]->m_vegs.strn[I_leaf] * r_burn2ag_cn;//Combusted
+      // Leaf nitrogen:
+      comb_vegn += bd[ip]->m_vegs.strn[I_leaf] * r_burn2ag_cn;// Combusted
       bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_leaf] * r_dead2ag_cn;//Standing dead
-      bd[ip]->m_vegs.strn[I_leaf] *= r_live_cn;//Remaining live
+      bd[ip]->m_vegs.strn[I_leaf] *= r_live_cn;// Remaining live
 
-      //Stem nitrogen:
-      comb_vegn += bd[ip]->m_vegs.strn[I_stem] * r_burn2ag_cn;//Combusted
+      // Stem nitrogen:
+      comb_vegn += bd[ip]->m_vegs.strn[I_stem] * r_burn2ag_cn;// Combusted
       bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_stem] * r_dead2ag_cn;//Standing dead
-      bd[ip]->m_vegs.strn[I_stem] *= r_live_cn;//Remaining live
+      bd[ip]->m_vegs.strn[I_stem] *= r_live_cn;// Remaining live
 
       // Below-ground veg. (root) burning/death during fire
       comb_vegc += bd[ip]->m_vegs.c[I_root] * r_burn2bg_cn[ip];
@@ -1151,18 +1152,18 @@ void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT]
         }
       }
       dead_bg_vegc += deadc_tmp;
-      bd[ip]->m_vegs.c[I_root] *= (1.0 - r_burn2bg_cn[ip] - r_dead2bg_cn);
+      bd[ip]->m_vegs.c[I_root] *= (1.0 - r_burn2bg_cn[ip] - r_dead2bg_cn);// Remaining live
 
       // For the dead below-ground N caused by fire, they are put into original layer
       double deadn_tmp = bd[ip]->m_vegs.strn[I_root] * r_dead2bg_cn; //this is needed below
       for (int il =0; il <cd->m_soil.numsl; il++) {
         if (cd->m_soil.frootfrac[il][ip] > 0.0) {
           //for this, 'rootfrac' must be updated above
-          bdall->m_sois.somcr[il] += deadn_tmp*cd->m_soil.frootfrac[il][ip];
+          bdall->m_sois.somcr[il] += deadn_tmp * cd->m_soil.frootfrac[il][ip];
         }
       }
-      dead_bg_vegn +=deadn_tmp;
-      bd[ip]->m_vegs.strn[I_root] *= (1.0 - r_burn2bg_cn[ip] - r_dead2bg_cn);
+      dead_bg_vegn += deadn_tmp;
+      bd[ip]->m_vegs.strn[I_root] *= (1.0 - r_burn2bg_cn[ip] - r_dead2bg_cn);// Remaining live
 
       // one more veg N pool (labile N)
       comb_vegn += bd[ip]->m_vegs.labn * (1.0 - r_live_cn);//assuming all labn emitted, leaving none into deadn
