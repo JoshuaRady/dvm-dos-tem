@@ -141,7 +141,7 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
   BOOST_LOG_SEV(glg, debug) << burnupOutput;
 
   siteFM = fm;//Save input for use in getAbgVegetationBurntFractionsProcess().
-  siteBU = BurnupSim;//Save the output for use in getAbgVegetationBurntFractionsProcess().
+  siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
 
   //Update litter, moss, and soil carbon stocks:
   //Some of this could be done directly here but we could also use parts of the 'original' code like
