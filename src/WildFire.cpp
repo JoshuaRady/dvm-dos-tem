@@ -1089,7 +1089,7 @@ void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT]
       }
       else// Use the revised process based wildfire implemenation:
       {
-        getAbgVegetationBurntFractionsProcess(const int ipft);
+        getAbgVegetationBurntFractionsProcess(ip);
       }
 
       // root death ratio: must be called after both above-ground and
