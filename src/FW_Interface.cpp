@@ -833,7 +833,7 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
  * @note This function needs access to the current fuel model and data output from Burnup.  For now
  *       those are stored a private data members.
  */
-void WildFire::getAbgVegetationBurntFractionsProcess(const int ipft)//Name is a bit long!
+void WildFire::getAbgVegetationBurntFractionsProcess(const int pftNum)//Name is a bit long!
 {
   bool treatMossAsDead = md.fire_moss_as_dead_fuel;
 
@@ -913,10 +913,10 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int ipft)//Name is a 
           //                     (siteBU.w_o_ij_Initial[deadMossIndex] +
           //                      siteBU.w_o_ij_Initial[liveHerbIndex]);
 
-          double totalInitialLoading = siteBU.w_o_ij_Initial[deadMossIndex] + siteBU.w_o_ij_Initial[liveHerbIndex];
+          double totalInitialLoading = siteBU.w_o_ij_Initial[deadHerbIndex] + siteBU.w_o_ij_Initial[liveHerbIndex];
           if (totalInitialLoading > 0.0)
           {
-            this->r_burn2ag_cn = (siteBU.combustion_ij[deadMossIndex] +
+            this->r_burn2ag_cn = (siteBU.combustion_ij[deadHerbIndex] +
                                   siteBU.combustion_ij[liveHerbIndex]) / totalInitialLoading;
           }
         }
