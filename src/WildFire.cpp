@@ -604,11 +604,12 @@ void WildFire::burn(const int year, const int midx) {
 
   double reta_vegc = 0.0;
   double reta_vegn = 0.0;
-  if (!md.fire_process_wildfire)
-  {
+  //if (!md.fire_process_wildfire)
+  //{
     burnVegetation(year, r_burn2bg_cn, comb_vegc, comb_vegn, dead_bg_vegc, dead_bg_vegn, reta_vegc, reta_vegn);
-  }
-  // FW_NOTE: In future the revised wildfire model while also return these 6 quantities.
+  //}
+  // FW_NOTE: In future the revised wildfire model will also return these 6 quantities.
+  // Currently testing burnVegetation with revised fire functionality!!!!!
 
   // Emissions calculations are the same for both models:
   BOOST_LOG_SEV(glg, info) << "Save the fire emission and return data into 'fd'...";
