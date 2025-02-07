@@ -382,8 +382,10 @@ double WildFire::GetLitterRawC() const
   return bdall->m_sois.rawc[topFibricIndex];
 }
 
-/** Get the total biomass for a non-vascular PFT on the stie.
+/** Get the total biomass for a non-vascular PFT on the site.
  * 
+ * @param[in] pftIndex The PFT index.
+ *
  * @returns The total dry biomass (not carbon) for the specified PFT (kg/m^2).
  * 
  * @note: This code was moved out of CohortStatesToFuelLoading() to reduce code repetition.  It is
@@ -398,6 +400,25 @@ double WildFire::GetPFTBiomass(const pftIndex) const
   double pftBiomass = (leafC + stemC + rootC) * c2b / gPerKg;//Convert to dry biomass.
   
   return pftBiomass;
+}
+
+/** Get the total biomass for all non-vascular PFTs on the site.
+ *
+ * @returns The total live dry biomass (not carbon) (kg/m^2).
+ */
+double WildFire::GetNonVascularBiomass() const
+{
+  double nvBiomass = 0.0;
+
+  for (int pftIndex = 0; pftIndex < NUM_PFT; pftIndex++)
+  {
+    if (cd->d_veg.nonvascular[pftNum] != 0)
+    {
+      nvBiomass += GetPFTBiomass(pftIndex);
+    }
+  }
+
+  return nvBiomass;
 }
 
 /** Get the estimated dead fuel size distribution for the site.
@@ -991,7 +1012,7 @@ double WildFire::GetLitterBurntFraction() const
         }
 
         //All fuel in a size class burns at the same rate:
-        double fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetLiveMossBiomass();
+        double fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetNonVascularBiomass();
         litterInitial += fineLitterInitial;
         litterCombusted += fineLitterInitial * fineBurntFraction;//Just the burnt fine litter.
       }
