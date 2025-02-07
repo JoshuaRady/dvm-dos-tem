@@ -911,7 +911,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
       // FW_MOD:
       // The revised wildfire handles litter burning explicitluy.  The litter is part of the top
       // orgnaic layer (Shallow organic / peat ~ I_FIB):
-      if (md.fire_process_wildfire && (cd->m_soil.type[i] == 1))
+      if (md.fire_process_wildfire && (cd->m_soil.type[il] == 1))
       {
         double litterBurntFraction = GetLitterBurntFraction();
 
