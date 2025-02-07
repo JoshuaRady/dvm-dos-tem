@@ -282,13 +282,13 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
   fm.w_o_ij[liveHerbIndex] = 0;
   fm.w_o_ij[liveWoodyIndex] = 0;
   
-  for (int pftNum = 0; pftNum < NUM_PFT; pftNum++)
+  for (int pftIndex = 0; pftIndex < NUM_PFT; pftIndex++)
   {
-    if (!cd->d_veg.ifwoody[pftNum])//Or m_veg??????
+    if (!cd->d_veg.ifwoody[pftIndex])//Or m_veg??????
     {
       //Put all herbaceous PFTs in the herbaceous:
       //Note: There is currently no way to tell graminoids and forbs appart.
-      if (cd->d_veg.nonvascular[pftNum] == 0)
+      if (cd->d_veg.nonvascular[pftIndex] == 0)
       {
         //If the herbaceous class is not present adding carbon to it will not influence the fire
         //behavior.  If herbaceous fuels are not important in this system we could ignore them.
@@ -300,8 +300,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         }
 
         //Include aboveground parts:
-        double leafC = bd[pftNum]->m_vegs.c[I_leaf];
-        double stemC = bd[pftNum]->m_vegs.c[I_stem];
+        double leafC = bd[pftIndex]->m_vegs.c[I_leaf];
+        double stemC = bd[pftIndex]->m_vegs.c[I_stem];
         fm.w_o_ij[liveHerbIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
       }
       else//Mosses:
@@ -309,7 +309,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         //My best reading is that mosses and lichens are all leaf in DVM-DOS-TEM.  However if they
         //had stems and 'roots', i.e. rhizoids = root C, they should burn too.  Include all
         //compartments now in case for now:
-        double mossBiomass = GetPFTBiomass(pftNum);
+        double mossBiomass = GetPFTBiomass(pftIndex);
 
         if (treatMossAsDead)
         {
@@ -330,7 +330,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
     else//Woody PFTs:
     {
       //Put shrubs in the live woody fuel:
-      if (IsShrub(cd->cmttype, pftNum))
+      if (IsShrub(cd->cmttype, pftIndex))
       {
         //If the woody class is not present adding carbon to it will not influence the fire
         //behavior.  See notes for herbaceous fules above.
@@ -340,8 +340,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         }
 
         //Include aboveground parts:
-        double leafC = bd[pftNum]->m_vegs.c[I_leaf];
-        double stemC = bd[pftNum]->m_vegs.c[I_stem];
+        double leafC = bd[pftIndex]->m_vegs.c[I_leaf];
+        double stemC = bd[pftIndex]->m_vegs.c[I_stem];
         fm.w_o_ij[liveWoodyIndex] += (leafC + stemC) * c2b / gPerKg;//Convert to dry biomass.
       }
       //Ignore trees.
@@ -863,14 +863,14 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
  *
  * The fractions are returned via class data members.  (See notes in getBurnAbgVegetation)
  *
- * @param[in] ipft The PFT index.
+ * @param[in] pftIndex The PFT index.
  *
  * @returns Nothing.  Class members are updated.
  *
  * @note This function needs access to the current fuel model and data output from Burnup.  For now
  *       those are stored a private data members.
  */
-void WildFire::getAbgVegetationBurntFractionsProcess(const int pftNum)//Name is a bit long!
+void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name is a bit long!
 {
   bool treatMossAsDead = md.fire_moss_as_dead_fuel;
 
@@ -888,9 +888,9 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftNum)//Name is 
   //conversion cancels out so can be ignored.
 
   //Parallel the PFT decision tree in CohortStatesToFuelLoading():
-  if (!cd->d_veg.ifwoody[pftNum])
+  if (!cd->d_veg.ifwoody[pftIndex])
   {
-    if (cd->d_veg.nonvascular[pftNum] == 0)//Herbaceous PFTs:
+    if (cd->d_veg.nonvascular[pftIndex] == 0)//Herbaceous PFTs:
     {
       //Herbs map to one fuel or two if dynamic moisture is on:
       if (siteFM.type != Dynamic)
@@ -964,7 +964,7 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftNum)//Name is 
   }
   else//Woody PFTs:
   {
-    if (IsShrub(cd->cmttype, pftNum))
+    if (IsShrub(cd->cmttype, pftIndex))
     {
       //Shrubs map to the live woody fuel:
       this->r_burn2ag_cn = siteBU.combustion_ij[liveWoodyIndex] / siteBU.w_o_ij_Initial[liveWoodyIndex];

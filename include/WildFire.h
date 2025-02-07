@@ -138,7 +138,7 @@ private:
   bool isFireReturnDate(const int year, const int midx);// FW_MOD
   double getBurnOrgSoilthick(const int year);
   void getBurnAbgVegetation(const int ipft, const int year);
-  void getAbgVegetationBurntFractionsProcess(const int pftNum);// FW_MOD
+  void getAbgVegetationBurntFractionsProcess(const int pftIndex);// FW_MOD
   double GetLitterBurntFraction() const;// FW_MOD
   void updateBurntOrgSoil(double burndepth, double& burnedsolc, double& burnedsoln,
                           double r_burn2bg_cn[NUM_PFT]);// FW_MOD
