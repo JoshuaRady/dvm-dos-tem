@@ -385,6 +385,24 @@ double WildFire::GetLitterRawC() const
   return bdall->m_sois.rawc[topFibricIndex];
 }
 
+/** Get the live moss mass for the stie.
+ * 
+ * @returns The total dry live moss dry biomass (not carbon) (kg/m^2).
+ * 
+ * @note: This code was moved out of CohortStatesToFuelLoading() to reduce code repetition.
+ */
+double WildFire::GetLiveMossBiomass() const
+{
+  //My best reading is that moss is all leaf in DVM-DOS-TEM.  However if they had stems and
+  //'roots', i.e. rhizoids = root C, they should burn too.  Include just in case for now:
+  double leafC = bd[pftNum]->m_vegs.c[I_leaf];
+  double stemC = bd[pftNum]->m_vegs.c[I_stem];//Should be 0.
+  double rootC = bd[pftNum]->m_vegs.c[I_root];//Should be 0.
+  double mossBiomass = (leafC + stemC + rootC) * c2b / gPerKg;//Convert to dry biomass.
+  
+  return mossBiomass;
+}
+
 /** Get the estimated dead fuel size distribution for the site.
  * The distribution is returned via the vectors passed.
  *
