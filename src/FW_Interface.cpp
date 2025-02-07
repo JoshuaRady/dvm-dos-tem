@@ -11,8 +11,8 @@
  * should be expected to change.
  * 
  * All of the functions requiring direct access to WildFire members have been moved into the class
- * but have left here pending testing so the new code can be more clearly identified.  There are
- * number of attendant functions. most of which can also be moved into the class but are being left
+ * but have been left here pending testing so the new code can be more clearly identified.  There are
+ * number of attendant functions, most of which can also be moved into the class but are being left
  * as is for now to make dependancies stark, i.e. they do not need access to member data or
  * functions.
  */
@@ -34,6 +34,7 @@ extern src::severity_logger< severity_level > glg;
 //Constants:
 const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dry basis.
 //This could vary by PFT but many models use a single value.
+const double gPerKg = 1000;//Move to FireweedUnits.h?
 
 
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
@@ -244,8 +245,6 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::CohortStatesToFuelLoading()...";
 
-  const double gPerKg = 1000;//Move to FireweedUnits.h?
-  
   //Dead fuels:
   double rawC = GetLitterRawC();//Get the total litter carbon.
 
@@ -306,7 +305,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
       }
       else//Mosses:
       {
-        double mossBiomass = GetMossBiomass();
+        double mossBiomass = GetLiveMossBiomass();
 
         if (treatMossAsDead)
         {
@@ -989,7 +988,7 @@ double WildFire::GetLitterBurntFraction() const
         }
 
         //All fuel in a size class burns at the same rate:
-        fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetMossBiomass();
+        double fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetLiveMossBiomass();
         litterInitial += fineLitterInitial;
         litterCombusted += fineLitterInitial * fineBurntFraction;//Just the burnt fine litter.
       }
@@ -1010,7 +1009,7 @@ double WildFire::GetLitterBurntFraction() const
   
   if (!ValidProportion(litterBurntFraction))
   {
-  	Stop("Invalid litter burnt fraction calculated: " + std::to_string(litterBurntFraction));
+    BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;
   }
   
   return litterBurntFraction;
