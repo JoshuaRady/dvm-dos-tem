@@ -152,7 +152,7 @@ private:
  
  void CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDead);
  double GetLitterRawC() const;
- double GetLiveMossBiomass() const;
+ double GetNonVascularBiomass(const pftIndex) const;
 
  double GetMidflameWindSpeed() const;
  std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
