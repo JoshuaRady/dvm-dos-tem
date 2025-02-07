@@ -864,7 +864,7 @@ double WildFire::getBurnOrgSoilthick(const int year) {
  *
  * @param[in] burndepth The calculated soil burn depth.
  *   As mentioned elsewhere the burn depth doesn't have to be passed in since it is stored in fd by
- *   getBurnOrgSoilthick().  I is clearer though as is more similar to the code prior to refactor.
+ *   getBurnOrgSoilthick().  It is clearer though as is more similar to the code prior to refactor.
  * @param[out] burnedsolc On return the amount of organic soil carbon burned (meters).
  * @param[out] burnedsoln On return the amount of soil nitroget burned.
  * @param[out] r_burn2bg_cn On return an array with the ratio of root carbon burned for each PFT.
@@ -890,7 +890,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
   burnedsoln = 0.0;
   
   for (int ip=0; ip<NUM_PFT; ip++) {
-    r_burn2bg_cn[ip] = 0.; //  used for vegetation below-ground (root) loss,
+    r_burn2bg_cn[ip] = 0.0; //  used for vegetation below-ground (root) loss,
                            //  and calculated below
   }
 
@@ -929,7 +929,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
         //Burn up the roots in the layer:
 //Note: The root fraction ?????
         for (int ip=0; ip<NUM_PFT; ip++) {
-          if (cd->m_veg.vegcov[ip]>0.) {
+          if (cd->m_veg.vegcov[ip] > 0.0) {
             r_burn2bg_cn[ip] += cd->m_soil.frootfrac[il][ip];
             cd->m_soil.frootfrac[il][ip] = 0.0;
           }
@@ -963,7 +963,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
         } else {
           // should never get here??
           BOOST_LOG_SEV(glg, warn) << "The remaining soil after a burn is greater than the thickness of this layer. Something is wrong??";
-          BOOST_LOG_SEV(glg, warn) << "partleft: " << partleft << "cd->m_soil.dz["<<il<<"]: " << cd->m_soil.dz[il];
+          BOOST_LOG_SEV(glg, warn) << "partleft: " << partleft << "cd->m_soil.dz[" << il << "]: " << cd->m_soil.dz[il];
           break;
         }
       }
