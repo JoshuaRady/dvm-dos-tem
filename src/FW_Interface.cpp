@@ -305,6 +305,9 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
       }
       else//Mosses:
       {
+        //My best reading is that mosses and lichens are all leaf in DVM-DOS-TEM.  However if they
+        //had stems and 'roots', i.e. rhizoids = root C, they should burn too.  Include all
+        //compartments now in case for now:
         double mossBiomass = GetNonVascularBiomass(pftNum);
 
         if (treatMossAsDead)
@@ -379,23 +382,22 @@ double WildFire::GetLitterRawC() const
   return bdall->m_sois.rawc[topFibricIndex];
 }
 
-/** Get the biomass for a non-vascular PFT on the stie.
+/** Get the total biomass for a non-vascular PFT on the stie.
  * 
- * @returns The total live dry biomass (not carbon) (kg/m^2).
+ * @returns The total dry biomass (not carbon) for the specified PFT (kg/m^2).
  * 
- * @note: This code was moved out of CohortStatesToFuelLoading() and generalized to reduce code
- *        repetition.
+ * @note: This code was moved out of CohortStatesToFuelLoading() to reduce code repetition.  It is
+ *        only currently used for non-vascular PFTs but is there is nothing specific to those PFTs
+ *        in it.
  */
-double WildFire::GetNonVascularBiomass(const pftIndex) const
+double WildFire::GetPFTBiomass(const pftIndex) const
 {
-  //My best reading is that mosses and lichens are all leaf in DVM-DOS-TEM.  However if they had
-  //stems and 'roots', i.e. rhizoids = root C, they should burn too.  Include just in case for now:
   double leafC = bd[pftIndex]->m_vegs.c[I_leaf];
   double stemC = bd[pftIndex]->m_vegs.c[I_stem];//Should be 0.
   double rootC = bd[pftIndex]->m_vegs.c[I_root];//Should be 0.
-  double mossBiomass = (leafC + stemC + rootC) * c2b / gPerKg;//Convert to dry biomass.
+  double pftBiomass = (leafC + stemC + rootC) * c2b / gPerKg;//Convert to dry biomass.
   
-  return mossBiomass;
+  return pftBiomass;
 }
 
 /** Get the estimated dead fuel size distribution for the site.
