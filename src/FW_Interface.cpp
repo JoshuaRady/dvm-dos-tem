@@ -944,6 +944,67 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftNum)//Name is 
   this->r_live_cn = 1.0 - this->r_burn2ag_cn - this->r_dead2ag_cn;
 }
 
+/** Return the change in the litter stock after surface fire.
+ * 
+ * Should we return the amount after fire, the reduction, or the fractional change?
+ *
+ * @returns ...
+ */
+double WildFire::GetLitterBurntFraction()//GetBurntLitter
+{
+  //We map litter to the dead fuels.  The litter is spread over multiple size classes so we need to
+  //put them back together to get the total litter change.  There may be other stocks mixed into the
+  //dead fuel depending on the mode, specifically moss and / or herbaceous fuels.
+  
+  //double litterInitial = 0.0;//The total dry litter mass before fire.
+  double w_o_Initial = 0.0;//The total dry litter mass before fire.
+  //GetLitterRawC
+  //double w_o_Final = 0.0;//The total dry litter mass after fire.
+  double litterCombusted = 0.0;
+  
+  //int numFuelTypes = siteFM.numClasses;//Or siteBU.w_o_ij_Initial.size() or similar.
+  int numDeadClasses = siteFM.NumDeadClasses();
+  for (int i = 0; i < numDeadClasses; i++)
+  {
+    //Skip any cured dynamic fuels:
+    //We don't need to check if this is a dynamic fuel model because DeadHerbaceousIndex() will
+    //return -1 if not.
+    if (i != siteFM.DeadHerbaceousIndex())
+    {
+      //It moss has been combined with the fine dead fuel we need to separate it out:
+      if ((i == 0) && md.fire_moss_as_dead_fuel)
+      {
+        double fineBurntFraction = 0.0;
+        if (siteBU.w_o_ij_Initial[i] > 0.0)//Avoid divide by zero.
+        {
+          fineBurntFraction = siteBU.combustion_ij[i] / siteBU.w_o_ij_Initial[i];
+        }
+        
+        fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetMossBiomass();
+        litterInitial += fineLitterInitial;
+        litterCombusted += fineLitterInitial * fineBurntFraction;
+      }
+      else
+      {
+        litterInitial += siteBU.w_o_ij_Initial[i];
+        //w_o_Final += siteBU.w_o_ij_final[i];
+        litterCombusted += siteBU.combustion_ij[i];
+      }
+    }
+  }
+
+  //Check the numbers...
+  
+  double litterBurntFraction = litterCombusted / litterInitial;
+  
+  if (!ValidProportion(litterBurntFraction))
+  {
+  	Stop("Invalid litter burnt fraction calculated: " + std::to_string(litterBurntFraction));
+  }
+  
+  return litterBurntFraction;
+}
+
 /** Simulate ground fire returning the burn depth.
  * 
  * This effectively replaces the functionality of WildFire::getBurnOrgSoilthick() in the original
