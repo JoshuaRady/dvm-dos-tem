@@ -908,6 +908,22 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
 
       totbotdepth += cd->m_soil.dz[il];
 
+      // FW_MOD:
+      // The revised wildfire handles litter burning explicitluy.  The litter is part of the top
+      // orgnaic layer (Shallow organic / peat ~ I_FIB):
+      if (md.fire_process_wildfire && (cd->m_soil.type[i] == 1))
+      {
+        double litterBurntFraction = GetLitterBurntFraction();
+
+        burnedsolc = bdall->m_sois.rawc[il] * litterBurntFraction;//Burnt litter carbon.
+        // FW_NOTE: There is no nitrogen pool equivelent to rawc.  We may need to track litter nitrogen.
+
+        bdall->m_sois.rawc[il] *= (1.0 - litterBurntFraction);//Unburnt litter carbon.
+      }
+      // FW_NOTE: The following code will treat any remain litter as burnable by the ground fire.
+      // We need to decide if the remaining litter, which will be skewed twords larger sizes, should
+      // be spared in ground fire.
+
       double ilsolc =  bdall->m_sois.rawc[il] + bdall->m_sois.soma[il] +
                        bdall->m_sois.sompr[il] + bdall->m_sois.somcr[il];
 
