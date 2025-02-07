@@ -152,7 +152,7 @@ private:
  
  void CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDead);
  double GetLitterRawC() const;
- double GetPFTBiomass(const pftIndex) const
+ double GetPFTBiomass(const int pftIndex) const;
  double GetNonVascularBiomass() const;
 
  double GetMidflameWindSpeed() const;

@@ -26,6 +26,7 @@
 #include "FireweedFuelTools.h"
 #include "FireweedLiveFuelMoistureGSI.h"
 #include "FireweedMetUtils.h"
+#include "FireweedUtils.h"
 
 #include <cmath>//Temporary for isnan().
 
@@ -308,7 +309,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         //My best reading is that mosses and lichens are all leaf in DVM-DOS-TEM.  However if they
         //had stems and 'roots', i.e. rhizoids = root C, they should burn too.  Include all
         //compartments now in case for now:
-        double mossBiomass = GetNonVascularBiomass(pftNum);
+        double mossBiomass = GetPFTBiomass(pftNum);
 
         if (treatMossAsDead)
         {
@@ -392,7 +393,7 @@ double WildFire::GetLitterRawC() const
  *        only currently used for non-vascular PFTs but is there is nothing specific to those PFTs
  *        in it.
  */
-double WildFire::GetPFTBiomass(const pftIndex) const
+double WildFire::GetPFTBiomass(const int pftIndex) const
 {
   double leafC = bd[pftIndex]->m_vegs.c[I_leaf];
   double stemC = bd[pftIndex]->m_vegs.c[I_stem];//Should be 0.
@@ -412,7 +413,7 @@ double WildFire::GetNonVascularBiomass() const
 
   for (int pftIndex = 0; pftIndex < NUM_PFT; pftIndex++)
   {
-    if (cd->d_veg.nonvascular[pftNum] != 0)
+    if (cd->d_veg.nonvascular[pftIndex] != 0)
     {
       nvBiomass += GetPFTBiomass(pftIndex);
     }
