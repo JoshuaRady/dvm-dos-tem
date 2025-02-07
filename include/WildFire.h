@@ -139,6 +139,7 @@ private:
   double getBurnOrgSoilthick(const int year);
   void getBurnAbgVegetation(const int ipft, const int year);
   void getAbgVegetationBurntFractionsProcess(const int pftNum);// FW_MOD
+  double GetLitterBurntFraction() const;// FW_MOD
   void updateBurntOrgSoil(double burndepth, double& burnedsolc, double& burnedsoln,
                           double r_burn2bg_cn[NUM_PFT]);// FW_MOD
   void burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT], double& comb_vegc,

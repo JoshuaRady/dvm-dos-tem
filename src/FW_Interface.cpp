@@ -959,23 +959,18 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftNum)//Name is 
 
 /** Return the change in the litter stock after surface fire.
  * 
- * Should we return the amount after fire, the reduction, or the fractional change?
+ * We map litter to the dead fuels.  The litter is spread over multiple size classes so we need to
+ * put them back together to get the total litter change.  There may be other stocks mixed into the
+ * dead fuel depending on the mode, specifically moss and / or herbaceous fuels.
  *
- * @returns ...
+ * @returns The fraction of litter burnt in the surface fire.
  */
-double WildFire::GetLitterBurntFraction()//GetBurntLitter
+double WildFire::GetLitterBurntFraction() const
 {
-  //We map litter to the dead fuels.  The litter is spread over multiple size classes so we need to
-  //put them back together to get the total litter change.  There may be other stocks mixed into the
-  //dead fuel depending on the mode, specifically moss and / or herbaceous fuels.
-  
-  //double litterInitial = 0.0;//The total dry litter mass before fire.
-  double w_o_Initial = 0.0;//The total dry litter mass before fire.
-  //GetLitterRawC
-  //double w_o_Final = 0.0;//The total dry litter mass after fire.
-  double litterCombusted = 0.0;
-  
-  //int numFuelTypes = siteFM.numClasses;//Or siteBU.w_o_ij_Initial.size() or similar.
+  double litterBurntFraction = 0.0;//Return value.
+  double litterInitial = 0.0;//The total dry litter mass before fire.
+  double litterCombusted = 0.0;//The total dry litter mass after fire.
+
   int numDeadClasses = siteFM.NumDeadClasses();
   for (int i = 0; i < numDeadClasses; i++)
   {
@@ -984,7 +979,7 @@ double WildFire::GetLitterBurntFraction()//GetBurntLitter
     //return -1 if not.
     if (i != siteFM.DeadHerbaceousIndex())
     {
-      //It moss has been combined with the fine dead fuel we need to separate it out:
+      //If live moss has been combined with the fine dead fuel we need to separate it out:
       if ((i == 0) && md.fire_moss_as_dead_fuel)
       {
         double fineBurntFraction = 0.0;
@@ -992,23 +987,26 @@ double WildFire::GetLitterBurntFraction()//GetBurntLitter
         {
           fineBurntFraction = siteBU.combustion_ij[i] / siteBU.w_o_ij_Initial[i];
         }
-        
+
+        //All fuel in a size class burns at the same rate:
         fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetMossBiomass();
         litterInitial += fineLitterInitial;
-        litterCombusted += fineLitterInitial * fineBurntFraction;
+        litterCombusted += fineLitterInitial * fineBurntFraction;//Just the burnt fine litter.
       }
       else
       {
         litterInitial += siteBU.w_o_ij_Initial[i];
-        //w_o_Final += siteBU.w_o_ij_final[i];
         litterCombusted += siteBU.combustion_ij[i];
       }
     }
   }
 
-  //Check the numbers...
+  //We could check that litterInitial matches up with what we get from GetLitterRawC() here.
   
-  double litterBurntFraction = litterCombusted / litterInitial;
+  if (litterInitial > 0.0)//Avoid divide by zero.
+  {
+    litterBurntFraction = litterCombusted / litterInitial;
+  }
   
   if (!ValidProportion(litterBurntFraction))
   {
