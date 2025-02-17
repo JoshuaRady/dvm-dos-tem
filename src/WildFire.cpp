@@ -852,9 +852,10 @@ double WildFire::getBurnOrgSoilthick(const int year) {
   return burn_thickness;
 };
 
-/** Update soil layers and carbon based on the burn depth.
+/** Update soil layers and carbon based on the ground fire burn depth.
  *
  * The function does the following:
+ * - If using the revised wildfire model burnt litter is removed.
  * - Soil carbon and nitrogen is removed from burned soil layers (via bdall).
  * - Root carbon and nitrogen is removed from burned soil layers (via cd).
  * - Carbon and nitrogen burned away is summed and returned in function arguments.
@@ -876,10 +877,10 @@ double WildFire::getBurnOrgSoilthick(const int year) {
  * FW_MOD: The following code was moved out of WildFire::burn().  Changes are primarily in
  * formatting and comments.
  *
- * FW_NOTE: We need to separate out the "litter" to make the following work for both approaches,
- * otherwise it may get double counted.  The revised wildfire model burns the "litter" in an earlier
- * stage.
- *
+ * FW_NOTE: If the revised wildfire model is running the "litter" that is burnt in the surface fire
+ * is removed first, whether or not a ground fire occurs.  With the current code any remaining
+ * litter may burn when ground fire occurs, but we should decide that definitely what we want to
+ * have happen.
  */
 void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& burnedsoln,
                                   double r_burn2bg_cn[NUM_PFT])
@@ -899,6 +900,8 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
   // orgnaic layer (Shallow organic / peat ~ I_FIB):
   if (md.fire_process_wildfire)
   {
+    BOOST_LOG_SEV(glg, debug) << "Handling burn 'litter' carbon..."
+
     // This loop is duplicated from WildFire::GetLitterRawC():
     int topFibricIndex;// = The soil layer that contains the litter.
     for (int i = 0; i < cd->m_soil.numsl; i++)//Assumes we are starting at the top layer.
