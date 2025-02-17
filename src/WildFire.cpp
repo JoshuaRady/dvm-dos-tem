@@ -889,7 +889,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
   burnedsolc = 0.0;
   burnedsoln = 0.0;
   
-  for (int ip=0; ip<NUM_PFT; ip++) {
+  for (int ip = 0; ip < NUM_PFT; ip++) {
     r_burn2bg_cn[ip] = 0.0; //  used for vegetation below-ground (root) loss,
                            //  and calculated below
   }
@@ -899,7 +899,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
   // orgnaic layer (Shallow organic / peat ~ I_FIB):
   if (md.fire_process_wildfire)// && (cd->m_soil.type[il] == 1))
   {
-    // This lopp is duplicated from WildFire::GetLitterRawC():
+    // This loop is duplicated from WildFire::GetLitterRawC():
     int topFibricIndex;// = The soil layer that contains the litter.
     for (int i = 0; i < cd->m_soil.numsl; i++)//Assumes we are starting at the top layer.
     {
@@ -971,7 +971,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
 
         //Burn up the roots in the layer:
 //Note: The root fraction ?????
-        for (int ip=0; ip<NUM_PFT; ip++) {
+        for (int ip = 0; ip < NUM_PFT; ip++) {
           if (cd->m_veg.vegcov[ip] > 0.0) {
             r_burn2bg_cn[ip] += cd->m_soil.frootfrac[il][ip];
             cd->m_soil.frootfrac[il][ip] = 0.0;
@@ -986,8 +986,8 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
           BOOST_LOG_SEV(glg, debug) << "Burning all but "<<partleft<<"of layer "<<il;
 
           //Soil C and N:
-          burnedsolc += (1.0-partleft/cd->m_soil.dz[il]) * ilsolc;
-          burnedsoln += (1.0-partleft/cd->m_soil.dz[il]) * ilsoln;
+          burnedsolc += (1.0 - partleft/cd->m_soil.dz[il]) * ilsolc;
+          burnedsoln += (1.0 - partleft/cd->m_soil.dz[il]) * ilsoln;
           bdall->m_sois.rawc[il] *= partleft/cd->m_soil.dz[il];
           bdall->m_sois.soma[il] *= partleft/cd->m_soil.dz[il];
           bdall->m_sois.sompr[il] *= partleft/cd->m_soil.dz[il];
@@ -996,7 +996,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
           bdall->m_sois.avln[il] *= partleft/cd->m_soil.dz[il];
 
           //Burn up a fraction of the roots in the layer:
-          for (int ip=0; ip<NUM_PFT; ip++) {
+          for (int ip = 0; ip < NUM_PFT; ip++) {
             if (cd->m_veg.vegcov[ip] > 0.0) {
               r_burn2bg_cn[ip] += (1-partleft/cd->m_soil.dz[il])
                                 * cd->m_soil.frootfrac[il][ip];
