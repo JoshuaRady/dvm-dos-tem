@@ -868,7 +868,7 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
  * @returns Nothing.  Class members are updated.
  *
  * @note This function needs access to the current fuel model and data output from Burnup.  For now
- *       those are stored a private data members.
+ *       those are stored in private data members.
  */
 void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name is a bit long!
 {

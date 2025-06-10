@@ -677,7 +677,7 @@ void WildFire::burn(const int year, const int midx) {
  */
 void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
   
-  BOOST_LOG_SEV(glg, info) << "Lookup the above ground vegetation burned as a funciton of severity.";
+  BOOST_LOG_SEV(glg, info) << "Lookup the above ground vegetation burned as a function of severity.";
   BOOST_LOG_SEV(glg, info) << " - Set the ratios for 'burn to above ground C,N' and 'dead to above ground C,N' member variables.";
   BOOST_LOG_SEV(glg, info) << " - Set the 'ratio live cn' member variable";
 
