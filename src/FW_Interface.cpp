@@ -53,6 +53,7 @@ const double gPerKg = 1000;//Move to FireweedUnits.h?
  * @note As discussed in a note in WildFire::burn() the burn depth is stored in the FirData member so the
  * return value is not strictly needed.  We are keeping this code parallel to getBurnOrgSoilthick()
  * for now.
+ * @note Used in the process wildfire model only.
  */
 double WildFire::RevisedFire(const int monthIndex)//Name could change.
 {
@@ -176,6 +177,8 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
  * @param[in] cmt The number of the CMT for this location.
  *
  * @returns The fuel model number (not the index) matching the CMT input.	STUB!!!!!
+ *
+ * @note Used in the process wildfire model only.
  */
 int GetMatchingFuelModel(const int cmt)
 {
@@ -193,7 +196,7 @@ int GetMatchingFuelModel(const int cmt)
   return fuelModelNumber;
 }
 
-/** Determine fuel loadings based on the cohorts states and store then in the sites' fuel model:
+/** Determine fuel loadings based on the cohorts states and store them in the site's fuel model:
  *
  * This process is a theory of what represent fuels in DVM-DOS-TEM.  Once the mapping is defined
  * the fuel loadings are know, since model states are clearly defined.  Since the mapping itself is
@@ -236,6 +239,8 @@ int GetMatchingFuelModel(const int cmt)
  * @param[in] treatMossAsDead Should moss be treated as a fine dead fuel (true) or herbaceous live fuel (false)?
  *
  * @returns Nothing but the fuel model loadding (w_o_ij) is updated on return.
+ *
+ * @note Used in the process wildfire model only.
  *
  * ToDo:
  * - Record the mapping of stocks to fuels in some way record the value before fire so we can update
@@ -356,6 +361,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
  * 
  * @note This started as a hack and could be moved into CohortStatesToFuelLoading().  However, it
  * does make the code a bit more organized.
+ * @note Used in the process wildfire model only.
  */
 double WildFire::GetLitterRawC() const
 {
@@ -392,6 +398,7 @@ double WildFire::GetLitterRawC() const
  * @note: This code was moved out of CohortStatesToFuelLoading() to reduce code repetition.  It is
  *        only currently used for non-vascular PFTs but is there is nothing specific to those PFTs
  *        in it.
+ * @note Used in the process wildfire model only.
  */
 double WildFire::GetPFTBiomass(const int pftIndex) const
 {
@@ -406,6 +413,8 @@ double WildFire::GetPFTBiomass(const int pftIndex) const
 /** Get the total biomass for all non-vascular PFTs on the site.
  *
  * @returns The total live dry biomass (not carbon) (kg/m^2).
+ *
+ * @note Used in the process wildfire model only.
  */
 double WildFire::GetNonVascularBiomass() const
 {
@@ -437,6 +446,8 @@ double WildFire::GetNonVascularBiomass() const
  * @param[out] distribWts An empty vector to return the weights of the distribution in.
  * 
  * @returns Nothing.  Parameters are updated instead.
+ *
+ * @note Used in the process wildfire model only.
  */ 
 void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,
                                  std::vector <double>& distribWts)
@@ -579,6 +590,8 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
  * @param[in] dynamic Temporary: Should the fuel bed depth be treated as changing with fuel amounts?
  *
  * @returns Nothing.  The fuel bed depth is updated in the fuel model passed.
+ *
+ * @note Used in the process wildfire model only.
  */
 void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
 {
@@ -618,6 +631,8 @@ void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
  * @note: We could also pass in the desired height.  We currently need ~2m and will have 2m wind
  * input so height adjustment is not necessary.  Passing in the time of day would allow us to adjust
  * daily to sub-daily wind (see above).
+ *
+ * @note Used in the process wildfire model only.
  */
 double WildFire::GetMidflameWindSpeed() const
 {
@@ -651,6 +666,8 @@ double WildFire::GetMidflameWindSpeed() const
  #
  * @returns M_f_ij, the fuel moisture for all fuel classes.  This is not returned in the fuel model
  * passed in because we don't know if curing is being applied.
+ *
+ * @note Used in the process wildfire model only.
  */
 std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const
 {
@@ -804,6 +821,8 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
  * @param[in] windSpeed The wind speed at 2 meters height (m/min).
  *
  * @returns An object containing the simulation results.
+ *
+ * @note Used in the process wildfire model only.
  */
 BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raData,
                                     const double tempAir, const double windSpeed)//CalculateSurfaceCombustion?
@@ -867,6 +886,7 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
  *
  * @returns Nothing.  Class members are updated.
  *
+ * @note Used in the process wildfire model only.
  * @note This function needs access to the current fuel model and data output from Burnup.  For now
  *       those are stored in private data members.
  */
@@ -988,6 +1008,8 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
  * dead fuel depending on the mode, specifically moss and / or herbaceous fuels.
  *
  * @returns The fraction of litter burnt in the surface fire.
+ *
+ * @note Used in the process wildfire model only.
  */
 double WildFire::GetLitterBurntFraction() const
 {
@@ -1054,6 +1076,8 @@ double WildFire::GetLitterBurntFraction() const
  * Burnup produces energy over time so it may be better to link the calculations?
  *
  * @returns The soil burn depth from ground fire (meters).
+ *
+ * @note Used in the process wildfire model only.
  */
 double SimulateGroundFire()
 {
