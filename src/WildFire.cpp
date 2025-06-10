@@ -278,9 +278,9 @@ bool WildFire::isFireReturnDate(const int year, const int midx)
  *
  * @returns Nothing.
  *
- * FW_NOTE: This function has been heavily refactored for the revised wildfire implementation. Work
- * is ongoing.  Code moved out of this function remains temoraily in comments because I think it is
- * helpful, but it may just make things more confusing.
+ * FW_NOTE: This function has been heavily refactored to add the revised wildfire implementation.
+ * Large blocks of code have been removed to create WildFire::updateBurntOrgSoil() and
+ * WildFire::burnVegetation().
  */
 void WildFire::burn(const int year, const int midx) {
   BOOST_LOG_NAMED_SCOPE("burning");
@@ -315,113 +315,9 @@ void WildFire::burn(const int year, const int midx) {
     burndepth = RevisedFire(midx);
   }
 
-  // FW_DRAFT_COMMENT: Update soil layers and carbon based on the burn depth:
+  // Update soil layers and carbon based on the burn depth:
   // Calcuations are the same for both models.
-  // FW_NOTE: The following code has been moved to WildFire::updateBurntOrgSoil().
-//   BOOST_LOG_SEV(glg, info) << "Setup some temporary pools for tracking various burn related attributes (depths, C, N)";
-//   double totbotdepth = 0.0;
-//   double burnedsolc = 0.0;
-//   double burnedsoln = 0.0;
-//   double r_burn2bg_cn[NUM_PFT]; // ratio of dead veg. after burning
-//   for (int ip=0; ip<NUM_PFT; ip++) {
-//     r_burn2bg_cn[ip] = 0.; //  used for vegetation below-ground (root) loss,
-//                            //  and calculated below
-//   }
-// 
-//   BOOST_LOG_SEV(glg, debug) << "Handle burning the soil (loop over all soil layers)...";
-//   for (int il = 0; il < cd->m_soil.numsl; il++) {
-// 
-//     BOOST_LOG_SEV(glg, debug) << "== Layer Info == "
-//                               << "   type:" << cd->m_soil.type[il] // 0:moss 1:shlwpeat 2:deeppeat 3:mineral
-//                               << "   dz:" << cd->m_soil.dz[il]
-//                               << "   top:" << cd->m_soil.z[il]
-//                               << "   bottom:"<< cd->m_soil.z[il] + cd->m_soil.dz[il];
-// 
-//     if(cd->m_soil.type[il] <= 2) {
-// 
-//       totbotdepth += cd->m_soil.dz[il];
-// 
-//       double ilsolc =  bdall->m_sois.rawc[il] + bdall->m_sois.soma[il] +
-//                        bdall->m_sois.sompr[il] + bdall->m_sois.somcr[il];
-// 
-//       double ilsoln =  bdall->m_sois.orgn[il] + bdall->m_sois.avln[il];
-// 
-//       if(totbotdepth <= burndepth) { //remove all the orgc/n in this layer
-//         BOOST_LOG_SEV(glg, debug) << "Haven't reached burndepth (" << burndepth << ") yet. Remove all org C and N in this layer";
-//         burnedsolc += ilsolc;
-//         burnedsoln += ilsoln;
-//         bdall->m_sois.rawc[il] = 0.0;
-//         bdall->m_sois.soma[il] = 0.0;
-//         bdall->m_sois.sompr[il]= 0.0;
-//         bdall->m_sois.somcr[il]= 0.0;
-//         bdall->m_sois.orgn[il] = 0.0;
-//         bdall->m_sois.avln[il] = 0.0;
-// 
-//         for (int ip=0; ip<NUM_PFT; ip++) {
-//           if (cd->m_veg.vegcov[ip]>0.) {
-//             r_burn2bg_cn[ip] += cd->m_soil.frootfrac[il][ip];
-//             cd->m_soil.frootfrac[il][ip] = 0.0;
-//           }
-//         }
-//       } else {
-//         BOOST_LOG_SEV(glg, debug) << "The bottom of this layer (il: " << il << ") is past the 'burndepth'. Find the remaining C and N as a fraction of layer thickness";
-//         double partleft = totbotdepth - burndepth;
-// 
-//         // Calculate the remaining C, N
-//         if (partleft < cd->m_soil.dz[il]) { // <-- Maybe this should be an assert instead of an if statement??
-//           BOOST_LOG_SEV(glg, debug) << "Burning all but "<<partleft<<"of layer "<<il;
-//           burnedsolc += (1.0-partleft/cd->m_soil.dz[il]) * ilsolc;
-//           burnedsoln += (1.0-partleft/cd->m_soil.dz[il]) * ilsoln;
-//           bdall->m_sois.rawc[il] *= partleft/cd->m_soil.dz[il];
-//           bdall->m_sois.soma[il] *= partleft/cd->m_soil.dz[il];
-//           bdall->m_sois.sompr[il] *= partleft/cd->m_soil.dz[il];
-//           bdall->m_sois.somcr[il] *= partleft/cd->m_soil.dz[il];
-//           bdall->m_sois.orgn[il] *= partleft/cd->m_soil.dz[il];
-//           bdall->m_sois.avln[il] *= partleft/cd->m_soil.dz[il];
-// 
-//           for (int ip=0; ip<NUM_PFT; ip++) {
-//             if (cd->m_veg.vegcov[ip] > 0.0) {
-//               r_burn2bg_cn[ip] += (1-partleft/cd->m_soil.dz[il])
-//                                 * cd->m_soil.frootfrac[il][ip];
-//               cd->m_soil.frootfrac[il][ip] *= partleft/cd->m_soil.dz[il];
-//             }
-//           }
-//         } else {
-//           // should never get here??
-//           BOOST_LOG_SEV(glg, warn) << "The remaining soil after a burn is greater than the thickness of this layer. Something is wrong??";
-//           BOOST_LOG_SEV(glg, warn) << "partleft: " << partleft << "cd->m_soil.dz["<<il<<"]: " << cd->m_soil.dz[il];
-//           break;
-//         }
-//       }
-//     } else {   //Mineral soil layers
-//       BOOST_LOG_SEV(glg, info) << "Layer type:" << cd->m_soil.type[il] << ". Should be a non-organic soil layer? (greater than type 2)";
-//       BOOST_LOG_SEV(glg, info) << "Not much to do here. Can't really burn non-organic layers.";
-// 
-//       if(totbotdepth <= burndepth) { //may not be needed, but just in case
-//         BOOST_LOG_SEV(glg, info) << "For some reason totbotdepth <= burndepth, so we are setting fd->fire_soid.burnthick = totbotdepth??";
-//         fd->fire_soid.burnthick = totbotdepth;
-//       }
-//     }
-//   } // end soil layer loop
-// 
-//   //Setting relative organic layer burn (rolb) value
-//   fd->fire_soid.rolb = fd->fire_soid.burnthick / totbotdepth;
-// 
-//   // needs to re-do the soil rootfrac for each pft which was modified above
-//   //   (in burn soil layer)
-//   BOOST_LOG_SEV(glg, info) << "Re-do the soil root fraction for each PFT modified by burning?";
-//   for (int ip = 0; ip < NUM_PFT; ip++) {
-//     double rootfracsum = 0.0;
-// 
-//     for (int il = 0; il < cd->m_soil.numsl; il++) {
-//       rootfracsum += cd->m_soil.frootfrac[il][ip];
-//     }
-// 
-//     for (int il =0; il <cd->m_soil.numsl; il++) {
-//       cd->m_soil.frootfrac[il][ip] /= rootfracsum;
-//     }
-//   }
-  //Variables to hold return values:
+  // Variables to hold return values:
   double burnedsolc = 0.0;
   double burnedsoln = 0.0;
   double r_burn2bg_cn[NUM_PFT];
@@ -455,128 +351,14 @@ void WildFire::burn(const int year, const int midx) {
   double reta_solc = burnedsolc * firpar.r_retain_c;   //together with veg.-burned C return, This will be put into soil later
   double reta_soln = burnedsoln * firpar.r_retain_n;   //together with veg.-burned N return, This will be put into soil later
 
-  BOOST_LOG_SEV(glg, info) << "Handle Vegetation burning and mortality...";//Move message into burnVegetation()?????
-  // FW_NOTE: The following commeted code has been moved to WildFire::burnVegetation().
+  //Live vegetation burning and mortality:
   //The live vegetation mass that combusts, summed for all PFTs:
   double comb_vegc = 0.0;
   double comb_vegn = 0.0;
-//   //(Standing) dead vegetation mass that combusts:
-//   double comb_deadc = 0.0;
-//   double comb_deadn = 0.0;
+
   //The dead mass of roots (belowground vegetation):
   double dead_bg_vegc = 0.0;
   double dead_bg_vegn = 0.0;
-//   double veg_2_dead_C = 0.0;//Only local...
-//   double veg_2_dead_N = 0.0;//Only local...
-// 
-//   bdall->m_vegs.deadc0 = 0.0;//Zeroing the standing dead pools
-//   bdall->m_vegs.deadn0 = 0.0;
-// 
-//   for (int ip = 0; ip < NUM_PFT; ip++) {
-// 
-//     if (cd->m_veg.vegcov[ip] > 0.0) {
-//       BOOST_LOG_SEV(glg, info) << "Some of PFT"<<ip<<" exists (coverage > 0). Burn it!";
-// 
-//       // vegetation burning/dead/living fraction for above-ground
-//       getBurnAbgVegetation(ip, year);
-// 
-//       // root death ratio: must be called after both above-ground and
-//       // below-ground burning. r_live_cn is same for both above-ground
-//       // and below-ground
-//       double r_dead2bg_cn = 1.0-r_burn2bg_cn[ip]-r_live_cn;
-// 
-//       // Dead veg C, N. Assuming all previous deadc burned.
-//       comb_deadc += bd[ip]->m_vegs.deadc;
-//       // Assuming all previous deadn burned
-//       comb_deadn += bd[ip]->m_vegs.deadn;
-//       
-//       //Zeroing the standing dead pools
-//       bd[ip]->m_vegs.deadc0 = 0.0;
-//       bd[ip]->m_vegs.deadn0 = 0.0;
-// 
-//       veg_2_dead_C = (bd[ip]->m_vegs.c[I_leaf] + bd[ip]->m_vegs.c[I_stem]) * r_dead2ag_cn;
-//       veg_2_dead_N = (bd[ip]->m_vegs.strn[I_leaf] + bd[ip]->m_vegs.strn[I_stem]) * r_dead2ag_cn;
-// 
-//       // Above-ground veg. burning/death during fire
-//       // when summing, needs adjusting by 'vegcov'
-//       comb_vegc += bd[ip]->m_vegs.c[I_leaf] * r_burn2ag_cn;
-// 
-//       // We define dead c/n as the not-falling veg (or binding with living veg)
-//       // during fire,
-//       bd[ip]->m_vegs.deadc = bd[ip]->m_vegs.c[I_leaf] * r_dead2ag_cn;
-//       // Which then is the source of ground debris (this is for woody plants
-//       // only, others could be set deadc/n to zero)
-//       bd[ip]->m_vegs.c[I_leaf] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);
-// 
-//       comb_vegc += bd[ip]->m_vegs.c[I_stem] * r_burn2ag_cn;
-//       bd[ip]->m_vegs.deadc += bd[ip]->m_vegs.c[I_stem] * r_dead2ag_cn;
-//       bd[ip]->m_vegs.c[I_stem] *= (1.0 - r_burn2ag_cn-r_dead2ag_cn);
-// 
-//       comb_vegn += bd[ip]->m_vegs.strn[I_leaf] * r_burn2ag_cn;
-//       bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_leaf] * r_dead2ag_cn;
-//       bd[ip]->m_vegs.strn[I_leaf] *= (1.0 - r_burn2ag_cn-r_dead2ag_cn);
-// 
-//       comb_vegn += bd[ip]->m_vegs.strn[I_stem] * r_burn2ag_cn;
-//       bd[ip]->m_vegs.deadn += bd[ip]->m_vegs.strn[I_stem] * r_dead2ag_cn;
-//       bd[ip]->m_vegs.strn[I_stem] *= (1.0 - r_burn2ag_cn - r_dead2ag_cn);
-// 
-//       // Below-ground veg. (root) burning/death during fire
-//       comb_vegc += bd[ip]->m_vegs.c[I_root] * r_burn2bg_cn[ip];
-//       comb_vegn += bd[ip]->m_vegs.strn[I_root] * r_burn2bg_cn[ip];
-// 
-//       // For the dead below-ground C caused by fire, they are put into original layer
-//       double deadc_tmp = bd[ip]->m_vegs.c[I_root]*r_dead2bg_cn;
-//       for (int il = 0; il < cd->m_soil.numsl; il++) {
-//         if (cd->m_soil.frootfrac[il][ip] > 0.0) {
-//           //for this, 'rootfrac' must be updated above
-//           bdall->m_sois.somcr[il] += deadc_tmp * cd->m_soil.frootfrac[il][ip];
-//         }
-//       }
-//       dead_bg_vegc += deadc_tmp;
-//       bd[ip]->m_vegs.c[I_root] *= (1.0 - r_burn2bg_cn[ip] - r_dead2bg_cn);
-// 
-//       // For the dead below-ground N caused by fire, they are put into original layer
-//       double deadn_tmp = bd[ip]->m_vegs.strn[I_root] * r_dead2bg_cn; //this is needed below
-//       for (int il =0; il <cd->m_soil.numsl; il++) {
-//         if (cd->m_soil.frootfrac[il][ip] > 0.0) {
-//           //for this, 'rootfrac' must be updated above
-//           bdall->m_sois.somcr[il] += deadn_tmp*cd->m_soil.frootfrac[il][ip];
-//         }
-//       }
-//       dead_bg_vegn +=deadn_tmp;
-//       bd[ip]->m_vegs.strn[I_root] *= (1.0 - r_burn2bg_cn[ip] - r_dead2bg_cn);
-// 
-//       // one more veg N pool (labile N)
-//       comb_vegn += bd[ip]->m_vegs.labn * (1.0 - r_live_cn);//assuming all labn emitted, leaving none into deadn
-//       bd[ip]->m_vegs.labn *= r_live_cn;
-// 
-//       // finally, we have:
-//       bd[ip]->m_vegs.call = bd[ip]->m_vegs.c[I_leaf]
-//                             + bd[ip]->m_vegs.c[I_stem]
-//                             + bd[ip]->m_vegs.c[I_root];
-//       bd[ip]->m_vegs.nall = bd[ip]->m_vegs.strn[I_leaf]
-//                             + bd[ip]->m_vegs.strn[I_stem]
-//                             + bd[ip]->m_vegs.strn[I_root]
-//                             + bd[ip]->m_vegs.labn;
-// 
-//     } // end of 'cd->m_veg.vegcov[ip] > 0.0' (no coverage, nothing to do)
-// 
-//     //Writing out initial standing dead pools. These values will be
-//     //used to compute the rate of decomposition of the standing dead - 
-//     //1/9th of the original value per year.
-//     bd[ip]->m_vegs.deadc0 = veg_2_dead_C;
-//     bd[ip]->m_vegs.deadn0 = veg_2_dead_N;
-// 
-//     //Writing out initial values of standing dead pools to the pools
-//     //actually used for computation. These values will be decremented
-//     //by 1/9th the original value per year.
-//     bd[ip]->m_vegs.deadc = veg_2_dead_C;
-//     bd[ip]->m_vegs.deadn = veg_2_dead_N;
-// 
-//   } // end pft loop
-// 
-//   double reta_vegc = (comb_vegc + comb_deadc) * firpar.r_retain_c;
-//   double reta_vegn = (comb_vegn + comb_deadn) * firpar.r_retain_n;
 
   // FW_NOTE: The follow blocks of code where already commented out and moved into the above.
   //Writing out initial standing dead pools. These values will be
@@ -591,6 +373,7 @@ void WildFire::burn(const int year, const int midx) {
   //bdall->m_vegs.deadc = veg_2_dead_C;
   //bdall->m_vegs.deadn = veg_2_dead_N;
 
+  // Retained burnt carbon and nitrogen:
   double reta_vegc = 0.0;
   double reta_vegn = 0.0;
   burnVegetation(year, r_burn2bg_cn, comb_vegc, comb_vegn, dead_bg_vegc, dead_bg_vegn, reta_vegc, reta_vegn);
@@ -1077,6 +860,8 @@ void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT]
                               double& comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
                               double& reta_vegc, double& reta_vegn)//Name? vegMortAndCombustion()
 {
+  BOOST_LOG_SEV(glg, info) << "Handle vegetation burning and mortality...";
+  
   // The live vegetation mass that combusts, summed for all PFTs:
   comb_vegc = 0.0;
   comb_vegn = 0.0;
