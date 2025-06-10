@@ -673,6 +673,7 @@ void WildFire::burn(const int year, const int midx) {
  * @returns Nothing.  Class members are updated.
  *
  * @note The function name is a bit unclear.
+ * @note Used in the classic wildfire model only.
  */
 void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
   
@@ -710,7 +711,7 @@ void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
 }
 
 
-/** Find the thickness of organic soil to burn.
+/** Find the thickness of organic soil to burn (classic wildfire model).
  * Use severity (lookup? or derive?) and soil moisture properties
  * (volumetric soil moisture).
  * Three rules:
@@ -721,6 +722,8 @@ void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
  * @param[in] year The current year.
  *
  * @returns The soil burn depth from ground fire (meters).
+ *
+ * @note Used in the classic wildfire model only.
  */
 double WildFire::getBurnOrgSoilthick(const int year) {
 
@@ -1060,7 +1063,7 @@ int WildFire::getFRI(){
   return fri;
 }
 
-/** Handle vegetation fire mortality and burning of vegetation and standing dead stock (classic method).
+/** Handle vegetation fire mortality and burning of vegetation and standing dead stock.
  *
  * This function takes the previously calculated root burn ratio and calculates the effects of fire
  * on the abovegournd vegetation.  These fire effects are applied to update PFT states (via bd and
