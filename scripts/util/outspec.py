@@ -87,6 +87,8 @@ def csv_file_to_data_dict_list(fname):
   
   data = []  
   for r in csv.DictReader(s):
+    if None in r.keys():
+      raise RuntimeError(f"Bad output spec file! Check your fields for {r['Name']}")
     if sorted(r.keys()) != expected_cols_sorted:
       print("PROBLEM WITH KEYS: ", sorted(r.keys()))
       if 'Name' in list(r.keys()):
@@ -385,7 +387,7 @@ def cmdline_run(args):
       # and TotNitrogentUptake (in the cal targets) is the sum of sn and ln...
       #('Nuptake','NUPTAKE'), 
       ('VegCarbon','VEGC'),
-      ('VegStructuralNitrogen','VEGN'),
+      ('VegStructuralNitrogen','VEGNSTR'),
       ('MossDeathC','MOSSDEATHC'),
       ('CarbonShallow','SHLWC'),
       ('CarbonDeep','DEEPC'),
@@ -402,7 +404,7 @@ def cmdline_run(args):
     for v in "INGPP INNPP NPP GPP".split():
       data = toggle_on_variable(data, v, 'yearly pft', verbose=args.DEBUG)
 
-    for v in "VEGC VEGN".split():
+    for v in "VEGC VEGNSTR".split():
       data = toggle_on_variable(data, v, 'yearly pft compartment', verbose=args.DEBUG)
 
     data = toggle_on_variable(data, 'CMTNUM', 'yearly', verbose=args.DEBUG)
