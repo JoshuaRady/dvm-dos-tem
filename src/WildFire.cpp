@@ -145,7 +145,7 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
  *
  * @returns Should a wildfire ignition occur at this time?
  */
-bool WildFire::should_ignite(const int year, const int midx, const std::string& stage) {// FW_MOD
+bool WildFire::should_ignite(const int year, const int midx, const std::string& stage) {
 
   BOOST_LOG_SEV(glg, info) << "determining fire ignition for year:" << year
                            << ", monthidx:" << midx << ", stage:" << stage;
@@ -228,13 +228,7 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
         break;
       }
     }
-  //} else {// FW_NOTE: This check is broken now due to fire switch checks. It requires more logic.
   }
-  // FW_NOTE: This will work:
-  //else if (stage.compare("pre-run") != 0 && stage.compare("eq-run") != 0 &&
-  //         stage.compare("sp-run") != 0 && stage.compare("tr-run") != 0 &&
-  //         stage.compare("sc-run") != 0)
-  // FW_NOTE: But this will be more efficient:
   else if (!(stage.compare("pre-run") == 0 || stage.compare("eq-run") == 0 ||
              stage.compare("sp-run") == 0 || stage.compare("tr-run") == 0 ||
              stage.compare("sc-run") == 0))
@@ -247,7 +241,6 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
   return ignite;
 }
 
-// FW_MOD_START:
 /** Determine if the current date, by year and month (index), aligns with the fire return interval.
  * 
  * @param[in] year The current year.
@@ -276,7 +269,7 @@ bool WildFire::isFireReturnDate(const int year, const int midx)
     // Do nothing: correct year, wrong month.
   }
   return false;
-}// FW_MOD_END.
+}
 
 /** Burn vegetation and soil organic carbon.
  * 
@@ -295,20 +288,18 @@ void WildFire::burn(const int year, const int midx) {
 
   double burndepth = 0.0;
 
-  // FW_DRAFT_COMMENT: Clear the FireData object:
+  // Clear the FireData object:
   BOOST_LOG_SEV(glg, debug) << fd->report_to_string("Before WildFire::burn(..)");
   BOOST_LOG_SEV(glg, info) << "Burning (simply clearing?) the 'FireData object...";
   fd->burn();
   BOOST_LOG_SEV(glg, debug) << fd->report_to_string("After FirData::burn(..)");
 
-  // FW_Note:
   // Determine the fire model we are using:
   if (!md.fire_process_wildfire)
   {
     BOOST_LOG_SEV(glg, info) << "Using the old/original/classic wildfire model.";//This could be moved before this function.
 
-    // FW_DRAFT_COMMENT: Calculate the burn depth based on the fire severity:
-    // for soil part and root burning
+    // Calculate the burn depth based on the fire severity:
     // FIX: there isn't really a reason for getBurnOrgSoilthick to return a value
     // as it has already set the "burn thickness" value in FirData...
     burndepth = getBurnOrgSoilthick(year);
@@ -823,7 +814,7 @@ double WildFire::getBurnOrgSoilthick(const int year) {
   }
   BOOST_LOG_SEV(glg, debug) << "Calculated burn thickness using VSM constraint: " << burn_thickness;
 
-  //FW_NOTE: These are preexisting commented code blocks.  There status is not known.
+  //FW_NOTE: These are preexisting commented code blocks.  Their status is not known.
 // always burn all moss, even if the severity is really low.
 //  if( burn_thickness < cd->m_soil.mossthick ) {
 //    BOOST_LOG_SEV(glg, debug) << "Whoops! Shallow burn, but we always burn all the moss!";
@@ -865,7 +856,7 @@ double WildFire::getBurnOrgSoilthick(const int year) {
  * Togeather these values are used to calculate fire fluxes.
  *
  * @returns Nothing.  Parameters are uodated.
- 
+ *
  * FW_MOD: The following code was moved out of WildFire::burn().  Changes are primarily in
  * formatting and comments.
  *
@@ -887,8 +878,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
                            //  and calculated below
   }
 
-  // FW_MOD:
-  // The revised wildfire handles litter burning explicitly.  The litter is part of the top
+  // The revised wildfire model handles litter burning explicitly.  The litter is part of the top
   // orgnaic layer (Shallow organic / peat ~ I_FIB):
   if (md.fire_process_wildfire)
   {
@@ -912,7 +902,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
 
     bdall->m_sois.rawc[topFibricIndex] *= (1.0 - litterBurntFraction);//Unburnt litter carbon.
   }
-  // FW_NOTE: The following code will treat any remain litter as burnable by the ground fire.
+  // FW_NOTE: The following code will treat any remain litter as burnable by the ground fire model.
   // We need to decide if the remaining litter, which will be skewed twords larger sizes, should
   // be spared in ground fire.
 
