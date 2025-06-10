@@ -129,8 +129,6 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
  *  There are two modes of operation: "FRI" (fire recurrence interval) and
  *  "exp". Pre-run, equilibrium, and spin-up stages all use the FRI settings
  *  for determining whether or not a fire should ignite, while transient and 
- 												*  scenario stages use explicit dates for fire occurrence.
- FW_MOD:
  *  scenario stages traditionally used explicit dates for fire occurrence.  This
  *  remains the default behavior but fire return interval may also be specified
  *  for all run stages.
@@ -658,10 +656,8 @@ void WildFire::burn(const int year, const int midx) {
   }
 };
 
-
-// above ground burning ONLY, based on fire severity indirectly or directly
-/*
-
+/** above ground burning ONLY, based on fire severity indirectly or directly (original description)
+ *
  * This function determines the fractions of a given PFT that are combusted, are killed but are not
  * combusted, and that survive fire.  This is based on the current fire severity and input
  * parameters.
@@ -715,20 +711,18 @@ void WildFire::getBurnAbgVegetation(const int ipft, const int year) {
 
 
 /** Find the thickness of organic soil to burn.
-* Use severity (lookup? or derive?) and soil moisture prpoperties
-* (volumetric soil moisture).
-* Three rules:
-*   1. only organic layer can be burned
-*   2. can't exceed a pixel specified 'max burn thickness'
-*   3. should not burn into "wet" organic soil layers
-
+ * Use severity (lookup? or derive?) and soil moisture properties
+ * (volumetric soil moisture).
+ * Three rules:
+ *   1. only organic layer can be burned
+ *   2. can't exceed a pixel specified 'max burn thickness'
+ *   3. should not burn into "wet" organic soil layers
+ *
  * @param[in] year The current year.
  *
  * @returns The soil burn depth from ground fire (meters).
- *
  */
 double WildFire::getBurnOrgSoilthick(const int year) {
-
 
   BOOST_LOG_SEV(glg, info) << "Find the amount of organic soil that is burned as a function of fire severity.";
 //assert((0 <= severity && severity < 5) && "Invalid fire severity! ");
@@ -1044,9 +1038,15 @@ void WildFire::setFirData(FirData* fdp) {
   fd =fdp;
 }
 
+/** Make an internal copy of the model data.
+ *
+ * @param[in] modelDataPtr A pointer to the model data.
+ *
+ * @returns Nothing.
+ */
 void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
 {
-  // FW_NOTE: The parental copy of md is deallocated or something before we are able to use
+  // The parental copy of md is deallocated or something before we are able to use
   // it and the strings in md becoming invalid.  Copy the data so we can use it later:
   md = *modelDataPtr;
 }
@@ -1060,8 +1060,8 @@ int WildFire::getFRI(){
   return fri;
 }
 
-/** FW_MOD: Handle vegetation fire mortality and burning of vegetation and standing dead stock (classic method).
- * 
+/** Handle vegetation fire mortality and burning of vegetation and standing dead stock (classic method).
+ *
  * This function takes the previously calculated root burn ratio and calculates the effects of fire
  * on the abovegournd vegetation.  These fire effects are applied to update PFT states (via bd and
  * bdall).  The total values of C and N for three fluxes are returned (via parameters).
