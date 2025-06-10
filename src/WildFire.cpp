@@ -288,7 +288,7 @@ bool WildFire::isFireReturnDate(const int year, const int midx)
  * @returns Nothing.
  *
  * FW_NOTE: This function has been heavily refactored for the revised wildfire implementation. Work
- * is ongoing.  Code moved out of this fucntion remains temoraily in comments because I think it is
+ * is ongoing.  Code moved out of this function remains temoraily in comments because I think it is
  * helpful, but it may just make things more confusing.
  */
 void WildFire::burn(const int year, const int midx) {
@@ -879,7 +879,7 @@ double WildFire::getBurnOrgSoilthick(const int year) {
  *
  * FW_NOTE: If the revised wildfire model is running the "litter" that is burnt in the surface fire
  * is removed first, whether or not a ground fire occurs.  With the current code any remaining
- * litter may burn when ground fire occurs, but we should decide that definitely what we want to
+ * litter may burn when ground fire occurs, but we should decide that is definitely what we want to
  * have happen.
  */
 void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& burnedsoln,
@@ -1051,7 +1051,7 @@ void WildFire::setFirData(FirData* fdp) {
 
 void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
 {
-  // FW_NOTE: The parental copy of md becomes is dealoacated or somethign before we are able to use
+  // FW_NOTE: The parental copy of md is deallocated or something before we are able to use
   // it and the strings in md becoming invalid.  Copy the data so we can use it later:
   md = *modelDataPtr;
 }
@@ -1069,7 +1069,7 @@ int WildFire::getFRI(){
  * 
  * This function takes the previously calculated root burn ratio and calculates the effects of fire
  * on the abovegournd vegetation.  These fire effects are applied to update PFT states (via bd and
- * bdall).  The total valuse of C and N for three fluxes are returned (via parameters).
+ * bdall).  The total values of C and N for three fluxes are returned (via parameters).
  *
  * @param[in] year The current year.
  * @param[in] r_burn2bg_cn An array with the ratio of root carbon burned for each PFT.
