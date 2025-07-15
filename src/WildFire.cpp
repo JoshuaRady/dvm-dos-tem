@@ -827,6 +827,12 @@ void WildFire::setModelData(ModelData* modelDataPtr)//FW_MOD
   md = *modelDataPtr;
 }
 
+/** Save a pointer to the cohort's Climate object.
+ *
+ * @param[in] climatePtr A pointer to the Climate object.
+ *
+ * @returns Nothing.
+ */
 void WildFire::setClimate(Climate* climatePtr)//FW_MOD
 {
   climate = climatePtr;
