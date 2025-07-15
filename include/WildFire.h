@@ -51,6 +51,7 @@ public:
   void setCohortLookup(CohortLookup* chtlup);
   void setModelData(ModelData* modelDataPtr);// FW_MOD
   void setClimate(Climate* climatePtr);// FW_MOD
+  void setGround(Ground* groundPtr);// FW_MOD
 
   void initializeParameter();
   void initializeState();
@@ -127,6 +128,7 @@ private:
   BgcData * bdall;
   ModelData md;// FW_MOD: The revised fire model has input file paths it needs.
   Climate * climate;// FW_MOD: The revised fire model needs environmental conditions.
+  Ground * ground;// FW_MOD: The revised fire model needs access to the soil layer properties.
 
   //FW_NOTE:
   // The following are only used in the process based wildfire mode and will only be valid after

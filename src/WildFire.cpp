@@ -838,6 +838,17 @@ void WildFire::setClimate(Climate* climatePtr)//FW_MOD
   climate = climatePtr;
 }
 
+/** Save a pointer to the cohort's Ground object.
+ *
+ * @param[in] climatePtr A pointer to the Ground object.
+ *
+ * @returns Nothing.
+ */
+void WildFire::setGround(Ground* groundPtr)//FW_MOD
+{
+  ground = groundPtr;
+}
+
 int WildFire::getFRI(){
   return fri;
 }
