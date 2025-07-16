@@ -23,6 +23,7 @@
 
 #include "FireweedFuelModels.h"
 #include "BurnupFuelModelInterface.h"
+#include "GFProfile.h"
 
 using namespace std;
 
@@ -159,6 +160,9 @@ private:
 
  double GetMidflameWindSpeed() const;
  std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
+
+ double SimulateGroundFire(const double fireHeatInput) const;
+ GFProfile GroundFireGetSoilProfile() const;
  // FW_MOD_END.
 
   ////////

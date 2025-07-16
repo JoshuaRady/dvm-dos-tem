@@ -24,6 +24,5 @@ bool IsShrub(const int cmtNumber, const int pftIdx);
 void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic = true);
 BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raData, const double tempAir, 
                                     const double windSpeed);
-double SimulateGroundFire();
 
 #endif //FW_INTERFACE_H

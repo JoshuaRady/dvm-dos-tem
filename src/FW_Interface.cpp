@@ -1076,7 +1076,7 @@ double WildFire::GetLitterBurntFraction() const
  *
  * @note Used in the process wildfire model only.
  */
-double SimulateGroundFire(const double fireHeatInput)
+double WildFire::SimulateGroundFire(const double fireHeatInput) const
 {
   BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()...";
 
@@ -1109,7 +1109,7 @@ double SimulateGroundFire(const double fireHeatInput)
  *
  * @note Used in the process wildfire model only.
  */
-GFProfile GroundFireGetSoilProfile()
+GFProfile WildFire::GroundFireGetSoilProfile() const
 {
   layerThickess_cm = 1.0;//Soil layer thickness in cm.	This should probably be a model setting parameter!!!!!
   
