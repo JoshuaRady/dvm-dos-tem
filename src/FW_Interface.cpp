@@ -1073,7 +1073,7 @@ double WildFire::GetLitterBurntFraction() const
  * phases of fire.  The ground fire model is currently under development elsewhere.
  *
  * Inputs (proposed):
- * - The structure and state of the soil column.
+ * [- The structure and state of the soil column.  Actually we get that within the function.]
  * - Energy inputs from aboveground fire components.
  * Burnup produces energy over time so it may be better to link the calculations?
  *
@@ -1091,13 +1091,15 @@ double SimulateGroundFire()
   //If not record that ignition failed and return.
   
   //Otherwise continue to calculate progressive smoldering downward.
-  //This is the same problem of drying and heating to combustion as we move down.  However, we can
-  //safely assume that the fire will not continue if we reach mineral soil, bedrock, permafrost, or
-  //the water table.
+  //This is the same problem of drying and heating to combustion as we move down.
   
   //
   GFProfile gfProfile = GroundFireGetSoilProfile();
-  burnDepth = GroundFireCalculateBurnDepthSimple(gfProfile);
+  burnDepth = DominoGroundFire(gfProfile, ... fireHeatInput????);
+      //heatLossFactor = 0.83,
+      //d_max = 5.0, const double fireHeatInput = 0.0);
+  //We need heatLossFactor and d_max.  These should probably be model parameters.
+  //We need the heat from the surface fire passed in.
   
   return burnDepth;
 }
