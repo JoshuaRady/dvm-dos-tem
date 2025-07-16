@@ -1069,38 +1069,23 @@ double WildFire::GetLitterBurntFraction() const
  * This effectively replaces the functionality of WildFire::getBurnOrgSoilthick() in the original
  * wildfire implementation.
  *
- * This is currently a stub and a place to work out how this simulation phase connects to the other
- * phases of fire.  The ground fire model is currently under development elsewhere.
- *
- * Inputs (proposed):
- * [- The structure and state of the soil column.  Actually we get that within the function.]
- * - Energy inputs from aboveground fire components.
- * Burnup produces energy over time so it may be better to link the calculations?
+ * @param fireHeatInput Total longwave heat input into the soil from the surface fire (kJ/m^3).
+ * @note Burnup produces energy over time so it may be better to link the calculations?
  *
  * @returns The soil burn depth from ground fire (meters).
  *
  * @note Used in the process wildfire model only.
  */
-double SimulateGroundFire()
+double SimulateGroundFire(const double fireHeatInput)
 {
-  BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()... [Stub]";
+  BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()...";
 
-  double burnDepth = 0;
-  
-  //Calculate if the energy output is sufficiency to ignite the surface layer.
-  //If not record that ignition failed and return.
-  
-  //Otherwise continue to calculate progressive smoldering downward.
-  //This is the same problem of drying and heating to combustion as we move down.
-  
-  //
-  GFProfile gfProfile = GroundFireGetSoilProfile();
-  burnDepth = DominoGroundFire(gfProfile, ... fireHeatInput????);
-      //heatLossFactor = 0.83,
-      //d_max = 5.0, const double fireHeatInput = 0.0);
-  //We need heatLossFactor and d_max.  These should probably be model parameters.
-  //We need the heat from the surface fire passed in.
-  
+  GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
+  gfProfile.t_ig = 300.0;//This should be a parameter or be calculated FW_PARAM!!!!!
+  double burnDepth = DominoGroundFire(gfProfile, fireHeatInput) / 100.0;//Convert cm to meters.
+  //For now we use the default values for heatLossFactor and d_max. FW_PARAM!!!!!
+  //These should probably be model parameters.
+
   return burnDepth;
 }
 
