@@ -28,7 +28,7 @@
 #include "FireweedMetUtils.h"
 #include "FireweedUtils.h"
 
-#include "../include/GFProfile.h"
+#include "../include/GroundFire.h"
 
 #include <cmath>//Temporary for isnan().
 
@@ -1119,6 +1119,8 @@ double SimulateGroundFire()
  * Snow needs to be considered.
  *
  * @returns A GFProfile object containing soil properties by layers of even thickness.
+ *
+ * @note Used in the process wildfire model only.
  */
 GFProfile GroundFireGetSoilProfile()
 {
@@ -1166,26 +1168,6 @@ GFProfile GroundFireGetSoilProfile()
   gfProfile.Interpolate(layerThickess_cm);
 
   return gfProfile;
-}
-
-/** Take a soil profile with values only specified for specific layers and interpolate between them
- * filling in values for remaining layers.
- *
- * @returns A yet to be specified object containing soil properties by layers of even thickness.
- * Or edit in place?
- */
-//GFProfile GroundFireInterpolateProfile(GFProfile)
-void GroundFireInterpolateProfile(GFProfile& gfProfile)
-{
-	//Interpolate between each set of values:
-	
-	//Find a pair of values...
-	//Interpolate from the first to the last for each soil property...
-	//Use the bottom of the last group as the top of the next...
-	//Until the bottom is reached...
-	//What do we do if there are empty layer before the first or after the last value?????
-	
-	//return gfProfile;
 }
 
 /** Perform a downward smoldering ground fire simulation and return the calculated burn depth.
