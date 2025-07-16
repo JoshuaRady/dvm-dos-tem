@@ -1169,18 +1169,3 @@ GFProfile GroundFireGetSoilProfile()
 
   return gfProfile;
 }
-
-/** Perform a downward smoldering ground fire simulation and return the calculated burn depth.
- * This implementation uses the simplified / medium complexity model iteration 17?????, see Proj. 11
- * Exp. 17.
- *
- * @param[in] gfProfile A description of the physical properties the portion of the soil column that
- *                      could burn.
- *
- * @returns The soil burn depth from ground fire (cm or meters?????).
- */
-double GroundFireCalculateBurnDepthSimple(GFProfile &gfProfile)//Name will change.
-//double GFCalculateBurnDepthSimple(GFProfile &gfProfile)
-{
-  
-}
