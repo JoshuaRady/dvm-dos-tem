@@ -1111,14 +1111,16 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
  */
 GFProfile WildFire::GroundFireGetSoilProfile() const
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering GroundFireGetSoilProfile()...";
+
   layerThickess_cm = 1.0;//Soil layer thickness in cm.	This should probably be a model setting parameter!!!!!
-  
+
   //Only consider the organic horizon(s):
   int numOrgLayers =  ground->organic.shlwnum + ground->organic.deepnum;
-  
+
   //Create an object to hold the profile data:
   GFProfile gfProfile(numOrgLayers);
-  
+
   //Walk through the organic soil layers and copy / convert properties to our new profile:
   Layer* thisLayer = ground->fstshlwl;
   for (int i = 1; i <= numOrgLayers; i++)
