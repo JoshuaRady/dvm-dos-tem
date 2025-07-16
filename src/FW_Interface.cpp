@@ -28,6 +28,8 @@
 #include "FireweedMetUtils.h"
 #include "FireweedUtils.h"
 
+#include "../include/GFProfile.h"
+
 #include <cmath>//Temporary for isnan().
 
 extern src::severity_logger< severity_level > glg;
@@ -1105,84 +1107,64 @@ double SimulateGroundFire()
  *
  * The main model's soil representation is made up of layers with varying thickness.  This function
  * creates a representation with layers of even thickness, converting, calculating, and
- * interpolating layer properties.
+ * interpolating layer properties needed by the ground fire model.
  *
  * Possible parameters could include the desired layer thickness.
  *
- * Note: This code extracts soil property data from the soistate_xxx state objects but this will
- * probably change to the layer objects for access to more properties.
+ * We assume that the fire will not continue if it reached mineral soil, bedrock, permafrost, or the
+ * water table.  However, permafrost is an annual property and can't be determined at a given month.
+ * Likewise the water table is calculated from the profile.  We must rely on temperature and water
+ * content to control this behavior.  [More?????]
+ * Moss is treated as a surface fuel.
+ * Snow needs to be considered.
  *
- *
- * @returns A yet to be specified object containing soil properties by layers of even thickness.
- *
- * @note In development, mostly pseudocode at this point.
+ * @returns A GFProfile object containing soil properties by layers of even thickness.
  */
 GFProfile GroundFireGetSoilProfile()
 {
-  layerThickess_cm = 1.0;//Soil layer thickness in cm.
+  layerThickess_cm = 1.0;//Soil layer thickness in cm.	This should probably be a model setting parameter!!!!!
   
-  //Determine how deep the profile needs to be.  We assume that the fire will not continue if it
-  //reached mineral soil, bedrock, permafrost, or the water table.
-  //Walk the layers from top to bottom until one these conditions is found...
-  double gfProfileDepth = 10;//Profile depth in cm. 
+  //Only consider the organic horizon(s):
+  int numOrgLayers =  ground->organic.shlwnum + ground->organic.deepnum;
   
   //Create an object to hold the profile data:
-  GFProfile gfProfile(gfProfileDepth, layerThickess_cm);
+  GFProfile gfProfile(numOrgLayers);
   
-  //Work though the soil layers and copy properties to our profile:
-  int numSoilLayersIn = cd->d_soil.numsl;//or m_soil?
-  for (int i = 1; i <= numTEMSoilLayers; i++)
+  //Walk through the organic soil layers and copy / convert properties to our new profile:
+  Layer* thisLayer = ground->fstshlwl;
+  for (int i = 1; i <= numOrgLayers; i++)
   {
-    //Using the layer centers make sense but what to do at the top and bottom of the profile?
-    
-    //Determine the depth of the layer center:
-    //What at the units of z and dz?
-    double layerCenter = cd->d_soil.z[i] + (cd->d_soil.dz[i] / 2.0);
-    
-    //Find the closest layer in our finer resolution profile:
-    int j;// = -1;
-    //int j = std::lower_bound(gfProfile.Depth_cm.begin(), gfProfile.Depth_cm.end(), layerCenter) - 
-    //        gfProfile.Depth_cm.begin();
-    const auto iterator = std::lower_bound(gfProfile.Depth_cm.begin(), gfProfile.Depth_cm.end(), layerCenter);
-    
-    if (iterator == gfProfile.Depth_cm.begin())
-    {
-      j = 0;
-    }
-    else if (iterator == gfProfile.Depth_cm.end())
-    {
-      j = gfProfile.Depth_cm.size() - 1;
-    }
-    else
-    {
-      // if (std::fabs(layerCenter - gfProfile.Depth_cm[iterator - 1]) <
-//           std::fabs(layerCenter - gfProfile.Depth_cm[iterator]))
-      if (std::fabs(layerCenter - *(iterator - 1)) < std::fabs(layerCenter - *iterator))
-      {
-        j = iterator - gfProfile.Depth_cm.begin() - 1;
-      }
-      else
-      {
-        j = iterator - gfProfile.Depth_cm.begin();
-      }
-    }
-    
-    //Copy data from the input layer to the matching layer:
-    gfProfile.TempC[j] = edall->d_sois.ts[i];//Temperature????? or SoilTempC
-    //gfProfile.DrySoilMassKg[j] = ...derive from Layer.rho or Layer.bulkden?
-    //gfProfile.InorganicPct[j] = ?????;
-    //Soil mostures content is the water mass per volume / dry soil mass per volume:
-    //liq is in kg/m^2 (per what depth?), Layer.rho is in kg/m^3
-    //gfProfile.MoistureContentPct[j] = WaterContentToMoistureContent(d_sois.liq[i], gfProfile.DrySoilMassKg[j]);//Or m_sois?
-    //gfProfile.MoistureContentPct[j] = edall->d_sois.liq[i] * ????? / Layer.rho[i] * 100
-    //gfProfile.c_s[j] = ?????;//Soil heat capacity	Layer.vhcsolid?
-    
-    //More properties?
+    //Copy data from the source layer to the matching layer:
+    gfProfile.thickness_cm[i] = thisLayer->dz / 100.0;//Layer thickness (m -> cm).
+    gfProfile.layerDepth[i] = thisLayer->dz / 100.0;//Depth at top of layer (m -> cm).
+    gfProfile.tempC[i] = thisLayer->tem;//Layer temperature in Celcius.
+    gfProfile.bulkDensity[i] = thisLayer->bulkden;//Dry soil mass per volume (kg/m^3).
+
+    //The organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is used
+    //for accounting but this will be somewhat less than the total organic, that which is lost on
+    //combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
+    //The following is a ratio value commonly used for soils but the value varies.  This is probably
+    //low for some histosols.  We can probably use our carbon pools to get more accurate.
+    const double SOMtoSOC_Ratio = 1.72;//Initial value.  Research needed.  Make a parameter?????
+    double totalSOC = (thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / 1000;//kg/m^3 ??????
+    double totalSOM = totalSOC * SOMtoSOC_Ratio;//kg/m^3 
+    //Or:
+    //double totalSOM = totalSOC / thisLayer->cfrac;
+    double organicFraction = totalSOM / thisLayer->bulkden;
+    gfProfile.inorganicPct[i] = (1.0 - organicFraction) * 100;//Percent inorganic content on a dry basis (~ ash content).
+
+    //Soil mostures content is the water mass per volume / dry soil mass per volume * 100%:
+    gfProfile.moistureContentPct[i] = thisLayer->liq / thisLayer->bulkden * 100.0;//Potential units issue with liq!!!!!
+
+    //vhcsolid is volumetric heat capacity (J/m^3/K).  Convert to specific heat capacity:
+    gfProfile.c_s[i] = thisLayer->vhcsolid / thisLayer->bulkden / 1000.0;//Layer heat capacity (kJ/kg/K).
+
+    thisLayer = thisLayer->nextl;
   }
-  
-  //Interpolate values for the missing value in the profile:
-  gfProfile = GroundFireInterpolateProfile(gfProfile);
-  
+
+  //Convert to layers of equal thickness and interpolate the values in the original profile:
+  gfProfile.Interpolate(layerThickess_cm);
+
   return gfProfile;
 }
 
