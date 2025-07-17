@@ -826,12 +826,12 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
  * @note Used in the process wildfire model only.
  */
 BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raData,
-                                    const double tempAir, const double windSpeed)//CalculateSurfaceCombustion?
+                                    const double tempAir, const double windSpeed)//Will be const when added to WildFire.
 {
-  BOOST_LOG_SEV(glg, debug) << "Entering SimulateSurfaceCombustion()... [In progress]";
+  BOOST_LOG_SEV(glg, debug) << "Entering SimulateSurfaceCombustion()...";
 
   //Burnup takes a number of parameters:
-  //Wind and air temperature are needed (passed in):
+  //Wind and air temperature are needed (passed in).
 
   //Fuel properties are a superset of those in a standard fire behavior fuel model:
   //Leave all remaining properties at their default values set in BurnupFM().
@@ -846,9 +846,9 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
   double duffLoading = 0.0;
   double duffMoisture = 0.0;
 
-  //Fire properties are obtained from the spread rate calculations:
-  //The model takes fire intensity and residence time.  These can be estimated form the spread rate
-  //calculations.
+  //Igniting fire properties are needed from the surface fire:
+  //The model takes fire intensity and residence time.  These can be estimated from the spread rate
+  //calculations and associated functions.
 
   //Fire intensity of the flaming front must be estimated.  The appropriate calculation to use is
   //the question since Rothermel & Albini and Burnup terminology are not identical.
