@@ -364,6 +364,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
  * @note This started as a hack and could be moved into CohortStatesToFuelLoading().  However, it
  * does make the code a bit more organized.
  * @note Used in the process wildfire model only.
+ * #note Now that we have added access to Ground this could be revised to use that.
  */
 double WildFire::GetLitterRawC() const
 {
@@ -1123,7 +1124,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
   //Walk through the organic soil layers and copy / convert properties to our new profile:
   Layer* thisLayer = ground->fstshlwl;
-  for (int i = 1; i <= numOrgLayers; i++)
+  for (int i = 0; i < numOrgLayers; i++)
   {
     //Copy data from the source layer to the matching layer:
     gfProfile.thickness_cm[i] = thisLayer->dz / 100.0;//Layer thickness (m -> cm).
@@ -1136,8 +1137,16 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
     //The following is a ratio value commonly used for soils but the value varies.  This is probably
     //low for some histosols.  We can probably use our carbon pools to get more accurate.
-    const double SOMtoSOC_Ratio = 1.72;//Initial value.  Research needed.  Make a parameter?????
-    double totalSOC = (thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / 1000;//kg/m^3 ??????
+    const double SOMtoSOC_Ratio = 1.72;//Initial value.  Research needed.  Make a FW_PARAM?????
+    double totalSOC = 0.0;
+    if (i == 0)//We treat the rawc compartment of the top non-moss/fibric/shallow layer as litter:
+    {
+      totalSOC = (thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / gPerKg;//kg/m^3 ??????
+    }
+    else
+    {
+      totalSOC = (thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / gPerKg;//kg/m^3 ??????
+    }
     double totalSOM = totalSOC * SOMtoSOC_Ratio;//kg/m^3 
     //Or:
     //double totalSOM = totalSOC / thisLayer->cfrac;
