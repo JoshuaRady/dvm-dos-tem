@@ -1,0 +1,83 @@
+/**
+ * @file GFProfile.h
+ * \author Joshua M. Rady
+ * Woodwell Climate Research Center
+ * \date 2025
+ *
+ * @brief This header file declares an object used to represent the manipulate the soil column used
+ * for simulations of smoldering ground fire.
+ *
+ */
+
+#ifndef GFPROFILE_H
+#define GFPROFILE_H
+
+#include <iostream>//Or just <ostream>?
+#include <vector>
+
+/** GFProfile Constants
+ *
+ * ProfileUndef is used to indicate an undefined/empty/missing value for a soil profile property.
+ * 0 or -1 would be a fine value for most properties, since it is imposible and therefore clearly
+ * invalid.  We use -300 because ir is an imposible celcius temperature.
+ */
+const double ProfileUndef = -300.0;
+
+/* @class GFProfile
+ * @brief A data object representing an organic soil profile:
+ */
+class GFProfile {
+	public:
+	
+	//Column properties:
+	double t_ig;//The soil temperature of ignition (C).  Currently homogeneous.
+	
+	//Layer properties:
+	//std::vector <int> Layer;//Layer number.  May not be necessary.
+	//The ground fire calculation currently expects equal layer thicknesses but incoming profiles
+	//may have layers of varying thicknesses that will then be interpolated.
+	std::vector <double> thickness_cm;//Layer thickness (cm).
+	std::vector <double> layerDepth;//Depth at top of layer (cm).
+	
+	std::vector <double> tempC;//Layer temperature in Celcius.
+	std::vector <double> bulkDensity;//Dry soil mass per volume (kg/m^3).
+	std::vector <double> inorganicPct;//Percent inorganic content on a dry basis (~ ash content).
+	//Soil mostures content is the water mass per volume / dry soil mass per volume:
+	std::vector <double> moistureContentPct;//(water mass / layer) / (dry soil mass / layer) * 100%
+	std::vector <double> c_s;//Layer heat capacity (kJ/kg/K)?????
+	
+	//Calculated ground fire output values:
+	std::vector <bool> burnt;
+	//The heat source and sink values can be helpful for understanding the results so we store them:
+	std::vector <double> heatSink;
+	std::vector <double> heatSource;
+	
+	//Constructor:
+	GFProfile(const int numLayers);
+
+	int NumLayers() const;
+	double DrySoilMassKg(const int layerIndex) const;
+
+	void Interpolate(const double newLayerThickness);
+	void InterpolateBetween(const int topLayer, int bottomLayer, const int numNewLayers);
+	void AddLayersToTop(const int numNewLayers = 1);
+	void AddLayersToBottom(const int numNewLayers = 1);
+	void InsertBlankLayers(const int insertAt, int const numNewLayers);
+	bool Validate() const;
+	std::ostream& Print(std::ostream& output) const;
+	std::ostream& PrintDelimited(std::ostream& output, const char delim = '\t') const;
+	
+	private:
+	
+	//Profile information:
+	//The purpose of this variable is to enforce constancy in property lengths.  This makes it clear
+	//how many layers there should be and helps avoid problems since the layer properties are
+	//public.  To avoid problems the number of layers should only changed with using the public
+	//functions.  Use NumLayers() to get the count.
+	int numLayers;
+};
+
+//External functions:
+std::ostream& operator<<(std::ostream& output, const GFProfile& gfProfile);
+
+#endif //GFPROFILE_H
