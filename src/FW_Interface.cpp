@@ -154,9 +154,12 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
   //Simulate ground fire:--------------------------------------------------
   //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
   //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
-  double fireHeatInput = XXXXX;
+  double abgFireIntensity = burnupOutput.history.IntegrateFireIntensity();//kJ/m^2
+  //Only a fraction of the heat of the aboveground fire enters the soil.  The fraction is something
+  //we need a better estimate of.  This value is a first guess and little more than a placeholder.
+  double fireHeatToSoil = abgFireIntensity * 0.10;//kJ/m^2 FW_PARAM?????
 
-  double burnDepth = SimulateGroundFire(fireHeatInput);
+  double burnDepth = SimulateGroundFire(fireHeatToSoil);
 
   //Litter and soil carbon stocks are updated in WildFire::updateBurntOrgSoil().
   //Moss and herbaceous carbon stocks are updated in WildFire::burnVegetation().
