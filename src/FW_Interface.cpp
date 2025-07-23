@@ -21,6 +21,7 @@
 #include "../include/TEMLogger.h"
 #include "../include/TEMUtilityFunctions.h"//For length_of_day().
 #include "../include/WildFire.h"
+#include "../include/Layer.h"
 
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedFuelTools.h"
@@ -1115,7 +1116,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 {
   BOOST_LOG_SEV(glg, debug) << "Entering GroundFireGetSoilProfile()...";
 
-  layerThickess_cm = 1.0;//Soil layer thickness in cm.	This should probably be a model setting parameter!!!!!
+  double layerThickess_cm = 1.0;//Soil layer thickness in cm.	This should probably be a model setting parameter!!!!!
 
   //Only consider the organic horizon(s):
   int numOrgLayers =  ground->organic.shlwnum + ground->organic.deepnum;
