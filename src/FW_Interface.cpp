@@ -1071,7 +1071,7 @@ double WildFire::GetLitterBurntFraction() const
  * This effectively replaces the functionality of WildFire::getBurnOrgSoilthick() in the original
  * wildfire implementation.
  *
- * @param fireHeatInput Total longwave heat input into the soil from the surface fire (kJ/m^3).
+ * @param fireHeatInput Total longwave heat input into the soil from the surface fire (kJ/m^2).
  * @note Burnup produces energy over time so it may be better to link the calculations?
  *
  * @returns The soil burn depth from ground fire (meters).
