@@ -13,6 +13,7 @@
 #include "BgcData.h"
 #include "ModelData.h"//FW_MOD: Added
 #include "Climate.h"//FW_MOD: Added
+#include "Ground.h"//FW_MOD: Added
 #include "RestartData.h"
 
 #include "errorcode.h"
