@@ -12,7 +12,7 @@
 #include <cmath>
 #include <string>
 
-#include "GFProfile.h"
+#include "../include/GFProfile.h"//Note: Difference from source repo.
 #include "FireweedMessaging.h"
 #include "FireweedStringUtils.h"
 #include "FireweedUtils.h"
