@@ -14,7 +14,7 @@
 #include <numeric>
 #include <string>
 
-#include "GroundFire.h"//For accumulate().
+#include ""../include/GroundFire.h"//"GroundFire.h"//Note: Difference from source repo.
 #include "FireweedMessaging.h"
 #include "FireweedUtils.h"
 
