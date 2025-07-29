@@ -29,7 +29,7 @@
 #include "FireweedMetUtils.h"
 #include "FireweedUtils.h"
 
-#include "GroundFire.h"//"../include/GroundFire.h"
+#include "../include/GroundFire.h"
 
 #include <cmath>//Temporary for isnan().
 
