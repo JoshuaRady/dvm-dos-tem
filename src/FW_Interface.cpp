@@ -1116,7 +1116,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 {
   BOOST_LOG_SEV(glg, debug) << "Entering GroundFireGetSoilProfile()...";
 
-  double layerThickess_cm = 1.0;//Soil layer thickness in cm.	This should probably be a model setting parameter!!!!!
+  double layerThickess_cm = 1.0;//Soil layer thickness in cm.	FW_PARAM!!!!!
 
   //Only consider the organic horizon(s):
   int numOrgLayers =  ground->organic.shlwnum + ground->organic.deepnum;
@@ -1163,6 +1163,9 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
     thisLayer = thisLayer->nextl;
   }
+
+  //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this::
+  gfProfile.Resurface();
 
   //Convert to layers of equal thickness and interpolate the values in the original profile:
   gfProfile.Interpolate(layerThickess_cm);
