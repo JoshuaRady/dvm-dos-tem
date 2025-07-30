@@ -370,6 +370,28 @@ void GFProfile::InsertBlankLayers(const int insertAt, const int numNewLayers)
 	numLayers += numNewLayers;
 }
 
+/** Revise the profile so that the top layer starts at a depth of zero.
+ * 
+ * If a soil profile is being translated from another representation where the top layer does not
+ * start at depth zero this function can be called to adjust the layer depths so it does.  This
+ * should be called before Interpolate() if needed.
+ *
+ * @returns Nothing.
+ */
+void GFProfile::Resurface()//Or AdjustDepths()
+{
+	if (layerDepth[0] != 0.0)
+	{
+		Log("The top layer is not at the surface. Adjusting layer depths.");
+
+		double deltaZ = layerDepth[0];
+		for (int i = 0; i < numLayers; i++)
+		{
+			layerDepth[i] -= deltaZ;
+		}
+	}
+}
+
 /** Perform some checks on the profile to see if looks valid.
  *
  * @returns Whether the profile passed the checks.

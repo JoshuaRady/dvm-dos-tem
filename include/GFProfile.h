@@ -63,6 +63,7 @@ class GFProfile {
 	void AddLayersToTop(const int numNewLayers = 1);
 	void AddLayersToBottom(const int numNewLayers = 1);
 	void InsertBlankLayers(const int insertAt, int const numNewLayers);
+	void Resurface();
 	bool Validate() const;
 	std::ostream& Print(std::ostream& output) const;
 	std::ostream& PrintDelimited(std::ostream& output, const char delim = '\t') const;
