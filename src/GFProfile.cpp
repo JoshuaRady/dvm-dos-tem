@@ -121,6 +121,7 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		if (layerDepth[0] != 0.0)
 		{
 			Stop("The top layer is not at the surface!");
+			//we should probably dump the layer here!!!!!
 		}
 
 		//Nudge the existing layers to the nearest equidistant layer postion:
