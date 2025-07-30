@@ -1131,8 +1131,8 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   for (int i = 0; i < numOrgLayers; i++)
   {
     //Copy data from the source layer to the matching layer:
-    gfProfile.thickness_cm[i] = thisLayer->dz / 100.0;//Layer thickness (m -> cm).
-    gfProfile.layerDepth[i] = thisLayer->dz / 100.0;//Depth at top of layer (m -> cm).
+    gfProfile.thickness_cm[i] = thisLayer->dz * 100.0;//Layer thickness (m -> cm).
+    gfProfile.layerDepth[i] = thisLayer->dz * 100.0;//Depth at top of layer (m -> cm).
     gfProfile.tempC[i] = thisLayer->tem;//Layer temperature in Celcius.
     gfProfile.bulkDensity[i] = thisLayer->bulkden;//Dry soil mass per volume (kg/m^3).
 
