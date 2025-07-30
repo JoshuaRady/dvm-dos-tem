@@ -395,6 +395,10 @@ void GFProfile::Resurface()//Or AdjustDepths()
 /** Perform some checks on the profile to see if looks valid.
  *
  * @returns Whether the profile passed the checks.
+ * 
+ * @note This code specifically checks that a profile is ready to be used for a ground fire
+ * simulation.  As such it checks that the layers are of equal thickness.  It might be helpful to
+ * be able to check profiles before interpolation as well.
  */
 bool GFProfile::Validate() const
 {
