@@ -1091,7 +1091,7 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
   //For now we use the default values for heatLossFactor and d_max. FW_PARAM!!!!!
   //These should probably be model parameters.
 
-  BOOST_LOG_SEV(glg, debug) << "Profile after DominoGroundFire():"
+  BOOST_LOG_SEV(glg, debug) << "Profile after DominoGroundFire():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   return burnDepth;
@@ -1169,19 +1169,19 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     thisLayer = thisLayer->nextl;
   }
 
-  BOOST_LOG_SEV(glg, debug) << "Intial translated profile:"
+  BOOST_LOG_SEV(glg, debug) << "Intial translated profile:";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this::
   gfProfile.Resurface();
 
-  BOOST_LOG_SEV(glg, debug) << "Profile after Resurface():"
+  BOOST_LOG_SEV(glg, debug) << "Profile after Resurface():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   //Convert to layers of equal thickness and interpolate the values in the original profile:
   gfProfile.Interpolate(layerThickess_cm);
 
-  BOOST_LOG_SEV(glg, debug) << "Profile after Interpolate():"
+  BOOST_LOG_SEV(glg, debug) << "Profile after Interpolate():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   return gfProfile;
