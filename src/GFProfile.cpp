@@ -383,7 +383,7 @@ void GFProfile::Resurface()//Or AdjustDepths()
 {
 	if (layerDepth[0] != 0.0)
 	{
-		Log("The top layer is not at the surface. Adjusting layer depths.");
+		Msg.Log("The top layer is not at the surface. Adjusting layer depths.");
 
 		double deltaZ = layerDepth[0];
 		for (int i = 0; i < numLayers; i++)
