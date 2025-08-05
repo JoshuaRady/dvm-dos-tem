@@ -189,9 +189,19 @@ int GetMatchingFuelModel(const int cmt)
 {
   //Get the number of the fuel model from the crosswalk in the parameter files.
   //This crosswalk needs to be made!!!!!
-  int fuelModelNumber = 161;//Temporarily hardwired.
-  //We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
+  int fuelModelNumber;
   
+  //Stub: Use a temporary value or a value supplied by the configuration file:
+  if (cd.fire_temp_fm == -1)
+  {
+    fuelModelNumber = 161;//Temporarily hardwired.
+    //We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
+  }
+  else
+  {
+    fuelModelNumber = cd.fire_temp_fm;
+    //We don't currently have a way to check that a fuel model number is valid.
+  }
   //There is a bare land fuel model by number but it doesn't have parameters.  Do we need to provide
   //a bare land parameter set or can we just signal the calling code that it should skip fire
   //calculations?
