@@ -133,6 +133,10 @@ public:
   bool fire_dynamic_fuel;//Calculate dynamic fuel moisture for dynamic fuel models:
   bool fire_moss_as_dead_fuel;//Should moss be treated as a dead fuel (true) or live fuel (false).
   bool fire_calculate_delta;//Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false).
+  double fire_gf_heat_loss_factor;//The fraction of heat lost from the soil
+  double fire_gf_d_max;//The maximum depth of heat transfer for the heat transfer approximation (cm).
+  double fire_gf_layer_thickness;//The soil layer thickness for the simulation (cm)
+  int fire_temp_fm;//A temporaty parameter to force fuel model choice.
   // FW_MOD_END.
 
   bool outSiteDay;

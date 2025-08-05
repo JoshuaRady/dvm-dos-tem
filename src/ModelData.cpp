@@ -140,6 +140,10 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   fire_dynamic_fuel = controldata["module_settings"]["dsb"]["fire"]["fire_dynamic_fuel"].asBool();
   fire_moss_as_dead_fuel = controldata["module_settings"]["dsb"]["fire"]["fire_moss_as_dead_fuel"].asBool();
   fire_calculate_delta = controldata["module_settings"]["dsb"]["fire"]["fire_calculate_delta"].asBool();
+  fire_gf_heat_loss_factor = controldata["module_settings"]["dsb"]["fire"]["fire_gf_heat_loss_factor"].asDouble();
+  fire_gf_d_max            = controldata["module_settings"]["dsb"]["fire"]["fire_gf_d_max"].asDouble();
+  fire_gf_layer_thickness  = controldata["module_settings"]["dsb"]["fire"]["fire_gf_layer_thickness"].asDouble();
+  fire_temp_fm             = controldata["module_settings"]["dsb"]["fire"]["fire_temp_fm"].asInt();
   // FW_MOD_END.
 }
 
