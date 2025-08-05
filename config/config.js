@@ -159,7 +159,8 @@
         "fire_moss_as_dead_fuel": true,
         //Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false):
         "fire_calculate_delta": false,
-        //Ground fire model paramters and settings.:
+        //Ground fire model paramters and settings:
+        "fire_heat_frac_to_soil": 0.1,//The fraction of aboveground fire heat that enters the soil.
         "fire_gf_heat_loss_factor": 0.83,//The fraction of heat lost from the soil
         "fire_gf_d_max": 5.0,//The maximum depth of heat transfer for the heat transfer approximation (cm).
         "fire_gf_layer_thickness": 1.0,//The soil layer thickness for the simulation (cm)
