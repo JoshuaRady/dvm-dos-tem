@@ -1,4 +1,4 @@
-/**
+/***********************************************************************************************//**
  * @file GroundFire.h
  * \author Joshua M. Rady
  * Woodwell Climate Research Center
@@ -7,7 +7,7 @@
  * @brief This header file declares functions to simulate smoldering ground fire using a moderate
  * complexity model where combustion is predicted layer by layer.
  *
- */
+ **************************************************************************************************/
 
 #ifndef FW_GROUNDFIRE_H
 #define FW_GROUNDFIRE_H

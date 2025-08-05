@@ -1,4 +1,4 @@
-/**
+/***********************************************************************************************//**
  * @file GFProfile.cpp
  * \author Joshua M. Rady
  * Woodwell Climate Research Center
@@ -7,9 +7,10 @@
  * @brief This file defines an object used to represent a soil column during simulations of
  * smoldering ground fire.
  *
- */
+ **************************************************************************************************/
 
 #include <cmath>
+#include <iomanip>
 #include <string>
 
 #include "../include/GFProfile.h"//Note: Difference from source repo.
@@ -19,10 +20,21 @@
 
 //Public Functions:---------------------------------------------------------------------------------
 
+/** Default constructor
+ *
+ * This constructor creates an object with all empty vectors.  If the number of layer is know at
+ * initialization the alternate constructor may be preferable.
+ */
+GFProfile::GFProfile()
+{
+	numLayers = 0;
+	t_ig = ProfileUndef;
+}
+
 /** Constructor
  *
  * This constructor makes an 'blank' profile of the specified size.  The soil properties are set to
- * invalid values that should be replaced.
+ * invalid values that should be replaced after initialization.
  */
 GFProfile::GFProfile(const int numLayers)
 {
@@ -55,7 +67,7 @@ int GFProfile::NumLayers() const
 
 /** Return the dry soil mass for a layer.
  * 
- * @param The index of the layer.
+ * @param[in] The index of the layer.
  * 
  * @returns The dry soil mass (kg/m^2/layer).
  */
@@ -69,29 +81,36 @@ double GFProfile::DrySoilMassKg(const int layerIndex) const
 	return bulkDensity[layerIndex] * (thickness_cm[layerIndex] / 100);//kg/m^3 * (cm / 100 cm/m) / layer = kg/m^2/layer.
 }
 
-/** Interpolate the profile.
+/** Interpolate the soil profile.
  *
  * Check the profile and expand it to have layers of equal thickness and interpolate the current
  * values for the new layers, if necessary.
  *
- * @param newLayerThickness The desired layer thickness (cm) to convert to.
+ * @param[in] newLayerThickness The desired layer thickness (cm) to convert to.
  *
  * @returns Nothing.
- 
+ *
  * @note Our interpolation process begins by nudging the properties of the original layers to the
  * nearest new layer, on the basis of the layer centers.  The profile is then interpolated from
  * there.  This approach preserves the original values exactly in the profile, but their depths
  * may shift a bit.  The alternative would be to interpolate everywhere.  This prioritise the depths
- * over the exact values, since all layers would be interpolated in this case.  It the new layers
+ * over the exact values, since all layers would be interpolated in this case.  If the new layers
  * are thin the difference between the two approaches should be small.
  *
  * @note An issue for our interpolation is that each layer has a thickness.  If we associate our
  * know values with the middle of the layer this causes some issues.  If the top or bottom layer are
  * thick we don't have any information to interpolate on the outsides.  We fill new layers at the
  * top and bottom with the properties of original top and bottom layers.
+ *
+ * @note If the incoming layer thicknesses are thinner than the new layer thickness the
+ * interpolation may crash or produce bad values.  We stop the interpolation if that occurs.
  */
 void GFProfile::Interpolate(const double newLayerThickness)
 {
+	if (newLayerThickness <= 0)
+	{
+		Stop("Interpolate(): Invalid value for newLayerThickness: " + std::to_string(newLayerThickness));
+	}
 	//Check that newLayerThickness is some small round value?
 
 	//At the end we will have a set of new layers.  The bottom of the deepest layer should be pretty
@@ -108,6 +127,11 @@ void GFProfile::Interpolate(const double newLayerThickness)
 	bool needed = false;
 	for (int i = 0; i < numLayers; i++)
 	{
+		if (thickness_cm[i] < newLayerThickness)
+		{
+			Stop("Can't interpolate profile. Original layer thickness is less that the new thickness.");
+		}
+		
 		if (thickness_cm[i] != newLayerThickness)//We don't give any wiggle room.
 		{
 			needed = true;
@@ -121,7 +145,7 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		if (layerDepth[0] != 0.0)
 		{
 			Stop("The top layer is not at the surface!");
-			//we should probably dump the layer here!!!!!
+			//we could dump the layer here.
 		}
 
 		//Nudge the existing layers to the nearest equidistant layer postion:
@@ -143,7 +167,7 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		//change as we are going, which makes things less confusing.
 
 		//Add layers below the bottom layer if needed:
-		//If the bottom of the lowest layer after nudging is still where we expect the new bottom it
+		//If the bottom of the lowest layer after nudging is where we expect the new bottom to be it
 		//is not necessary.
 		if (layerDepth[numLayers - 1] != newBottomLayerDepth)
 		{
@@ -151,7 +175,7 @@ void GFProfile::Interpolate(const double newLayerThickness)
 			AddLayersToBottom(numNewLayers);
 		}
 
-		//Starting from the original bottom layer see if layers need to interpolated between them:
+		//Starting from the original bottom layer see if layers need to be interpolated between them:
 		for (int j = initBottomIndex; j > 0; j--)
 		{
 			//See if adjacent layers are one new layer thickness apart:
@@ -181,10 +205,10 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		}
 
 		//Perform quality control:
-		//Check spacing?
-		if (!Validate())
+		if (!Validate(true))
 		{
 			Print(std::cout);
+			//This could be made fatal.
 		}
 	}
 }
@@ -194,11 +218,11 @@ void GFProfile::Interpolate(const double newLayerThickness)
  * The function adds new layers between the layers specified and interpolates the soil physical
  * properties evenly across them.  If there is space between the parent layers then the new layers
  * will be given equal thicknesses to fill the gap. Otherwise they will be left blank and a warning
- * will be given. The interpolation but does not change the parent layer thicknesses.
+ * will be given. The interpolation does not change the parent layer thicknesses.
  *
- * @param topLayer The top layer index to interpolate from.
- * @param bottomLayer The bottom layer index to interpolate to.
- * @param numNewLayers The number of layers to interpolate between them.
+ * @param[in] topLayer The top layer index to interpolate from.
+ * @param[in] bottomLayer The bottom layer index to interpolate to.
+ * @param[in] numNewLayers The number of layers to interpolate between them.
  *
  * @note Specifying the top and bottom layers for interpolation makes this function call clear to
  * read but specifying the bottom is not really necessary since it only makes sense to interpolate
@@ -222,7 +246,6 @@ void GFProfile::InterpolateBetween(const int topLayer, int bottomLayer, const in
 	bottomLayer = bottomLayer + numNewLayers;//The bottom layer moves down.
 
 	//Check the parent layer spacing:
-	//double zBetween = layerDepth[topLayer] + thickness_cm[topLayer] - layerDepth[bottomLayer];
 	double zBetween = layerDepth[bottomLayer] - (layerDepth[topLayer] + thickness_cm[topLayer]);
 	if (zBetween == 0.0)//The layers are touching.
 	{
@@ -267,7 +290,7 @@ void GFProfile::InterpolateBetween(const int topLayer, int bottomLayer, const in
  * makes assumptions consistant with this.  It would also probably be safe to assume that after this
  * the new top layer will be at the surface, but we don't currently check for that here.
  *
- * @param numNewLayers Number of layers to add.
+ * @param[in] numNewLayers The number of layers to add.
  *
  * @returns Nothing,
  */
@@ -306,7 +329,7 @@ void GFProfile::AddLayersToTop(const int numNewLayers)
  * This function is used when the bottom layer is being sliced into thinner layers and the code
  * makes assumptions consistant with this.
  *
- * @param numNewLayers Number of layers to add.
+ * @param[in] numNewLayers The number of layers to add.
  *
  * @returns Nothing,
 */
@@ -319,7 +342,6 @@ void GFProfile::AddLayersToBottom(const int numNewLayers)
 
 	thickness_cm.insert(thickness_cm.end(), numNewLayers, thickness_cm[numLayers - 1]);
 	
-	//for (int i = 0; i < numLayers; i++)
 	for (int i = 0; i < numNewLayers; i++)
 	{
 		layerDepth.push_back(layerDepth[numLayers - 1 + i] + thickness_cm[numLayers - 1]);
@@ -341,8 +363,9 @@ void GFProfile::AddLayersToBottom(const int numNewLayers)
 
 /** Insert new blank layers into the profile. (Properties must be added afterwards.)
  *
- * @param insertAt The index to insert at (i.e. the layer currently at index insertAt will be shifted down).
- * @param numNewLayers Number of layers to insert.
+ * @param[in] insertAt The index to insert at (i.e. the layer currently at index insertAt will be
+ *                     shifted down).
+ * @param[in] numNewLayers The number of layers to insert.
  *
  * @returns Nothing,
  */
@@ -395,13 +418,13 @@ void GFProfile::Resurface()//Or AdjustDepths()
 
 /** Perform some checks on the profile to see if looks valid.
  *
+ * @param[in] uniformLayers For a profile is ready to be used for a ground fire simulation with
+ *                          DominoGroundFire() it should have layers of equal thickness.  Setting
+ *                          this to true will add a check for this.
+ *
  * @returns Whether the profile passed the checks.
- * 
- * @note This code specifically checks that a profile is ready to be used for a ground fire
- * simulation.  As such it checks that the layers are of equal thickness.  It might be helpful to
- * be able to check profiles before interpolation as well.
  */
-bool GFProfile::Validate() const
+bool GFProfile::Validate(const bool uniformLayers) const
 {
 	bool valid = true;
 
@@ -425,7 +448,7 @@ bool GFProfile::Validate() const
 	{
 		if (thickness_cm[i] <= 0)
 		{
-			Warning("Invalid thickness for layer " + std::to_string(i));
+			Warning("Invalid thickness for layer index " + std::to_string(i));
 			valid = false;
 		}
 
@@ -441,10 +464,16 @@ bool GFProfile::Validate() const
 		{
 			if (layerDepth[i] != (layerDepth[i - 1] + thickness_cm[i - 1]))
 			{
-				Warning("Layer dimensions not consistant for layer " + std::to_string(i));
+				Warning("Layer dimensions not consistant for layer index " + std::to_string(i));
 				valid = false;
 			}
 		}
+	}
+
+	if (uniformLayers && !EqualThickness())
+	{
+		Warning("Layers do not all have uniform thickness.");
+		valid = false;
 	}
 
 	//Check for invalid values:
@@ -461,7 +490,7 @@ bool GFProfile::Validate() const
 	//The nature and properties of soils (Vol. 15, pg. 163). Columbus, OH: Pearson.
 	if (!InRange(bulkDensity, 0.0, 2400.0))
 	{
-		Warning("Unlikely bulk density value(s).");
+		Warning("Unlikely or impossible bulk density value(s).");
 	}
 
 	if (!InRange(inorganicPct, 0.0, 100.0))
@@ -481,15 +510,66 @@ bool GFProfile::Validate() const
 	return valid;
 }
 
+/** Check if the soll layers are all the same thickness.
+ *
+ * @returns Whether the soll layers are equal thickness.
+ */
+bool GFProfile::EqualThickness() const
+{
+	if (numLayers == 0)
+	{
+		Stop("EqualThickness(): The profile has no layers.");
+	}
+	else if (numLayers > 1)
+	{
+		for (int l = 1; l < numLayers; l++)
+		{
+			if (thickness_cm[l] != thickness_cm[0])
+			{
+				return false;
+			}
+		}
+	}
+	//If there is only one layer then we return true.
+
+	return true;
+}
+
+/** Get the simulated depth of burn, AKA burn thickness.
+ *
+ * @returns Burn depth (cm).
+ * 
+ # @note We could add checking that the a simulation has been completed successfully.  If it hasn't
+ * a nonsense value will be returned.
+ */ 
+double GFProfile::GetBurnDepth() const
+{
+	double burnDepth = 0.0;
+
+	//Find the lowest layer that burned and calculate the depth at the layer bottom:
+	for (int l = numLayers - 1; l >= 0; l--)
+	{
+		if (burnt[l])
+		{
+			burnDepth = layerDepth[l] + thickness_cm[l];
+			break;
+		}
+	}
+
+	return burnDepth;
+}
+
 /** Print the soil profile data to an output stream.
  *
- * @param output The output stream to print to.
+ * @param[in] output The output stream to print to.
  *
- * @returns The ostream so it can be conatinated to.
+ * @returns The ostream so it can be concatenated to.
  */
 std::ostream& GFProfile::Print(std::ostream& output) const
 {
-	output << "Ground fire soil profile:" << std::endl;
+	//This works but is can be hard to read at the layers increase:
+
+	/*output << "Ground fire soil profile:" << std::endl;
 	output << "The column has " << numLayers << " layers." << std::endl;
 	output << "The soil ignition temperature is " << t_ig << " C." << std::endl;
 
@@ -530,36 +610,113 @@ std::ostream& GFProfile::Print(std::ostream& output) const
 	output << "Layer heat sink: ";
 	PrintVector(output, heatSink);
 	output << "Layer heat source: ";
-	PrintVector(output, heatSource);
+	PrintVector(output, heatSource);*/
+
+	//Print layer properties in table form:
+	const int layerWidth = 6;
+	const int thickWidth = 13;
+	const int depthWidth = 11;
+	const int tempWidth = 7;
+	const int igWidth = 14;
+	const int bdWidth = 13;
+	const int inorgWidth = 13;
+	const int mcWidth = 19;
+	const int csWidth = 14;
+	const int burntWidth = 6;
+	const int sinkWidth = 10;
+	const int srcWidth = 12;
+
+	//Member name header:
+	output << std::setw(layerWidth) << " "
+		<< std::setw(thickWidth) << "thickness_cm"
+		<< std::setw(depthWidth) << "layerDepth"
+		<< std::setw(tempWidth) << "TempC"
+		<< std::setw(igWidth) << "t_ig"
+		<< std::setw(bdWidth) << "bulkDensity"
+		<< std::setw(inorgWidth) << "inorganicPct"
+		<< std::setw(mcWidth) << "moistureContentPct"
+		<< std::setw(csWidth) << "c_s"
+		<< std::setw(burntWidth) << "Burnt"
+		<< std::setw(sinkWidth) << "heatSink"
+		<< std::setw(srcWidth) << "heatSource" << std::endl;
+
+	//Descriptive header:
+	output << std::setw(layerWidth) << "Layer"
+		<< std::setw(thickWidth) << "Thickness"
+		<< std::setw(depthWidth) << "Depth"
+		<< std::setw(tempWidth) << "Temp"
+		<< std::setw(igWidth) << "Ignition Temp"
+		<< std::setw(bdWidth) << "Bulk Density"
+		<< std::setw(inorgWidth) << "Inorganic"
+		<< std::setw(mcWidth) << "Moisture Content"
+		<< std::setw(csWidth) << "Heat Capacity"
+		<< std::setw(burntWidth) << "Burnt"
+		<< std::setw(sinkWidth) << "Heat Sink"
+		<< std::setw(srcWidth) << "Heat Source" << std::endl;
+
+	//Units header:
+	output << std::setw(layerWidth) << "#"
+		<< std::setw(thickWidth) << "cm"
+		<< std::setw(depthWidth) << "cm"
+		<< std::setw(tempWidth) << "C"
+		<< std::setw(igWidth) << "C"
+		<< std::setw(bdWidth) << "kg/m^3"
+		<< std::setw(inorgWidth) << "%"
+		<< std::setw(mcWidth) << "%"
+		<< std::setw(csWidth) << "kJ/kg/K"
+		<< std::setw(burntWidth) << " "
+		<< std::setw(sinkWidth) << "kJ/kg"
+		<< std::setw(srcWidth) << "kJ/kg" << std::endl;
+
+	//Values:
+	output << std::boolalpha;//Print as burnt as strings.
+	for (int l = 0; l < numLayers; l++)
+	{
+		output << std::setw(layerWidth) << l + 1
+			<< std::setw(thickWidth) << std::fixed << std::setprecision(2) << thickness_cm[l]
+			<< std::setw(depthWidth) << std::fixed << std::setprecision(2) << layerDepth[l]
+			<< std::setw(tempWidth) << std::fixed << std::setprecision(2) << tempC[l]
+			<< std::setw(igWidth) << std::fixed << std::setprecision(1) << t_ig
+			<< std::setw(bdWidth) << std::fixed << std::setprecision(1) << bulkDensity[l]
+			<< std::setw(inorgWidth) << std::fixed << std::setprecision(2) << inorganicPct[l]
+			<< std::setw(mcWidth) << std::fixed << std::setprecision(2) << moistureContentPct[l]
+			<< std::setw(csWidth) << std::fixed << std::setprecision(3) << c_s[l]
+			<< std::setw(burntWidth) << burnt[l]
+			<< std::setw(sinkWidth) << std::fixed << std::setprecision(2) << heatSink[l]
+			<< std::setw(srcWidth) << std::fixed << std::setprecision(2) << heatSource[l] << std::endl;
+	}
+	output << std::noboolalpha;
+	output.copyfmt(std::ios(nullptr));//Restore the previous print settings.
 
 	return output;
 }
 
-/** Print the soil profile to an output stream as a set of delimited data rows for each layer..
+/** Print the soil profile to an output stream as a set of delimited data rows for each layer,
+ * suitable for data ingestion.
  *
- * @param output The output stream to print to.
- * @param delim The delimiter character.  Defaults to the tab character.
+ * @param[in] output The output stream to print to.
+ * @param[in] delim The delimiter character.  Defaults to the tab character.
  *
- * @returns The ostream so it can be conatinated to.
+ * @returns The ostream so it can be concatenated to.
  */
 std::ostream& GFProfile::PrintDelimited(std::ostream& output, const char delim) const
 {
 	//Print the header:
-	output << "LayerThickness" << delim << "LayerDepth" << delim << "TempC" << delim << "t_ig" <<
-	          delim << "BulkDensity" << delim << "InorganicPct" << delim << "MoistureContentPct" <<
-	          delim << "c_s" << delim << "Burnt" << delim << "HeatSink" << delim << "HeatSource" <<
-	          std::endl;//Or newline?
+	output << "Layer" << delim << "LayerThickness" << delim << "LayerDepth" << delim <<
+	          "TempC" << delim << "t_ig" << delim << "BulkDensity" << delim <<
+	          "InorganicPct" << delim << "MoistureContentPct" << delim << "c_s" << delim <<
+	          "Burnt" << delim << "HeatSink" << delim << "HeatSource" << std::endl;//Or newline?
 	//Omit the soil mass?
 
 	//Print the layer data in rows:
 	output << std::boolalpha;//Print as burnt as strings.
-	for (int i = 0; i < numLayers; i++)
+	for (int l = 0; l < numLayers; l++)
 	{
 		//Consider rounding values...
-		output << thickness_cm[i] << delim << layerDepth[i] << delim << tempC[i] << delim << t_ig <<
-		          delim << bulkDensity[i] << delim << inorganicPct[i] << delim <<
-		          moistureContentPct[i] << delim << c_s[i] << delim << burnt[i] << delim <<
-		          heatSink[i] << delim << heatSource[i] << delim << std::endl;//Or newline?
+		output << (l + 1) << delim << thickness_cm[l] << delim << layerDepth[l] << delim <<
+		          tempC[l] << delim << t_ig << delim << bulkDensity[l] << delim <<
+		          inorganicPct[l] << delim << moistureContentPct[l] << delim << c_s[l] << delim <<
+		          burnt[l] << delim << heatSink[l] << delim << heatSource[l] << delim << std::endl;//Or newline?
 	}
 	output << std::noboolalpha;
 

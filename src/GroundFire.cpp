@@ -1,4 +1,4 @@
-/**
+/***********************************************************************************************//**
  * @file GroundFire.cpp
  * \author Joshua M. Rady
  * Woodwell Climate Research Center
@@ -7,16 +7,23 @@
  * @brief This file defines functions to simulate smoldering ground fire using a moderate complexity
  * model where combustion is predicted layer by layer.
  *
- */
+ **************************************************************************************************/
 
 #include <algorithm>//For fill().
 #include <cmath>
-#include <numeric>
+#include <numeric>//For accumulate().
 #include <string>
 
 #include "../include/GroundFire.h"//"GroundFire.h"//Note: Difference from source repo.
 #include "FireweedMessaging.h"
 #include "FireweedUtils.h"
+
+//Constants:----------------------------------------------------------------------------------------
+//Properties of water:
+const double DelatH_vap = 2257.0;//ΔH_vap = (Latent) heat of vaporization of water (J/g or kJ/kg)
+const double c_w = 4.184;//The specific heat capacity of water (kJ/kg/K at 20C).
+
+//Functions:----------------------------------------------------------------------------------------
 
 /** Calculate and return the heat of combustion of an organic soil based on its organic content.
  *
@@ -37,8 +44,8 @@
  * However, we only have those from a few papers so we can only make a first order estimate.  We may
  * be able to improve this function over time with more research.
  * 
- * @param inorganicPct The percent organic content of the soil on the dry basis.
- * @param  organicHOC The (theoretical) heat of combustion for a purely organic soil (MJ/kg).
+ * @param[in] inorganicPct The percent organic content of the soil on the dry basis.
+ * @param[in]  organicHOC The (theoretical) heat of combustion for a purely organic soil (MJ/kg).
  * The peat moss in Frandsen 1987 has a heat of combustion of 20.6 MJ/kg at 3.7% inorganic.  We
  * can estimate that of 100% organic as:
  * 20.6 / (100 - 3.7) * 100 = 21.39148 MJ/kg
@@ -54,11 +61,11 @@ double SoilHeatOfCombustion(const double inorganicPct, const double organicHOC)
 /** Calculate and return the heat sink for a mass of organic soil.  This is the is the sum of the
  * energy required for drying and to further heat the dry soil to ignition.
  *
- * @param drySoilMass = The mass of dry soil (kg)
- * @param moistureContentPct = Percent moisture content (water mass / dry soil mass * 100%).
- * @param T_int Intial soil temperature (C).
- * @param T_ig Temperature of (auto/self-)ignition or combustion (C).
- * @param c_s Specific heat capacity of the soil (kJ/kg/K). [at 20C?]
+ * @param[in] drySoilMass = The mass of dry soil (kg)
+ * @param[in] moistureContentPct = Percent moisture content (water mass / dry soil mass * 100%).
+ * @param[in] T_int Intial soil temperature (C).
+ * @param[in] T_ig Temperature of (auto/self-)ignition or combustion (C).
+ * @param[in] c_s Specific heat capacity of the soil (kJ/kg/K). [at 20C?]
  *        This is a function of the soil component heat capacities and the temperature, though for
  *        now  we ignore the temperature dependence as is frequently done.
  *
@@ -68,11 +75,7 @@ double SoilHeatSink(const double moistureContentPct, const double T_int, const d
 {
 	//Calculate the heat of drying (kJ/kg water):
 	//Here we use degrees C but could use K.
-	
-	//Properties of water (should be moved to constants):
-	double DelatH_vap = 2257.0;//ΔH_vap = (Latent) heat of vaporization of water (J/g or kJ/kg)
-	double c_w = 4.184;//The specific heat capacity of water (kJ/kg/K at 20C).
-	
+
 	//Soil water is in free and bound forms.  The bound water fraction requires additional energy to
 	//evaporate.  I'm still trying to figure out how to estimate what the bound fraction is.  There may
 	//even be more than one bound fraction as hygroscopic and tightly bound water may be different?
@@ -80,12 +83,12 @@ double SoilHeatSink(const double moistureContentPct, const double T_int, const d
 	//These terms are being set to zero until I figure this out.
 	double frac_bound = 0.0;//The fraction of water in a bound form.
 	double DeltaH_des = 0.0;//ΔH_des = Heat of desorption of water (kJ/kg)
-	
+
 	double DeltaH_dry = (100.0 - T_int) * c_w + DelatH_vap + (frac_bound * DeltaH_des);
-	
+
 	//Heat of ignition of dry soil (kJ/kg):
 	double DeltaH_ig = (T_ig - T_int) * c_s;
-	
+
 	//Total heat required, (kJ/kg moist soil):
 	//For 1 kg dry soil the soil water (kg) = 1 kg * percent moisture content / 100%.
 	double h_sink = (DeltaH_dry * moistureContentPct / 100.0) + DeltaH_ig;
@@ -99,7 +102,7 @@ double SoilHeatSink(const double moistureContentPct, const double T_int, const d
  * The function returns fractional weights adding to one.  The weight order is top to bottom.  The
  * actual heat per layer can be obtained by multiplication.
  *
- * @param numLayers The number of layer for which to compute the distribution.
+ * @param[in] numLayers The number of layer for which to compute the distribution.
  *
  * @returns A vector of fractional weights adding to one for each layer from top to bottom.
  */
@@ -162,23 +165,27 @@ std::vector <double> HeatDistributionLinear(const int numLayers)
  *
  * This function preserves the model iteration 17 (Proj_11_Exp_17_Analysis.r DominoGroundFire17()).
  *
- * @param soilCol A GFProfile object representing the soil profile for the simulation.
- * @param fireHeatInput Total longwave heat input into the soil from the surface fire (kJ/m^3).
- * @param heatLossFactor The fraction of heat lost from the soil (per cm).  This intended to
+ * @param[in,out] soilCol A GFProfile object representing the soil profile for the simulation.
+ * @param[in] fireHeatInput Total longwave heat input into the soil from the surface fire (kJ/m^3).
+ * @param[in] heatLossFactor The fraction of heat lost from the soil (per cm).  This intended to
  *        represent radiant and  convective losses from the soil surface in the time is take for a
  *        layer to combust. The downward efficiency factor from Benscoter et al. 2011 = downwardEF.
  *        As a heat loss = 0.83.
- * @param d_max The maximum depth of heat transfer for the heat transfer approximation (cm).
+ * @param[in] d_max The maximum depth of heat transfer for the heat transfer approximation (cm).
  *
- * @returns The burn depth (cm).
+ * @returns The burn depth (cm).  Additionally the GFProfile passed is updated on return.
  */
 double DominoGroundFire(GFProfile& soilCol, const double fireHeatInput,
                         const double heatLossFactor, const double d_max)
 {
-	//Check for layers of equal depth?
+	bool linearHeatTransfer = false;//Was a parameter.  Should be re-elevated or eliminated!!!!!
 
-	double burnDepth = 0.0;//Return value.
-	bool linearHeatTransfer = false;//Was a parameter.
+	//Check that the layers have equal thickness:
+	//If the profile was interpolated the layer think will have been checked but we can't know that.
+	if (!soilCol.EqualThickness())
+	{
+		Stop("DominoGroundFire(): Soil layers do not all have uniform thickness.");
+	}
 
 	//The soil profile contains layer thicknesses for each layer.  That was added with the plan to
 	//enable variable depth layers.  We haven't done that yet and the following code assumes that
@@ -276,23 +283,5 @@ double DominoGroundFire(GFProfile& soilCol, const double fireHeatInput,
 		}
 	}
 
-	//To return the burn depth we need the depth at the bottom of the last layer burned:
-	int lowest = -1;
-	for (int k = soilCol.NumLayers(); k >= 0; k--)
-	{
-		if (soilCol.burnt[k])
-		{
-			lowest = k;
-			break;
-		}
-	}
-	
-	if (lowest != -1)
-	{
-		burnDepth = soilCol.layerDepth[lowest] + layerThickness_cm;
-	}
-
-	//soilCol.Print(std::cout);//For debugging.
-
-	return burnDepth;
+	return soilCol.GetBurnDepth();
 }
