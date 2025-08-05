@@ -1137,7 +1137,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     gfProfile.thickness_cm[i] = thisLayer->dz * 100.0;//Layer thickness (m -> cm).
     gfProfile.layerDepth[i] = thisLayer->dz * 100.0;//Depth at top of layer (m -> cm).
     gfProfile.tempC[i] = thisLayer->tem;//Layer temperature in Celcius.
-    gfProfile.bulkDensity[i] = thisLayer->bulkden;//Dry soil mass per volume (kg/m^3).
+    gfProfile.bulkDensity[i] = thisLayer->bulkden / gPerKg;//Dry soil mass per volume (g/m^3 -> kg/m^3).
 
     //The organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is used
     //for accounting but this will be somewhat less than the total organic, that which is lost on
