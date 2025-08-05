@@ -192,7 +192,7 @@ int GetMatchingFuelModel(const int cmt)
   int fuelModelNumber;
   
   //Stub: Use a temporary value or a value supplied by the configuration file:
-  if (cd.fire_temp_fm == -1)
+  if (md.fire_temp_fm == -1)
   {
     fuelModelNumber = 161;//Temporarily hardwired.
     //We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
