@@ -185,7 +185,7 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
  *
  * @note Used in the process wildfire model only.
  */
-int GetMatchingFuelModel(const int cmt)
+int WildFire::GetMatchingFuelModel(const int cmt) const
 {
   //Get the number of the fuel model from the crosswalk in the parameter files.
   //This crosswalk needs to be made!!!!!

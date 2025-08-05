@@ -17,7 +17,6 @@
 #include "FireweedRAFireSpread.h"
 #include "BurnupFuelModelInterface.h"
 
-int GetMatchingFuelModel(const int cmt);
 void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,
                                  std::vector <double>& distribWts);
 bool IsShrub(const int cmtNumber, const int pftIdx);
