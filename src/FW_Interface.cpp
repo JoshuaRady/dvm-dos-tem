@@ -157,9 +157,8 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
   //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
   double abgFireEnergy = burnupOutput.history.IntegrateFireIntensity();//kJ/m^2
   BOOST_LOG_SEV(glg, debug) << "Aboveground fire energy: " << abgFireEnergy << "kJ/m^2";
-  //Only a fraction of the heat of the aboveground fire enters the soil.  The fraction is something
-  //we need a better estimate of.  This value is a first guess and little more than a placeholder.
-  double fireHeatToSoil = abgFireEnergy * 0.10;//kJ/m^2 FW_PARAM?????
+  //Only a fraction of the heat of the aboveground fire enters the soil:
+  double fireHeatToSoil = abgFireEnergy * md.fire_heat_frac_to_soil;//kJ/m^2
   BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << "kJ/m^2";
 
   double burnDepth = SimulateGroundFire(fireHeatToSoil);
@@ -1087,9 +1086,8 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
 
   GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
   gfProfile.t_ig = 300.0;//This should be a parameter or be calculated FW_PARAM!!!!!
-  double burnDepth = DominoGroundFire(gfProfile, fireHeatInput) / 100.0;//Convert cm to meters.
-  //For now we use the default values for heatLossFactor and d_max. FW_PARAM!!!!!
-  //These should probably be model parameters.
+  double burnDepth = DominoGroundFire(gfProfile, fireHeatInput, cd.fire_gf_heat_loss_factor,
+                                      cd.fire_gf_d_max) / 100.0;//Convert cm to meters.
 
   BOOST_LOG_SEV(glg, debug) << "Profile after DominoGroundFire():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
@@ -1120,8 +1118,6 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
 GFProfile WildFire::GroundFireGetSoilProfile() const
 {
   BOOST_LOG_SEV(glg, debug) << "Entering GroundFireGetSoilProfile()...";
-
-  double layerThickess_cm = 1.0;//Soil layer thickness in cm.	FW_PARAM!!!!!
 
   //Only consider the organic horizon(s):
   int numOrgLayers =  ground->organic.shlwnum + ground->organic.deepnum;
@@ -1179,7 +1175,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   //Convert to layers of equal thickness and interpolate the values in the original profile:
-  gfProfile.Interpolate(layerThickess_cm);
+  gfProfile.Interpolate(cd.fire_gf_layer_thickness);
 
   BOOST_LOG_SEV(glg, debug) << "Profile after Interpolate():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
