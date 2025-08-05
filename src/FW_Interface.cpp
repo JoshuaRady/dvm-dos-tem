@@ -199,7 +199,7 @@ int GetMatchingFuelModel(const int cmt)
   }
   else
   {
-    fuelModelNumber = cd.fire_temp_fm;
+    fuelModelNumber = md.fire_temp_fm;
     //We don't currently have a way to check that a fuel model number is valid.
   }
   //There is a bare land fuel model by number but it doesn't have parameters.  Do we need to provide
@@ -1096,8 +1096,8 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
 
   GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
   gfProfile.t_ig = 300.0;//This should be a parameter or be calculated FW_PARAM!!!!!
-  double burnDepth = DominoGroundFire(gfProfile, fireHeatInput, cd.fire_gf_heat_loss_factor,
-                                      cd.fire_gf_d_max) / 100.0;//Convert cm to meters.
+  double burnDepth = DominoGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
+                                      md.fire_gf_d_max) / 100.0;//Convert cm to meters.
 
   BOOST_LOG_SEV(glg, debug) << "Profile after DominoGroundFire():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
@@ -1185,7 +1185,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   //Convert to layers of equal thickness and interpolate the values in the original profile:
-  gfProfile.Interpolate(cd.fire_gf_layer_thickness);
+  gfProfile.Interpolate(md.fire_gf_layer_thickness);
 
   BOOST_LOG_SEV(glg, debug) << "Profile after Interpolate():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
