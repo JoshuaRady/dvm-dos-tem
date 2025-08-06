@@ -1151,19 +1151,23 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //The following is a ratio value commonly used for soils but the value varies.  This is probably
     //low for some histosols.  We can probably use our carbon pools to get more accurate.
     const double SOMtoSOC_Ratio = 1.72;//Initial value.  Research needed.  Make a FW_PARAM?????
-    double totalSOC = 0.0;//kg/m^3
+    double totalSOC = 0.0;//g/m^2(/layer)
     if (i == 0)//We treat the rawc compartment of the top non-moss/fibric/shallow layer as litter:
     {
-      totalSOC = (thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / gPerKg;///g/m^3 -> kg/m^3
+      totalSOC = thisLayer->soma + thisLayer->sompr + thisLayer->somcr;//g/m^2(/layer)
     }
     else
     {
-      totalSOC = (thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / gPerKg;//g/m^3 -> kg/m^3
+      totalSOC = thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr;//g/m^2(/layer)
     }
-    double totalSOM = totalSOC * SOMtoSOC_Ratio;//kg/m^3 
+    //The soil organic carbon pools are in gC/m^2 per layer.  Use the layer depth to convert to density:
+    //(gC/m^2 / m) / g/Kg = kgC/m^3
+    double totalSOCdensity = (totalSOC / thisLayer->dz) / gPerKg;//kg/m^3
+    //Convert from carbon to organic matter:
+    double totalSOMdensity = totalSOCdensity * SOMtoSOC_Ratio;//kg/m^3 
     //Or:
-    //double totalSOM = totalSOC / thisLayer->cfrac;
-    double organicFraction = totalSOM / gfProfile.bulkDensity[i];
+    //double totalSOMdensity = totalSOCdensity / thisLayer->cfrac;
+    double organicFraction = totalSOMdensity / gfProfile.bulkDensity[i];
     gfProfile.inorganicPct[i] = (1.0 - organicFraction) * 100;//Percent inorganic content on a dry basis (~ ash content).
 
     //Soil moisture content (%):
