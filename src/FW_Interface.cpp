@@ -1172,10 +1172,13 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
     //Soil moisture content (%):
     //This is the water mass per volume / dry soil mass per volume * 100%.
-    //liq is liquid water and ice is ice content (kg/m^3 [or kg/m^2/layer?????]).
     //Ice needs to be added to the ground fire model explicitly but for now we convert it to water.
-    ////kg/m^3 / kg/m^3 * 100% = %
-    gfProfile.moistureContentPct[i] = (thisLayer->liq + thisLayer->ice) / gfProfile.bulkDensity[i] * 100.0;//%
+    //liq is liquid water and ice is ice content in kg/m^2 per layer.  Use the layer depth to convert to density:
+    //kg/m^2 / m = kg/m^3
+    double waterDensity = (thisLayer->liq + thisLayer->ice) / thisLayer->dz;//kg/m^3	Or moistureContent?????
+    
+    //kg/m^3 / kg/m^3 * 100% = %
+    gfProfile.moistureContentPct[i] = waterDensity / gfProfile.bulkDensity[i] * 100.0;//%
 
     //Layer heat capacity (kJ/kg/K):
     //vhcsolid is volumetric heat capacity (J/m^3/K).  Convert to specific heat capacity.
