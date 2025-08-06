@@ -156,10 +156,10 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
   //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
   //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
   double abgFireEnergy = burnupOutput.history.IntegrateFireIntensity();//kJ/m^2
-  BOOST_LOG_SEV(glg, debug) << "Aboveground fire energy: " << abgFireEnergy << "kJ/m^2";
+  BOOST_LOG_SEV(glg, debug) << "Aboveground fire energy: " << abgFireEnergy << " kJ/m^2";
   //Only a fraction of the heat of the aboveground fire enters the soil:
   double fireHeatToSoil = abgFireEnergy * md.fire_heat_frac_to_soil;//kJ/m^2
-  BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << "kJ/m^2";
+  BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
 
   double burnDepth = SimulateGroundFire(fireHeatToSoil);
 

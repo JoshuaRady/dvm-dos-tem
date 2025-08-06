@@ -567,10 +567,10 @@ double GFProfile::GetBurnDepth() const
  */
 std::ostream& GFProfile::Print(std::ostream& output) const
 {
-	//This works but is can be hard to read at the layers increase:
-
-	/*output << "Ground fire soil profile:" << std::endl;
-	output << "The column has " << numLayers << " layers." << std::endl;
+	output << "Ground fire soil profile:" << std::endl;
+	
+	//The following works but is can be hard to read at the layers increase:
+	/*output << "The column has " << numLayers << " layers." << std::endl;
 	output << "The soil ignition temperature is " << t_ig << " C." << std::endl;
 
 	//output << "Layer thickness (cm): " << thickness_cm << std::endl;
