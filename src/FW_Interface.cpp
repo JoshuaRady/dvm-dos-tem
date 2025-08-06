@@ -1181,9 +1181,10 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     gfProfile.moistureContentPct[i] = waterDensity / gfProfile.bulkDensity[i] * 100.0;//%
 
     //Layer heat capacity (kJ/kg/K):
-    //vhcsolid is volumetric heat capacity (J/m^3/K).  Convert to specific heat capacity.
-    //J/m^3/K / kg/m^3 * 1000J/KJ = kJ/kg/K
-    gfProfile.c_s[i] = thisLayer->vhcsolid / gfProfile.bulkDensity[i] / 1000.0;//kJ/kg/K
+    //vhcsolid is volumetric heat capacity (J/m^3/K) for dry compacted soil. Converting to specific
+    //heat capacity requires considering the pore fraction and the bulk density:
+    //(J/m^3/K * solid fraction) / kg/m^3 * 1000J/KJ = kJ/kg/K
+    gfProfile.c_s[i] = (thisLayer->vhcsolid * (1.0 - poro)) / gfProfile.bulkDensity[i] / 1000.0;//kJ/kg/K
 
     thisLayer = thisLayer->nextl;
   }
