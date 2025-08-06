@@ -1192,11 +1192,17 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   BOOST_LOG_SEV(glg, debug) << "Intial translated profile:";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
-  //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this::
+  //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this:
   gfProfile.Resurface();
 
   BOOST_LOG_SEV(glg, debug) << "Profile after Resurface():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
+
+  //Check the profile before interpolating:
+  if (!gfProfile.Validate())
+  {
+    BOOST_LOG_SEV(glg, fatal) << "Translated profile it not valid.";
+  }
 
   //Convert to layers of equal thickness and interpolate the values in the original profile:
   gfProfile.Interpolate(md.fire_gf_layer_thickness);
