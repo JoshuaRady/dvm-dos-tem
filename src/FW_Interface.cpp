@@ -1151,26 +1151,30 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //The following is a ratio value commonly used for soils but the value varies.  This is probably
     //low for some histosols.  We can probably use our carbon pools to get more accurate.
     const double SOMtoSOC_Ratio = 1.72;//Initial value.  Research needed.  Make a FW_PARAM?????
-    double totalSOC = 0.0;
+    double totalSOC = 0.0;//kg/m^3
     if (i == 0)//We treat the rawc compartment of the top non-moss/fibric/shallow layer as litter:
     {
-      totalSOC = (thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / gPerKg;//kg/m^3 ??????
+      totalSOC = (thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / gPerKg;///g/m^3 -> kg/m^3
     }
     else
     {
-      totalSOC = (thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / gPerKg;//kg/m^3 ??????
+      totalSOC = (thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr) / gPerKg;//g/m^3 -> kg/m^3
     }
     double totalSOM = totalSOC * SOMtoSOC_Ratio;//kg/m^3 
     //Or:
     //double totalSOM = totalSOC / thisLayer->cfrac;
-    double organicFraction = totalSOM / thisLayer->bulkden;
+    double organicFraction = totalSOM / gfProfile.bulkDensity[i];
     gfProfile.inorganicPct[i] = (1.0 - organicFraction) * 100;//Percent inorganic content on a dry basis (~ ash content).
 
-    //Soil mostures content is the water mass per volume / dry soil mass per volume * 100%:
-    gfProfile.moistureContentPct[i] = thisLayer->liq / thisLayer->bulkden * 100.0;//Potential units issue with liq!!!!!
+    //Soil moisture content (%):
+    //This is the water mass per volume / dry soil mass per volume * 100%.
+    //liq is liquid water (kg/m^3 [or kg/m^2/layer?????]).
+    gfProfile.moistureContentPct[i] = thisLayer->liq / gfProfile.bulkDensity[i] * 100.0;//kg/m^3 / kg/m^3 * 100%
 
-    //vhcsolid is volumetric heat capacity (J/m^3/K).  Convert to specific heat capacity:
-    gfProfile.c_s[i] = thisLayer->vhcsolid / thisLayer->bulkden / 1000.0;//Layer heat capacity (kJ/kg/K).
+    //Layer heat capacity (kJ/kg/K):
+    //vhcsolid is volumetric heat capacity (J/m^3/K).  Convert to specific heat capacity.
+    //J/m^3/K / kg/m^3 * 1000J/KJ = kJ/kg/K
+    gfProfile.c_s[i] = thisLayer->vhcsolid / gfProfile.bulkDensity[i] / 1000.0;//kJ/kg/K
 
     thisLayer = thisLayer->nextl;
   }
