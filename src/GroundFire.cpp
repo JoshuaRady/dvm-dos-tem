@@ -112,8 +112,9 @@ std::vector <double> HeatDistributionLinear(const int numLayers)
 	{
 		Stop("The number of layer must be at least 1.");
 	}
-		std::vector <double> layerWeights(numLayers);
-		double layerThickFrac = 1.0 / numLayers;//The relative thickness of layers as a fraction of the whole depth.
+
+	std::vector <double> layerWeights(numLayers);
+	double layerThickFrac = 1.0 / numLayers;//The relative thickness of layers as a fraction of the whole depth.
 
 	for (int i = 0; i < numLayers; i++)
 	{
