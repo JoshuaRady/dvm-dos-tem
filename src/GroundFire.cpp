@@ -53,7 +53,12 @@ const double c_w = 4.184;//The specific heat capacity of water (kJ/kg/K at 20C).
  * @returns The soil heat of combustion (MJ/kg, ~net fuel heat content).
  */
 double SoilHeatOfCombustion(const double inorganicPct, const double organicHOC)
-{	
+{
+	if (!InRange(inorganicPct), 0.0, 100.0)
+	{
+		Stop("Invalid inorganic percentage.");
+	}
+
 	double soilHOC = organicHOC * (100.0 - inorganicPct) / 100.0;//MJ/kg
 	return soilHOC;
 }
