@@ -1150,7 +1150,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
     //The following is a ratio value commonly used for soils but the value varies.  This is probably
     //low for some histosols.  We can probably use our carbon pools to get more accurate.
-    const double SOMtoSOC_Ratio = 1.72;//Initial value.  Research needed.  Make a FW_PARAM?????
+    const double SOCtoSOM_Ratio = 0.50;//Second initial value.  More research needed. FW_PARAM?????
     double totalSOC = 0.0;//g/m^2(/layer)
     if (i == 0)//We treat the rawc compartment of the top non-moss/fibric/shallow layer as litter:
     {
@@ -1166,7 +1166,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //(gC/m^2 / m) / g/Kg = kgC/m^3
     double totalSOCdensity = (totalSOC / thisLayer->dz) / gPerKg;//kg/m^3
     //Convert from carbon to organic matter:
-    double totalSOMdensity = totalSOCdensity * SOMtoSOC_Ratio;//kg/m^3
+    double totalSOMdensity = totalSOCdensity / SOCtoSOM_Ratio;//kg/m^3
     //Or:
     //double totalSOMdensity = totalSOCdensity / thisLayer->cfrac;
 
