@@ -31,7 +31,7 @@
 
 #include "../include/GroundFire.h"
 
-#include <cmath>//Temporary for isnan().
+#include <cmath>//For fmin().
 
 extern src::severity_logger< severity_level > glg;
 
@@ -1155,6 +1155,8 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     if (i == 0)//We treat the rawc compartment of the top non-moss/fibric/shallow layer as litter:
     {
       totalSOC = thisLayer->soma + thisLayer->sompr + thisLayer->somcr;//g/m^2(/layer)
+
+      //FW_NOTE: If the rawc is not considered here it should also be subracted from the layer mass below!
     }
     else
     {
@@ -1164,10 +1166,20 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //(gC/m^2 / m) / g/Kg = kgC/m^3
     double totalSOCdensity = (totalSOC / thisLayer->dz) / gPerKg;//kg/m^3
     //Convert from carbon to organic matter:
-    double totalSOMdensity = totalSOCdensity * SOMtoSOC_Ratio;//kg/m^3 
+    double totalSOMdensity = totalSOCdensity * SOMtoSOC_Ratio;//kg/m^3
     //Or:
     //double totalSOMdensity = totalSOCdensity / thisLayer->cfrac;
+
+    //Even if the soil is purely organic it can't exceed a fraction of 1.0 so cap it:
     double organicFraction = totalSOMdensity / gfProfile.bulkDensity[i];
+    //Temporary code to track this situation:
+    if (organicFraction > 1.0)
+    {
+      BOOST_LOG_SEV(glg, debug) << "organicFraction = " << organicFraction;
+      BOOST_LOG_SEV(glg, debug) << "Layer carbon = " << (thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr);
+      BOOST_LOG_SEV(glg, debug) << "totalSOC = " << totalSOC;
+    }
+    organicFraction = fmax(organicFraction, 1.0);
     gfProfile.inorganicPct[i] = (1.0 - organicFraction) * 100;//Percent inorganic content on a dry basis (~ ash content).
 
     //Soil moisture content (%):
