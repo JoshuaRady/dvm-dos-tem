@@ -1172,13 +1172,19 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
     //Even if the soil is purely organic it can't exceed a fraction of 1.0 so cap it:
     double organicFraction = totalSOMdensity / gfProfile.bulkDensity[i];
-    //Temporary code to track this situation:
+
+    //Temporary code to report on the carbonin in more detail:
+    double totalSOCTemp = thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr;//The total reguardless of layer.
+    double totalSOCdensity2 = (totalSOCTemp / thisLayer->dz) / gPerKg;//kg/m^3
+    double cFraction = totalSOCdensity2 / gfProfile.bulkDensity[i];
+    BOOST_LOG_SEV(glg, debug) << "True total carbon fraction of layer = " << cFraction;
     if (organicFraction > 1.0)
     {
       BOOST_LOG_SEV(glg, debug) << "organicFraction = " << organicFraction;
-      BOOST_LOG_SEV(glg, debug) << "Layer carbon = " << (thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr);
+      BOOST_LOG_SEV(glg, debug) << "Layer carbon = " << ;
       BOOST_LOG_SEV(glg, debug) << "totalSOC = " << totalSOC;
     }
+
     organicFraction = fmin(organicFraction, 1.0);
     gfProfile.inorganicPct[i] = (1.0 - organicFraction) * 100;//Percent inorganic content on a dry basis (~ ash content).
 
