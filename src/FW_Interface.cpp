@@ -1179,7 +1179,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
       BOOST_LOG_SEV(glg, debug) << "Layer carbon = " << (thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr);
       BOOST_LOG_SEV(glg, debug) << "totalSOC = " << totalSOC;
     }
-    organicFraction = fmax(organicFraction, 1.0);
+    organicFraction = fmin(organicFraction, 1.0);
     gfProfile.inorganicPct[i] = (1.0 - organicFraction) * 100;//Percent inorganic content on a dry basis (~ ash content).
 
     //Soil moisture content (%):
