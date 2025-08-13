@@ -1181,7 +1181,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     if (organicFraction > 1.0)
     {
       BOOST_LOG_SEV(glg, debug) << "organicFraction = " << organicFraction;
-      BOOST_LOG_SEV(glg, debug) << "Layer carbon = " << ;
+      BOOST_LOG_SEV(glg, debug) << "Layer carbon = " << totalSOCTemp;
       BOOST_LOG_SEV(glg, debug) << "totalSOC = " << totalSOC;
     }
 
