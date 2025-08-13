@@ -54,7 +54,7 @@ const double c_w = 4.184;//The specific heat capacity of water (kJ/kg/K at 20C).
  */
 double SoilHeatOfCombustion(const double inorganicPct, const double organicHOC)
 {
-	if (!InRange(inorganicPct, 0.0, 100.0)
+	if (!InRange(inorganicPct, 0.0, 100.0))
 	{
 		Stop("Invalid inorganic percentage.");
 	}
