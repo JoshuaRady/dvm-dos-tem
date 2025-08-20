@@ -462,7 +462,8 @@ bool GFProfile::Validate(const bool uniformLayers) const
 		}
 		else
 		{
-			if (layerDepth[i] != (layerDepth[i - 1] + thickness_cm[i - 1]))
+			//if (layerDepth[i] != (layerDepth[i - 1] + thickness_cm[i - 1]))
+			if (! FloatCompare(layerDepth[i], (layerDepth[i - 1] + thickness_cm[i - 1])))
 			{
 				Warning("Layer dimensions not consistant for layer index " + std::to_string(i));
 				valid = false;
