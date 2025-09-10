@@ -164,8 +164,8 @@
         "fire_heat_frac_to_soil": 0.1,
         //The fraction of heat lost from the soil:
         "fire_gf_heat_loss_factor": 0.83,
-        //The maximum depth of heat transfer for the heat transfer approximation (cm):
-        "fire_gf_d_max": 5.0,
+        //The maximum heat penetration depth for the smoldering heat transfer approximation (cm):
+        "fire_gf_smolder_PD": 5.0,
         //The soil layer thickness for the simulation (cm):
         "fire_gf_layer_thickness": 1.0,
         //A temporaty parameter to force fuel model choice:
