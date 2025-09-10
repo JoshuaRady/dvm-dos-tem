@@ -17,9 +17,12 @@
 #include "GFProfile.h"
 
 double SoilHeatOfCombustion(const double inorganicPct, const double organicHOC = 21.39148);//FW_PARAM
-double SoilHeatSink(const double moistureContentPct, const double T_int, const double T_ig, const double c_s);
+double EffectiveSmolderingHOC(const double inorganicPct);
+double SoilHeatSink(const double moistureContentPct, const double t_int, const double t_ig, const double c_s);
 std::vector <double> HeatDistributionLinear(const int numLayers);
 double DominoGroundFire(GFProfile& soilCol, const double fireHeatInput = 0.0,//With no heat input nothing will burn.
-                        const double heatLossFactor = 0.83, const double d_max = 5.0);
+                        const double heatLossFactor = 0.83, const double surfacePD = 1.0,
+                        const double smolderPD = 5.0, const int surfaceTM = 0,
+                        const int smolderTM = 1);
 
 #endif //FW_GROUNDFIRE_H
