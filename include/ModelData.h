@@ -134,8 +134,9 @@ public:
   bool fire_moss_as_dead_fuel;//Should moss be treated as a dead fuel (true) or live fuel (false).
   bool fire_calculate_delta;//Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false).
   double fire_heat_frac_to_soil;//The fraction of aboveground fire heat that enters the soil.
-  double fire_gf_heat_loss_factor;//The fraction of heat lost from the soil
-  double fire_gf_smolder_PD;//The maximum heat penetration depth for the smoldering heat transfer approximation (cm).
+  double fire_gf_heat_loss_factor;//The fraction of heat lost from the soil.
+  double fire_gf_surface_pd;//The maximum heat penetration depth for the soil surface heat transfer approximation (cm).
+  double fire_gf_smolder_pd;//The maximum heat penetration depth for the smoldering heat transfer approximation (cm).
   double fire_gf_layer_thickness;//The soil layer thickness for the simulation (cm)
   int fire_temp_fm;//A temporaty parameter to force fuel model choice.
   // FW_MOD_END.

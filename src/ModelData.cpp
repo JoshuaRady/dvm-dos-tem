@@ -142,6 +142,7 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   fire_calculate_delta = controldata["module_settings"]["dsb"]["fire"]["fire_calculate_delta"].asBool();
   fire_heat_frac_to_soil   = controldata["module_settings"]["dsb"]["fire"]["fire_heat_frac_to_soil"].asDouble();
   fire_gf_heat_loss_factor = controldata["module_settings"]["dsb"]["fire"]["fire_gf_heat_loss_factor"].asDouble();
+  fire_gf_surface_pd       = controldata["module_settings"]["dsb"]["fire"]["fire_gf_surface_pd"].asDouble();
   fire_gf_smolder_pd       = controldata["module_settings"]["dsb"]["fire"]["fire_gf_smolder_pd"].asDouble();
   fire_gf_layer_thickness  = controldata["module_settings"]["dsb"]["fire"]["fire_gf_layer_thickness"].asDouble();
   fire_temp_fm             = controldata["module_settings"]["dsb"]["fire"]["fire_temp_fm"].asInt();

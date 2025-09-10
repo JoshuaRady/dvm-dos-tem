@@ -1097,8 +1097,7 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
   GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
   gfProfile.t_ig = 200.0;//This should be a parameter (by profile?) or be calculated FW_PARAM!!!!!
   double burnDepth = DominoGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
-                                      1.0,//There is not yet a config value for surfacePD. Use default.
-                                      md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
+                                      md.fire_gf_surface_pd, md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
 
   BOOST_LOG_SEV(glg, debug) << "Profile after DominoGroundFire():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
