@@ -1095,7 +1095,6 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
   BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()...";
 
   GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
-  gfProfile.t_ig = 200.0;//This should be a parameter (by profile?) or be calculated FW_PARAM!!!!!
   double burnDepth = DominoGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
                                       md.fire_gf_surface_pd, md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
 
@@ -1143,6 +1142,25 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     gfProfile.thickness_cm[i] = thisLayer->dz * 100.0;//Layer thickness (m -> cm).
     gfProfile.layerDepth[i] = thisLayer->z * 100.0;//Depth at top of layer (m -> cm).
     gfProfile.tempC[i] = thisLayer->tem;//Layer temperature in Celcius.
+
+    //The humic layers should probably have higher temperatures of ignition but more research is
+    //needed.  The values should parameters or be calculated from the level of decay.  They will be
+    //interpolated in the ground fire calculation.
+    if (thisLayer->isFibric)
+    {
+      gfProfile.t_ig[i] = 200.0;//FW_PARAM?????
+      gfProfile.type[i] = "Fibric";
+    }
+    else if (thisLayer->isHumic)
+    {
+      gfProfile.t_ig[i] = 200.0;//FW_PARAM?????
+      gfProfile.type[i] = "Humic";
+    }
+    else//Same as checking !thisLayer->isOrganic.
+    {
+      BOOST_LOG_SEV(glg, fatal) << "Layer is not an expected organic type.";
+    }
+
     gfProfile.bulkDensity[i] = thisLayer->bulkden / gPerKg;//Dry soil mass per volume (g/m^3 -> kg/m^3).
 
     //The organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is used
@@ -1173,7 +1191,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //Even if the soil is purely organic it can't exceed a fraction of 1.0 so cap it:
     double organicFraction = totalSOMdensity / gfProfile.bulkDensity[i];
 
-    //Temporary code to report on the carbonin in more detail:
+    //Temporary code to report on the carbon in more detail:
     double totalSOCTemp = thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr;//The total reguardless of layer.
     double totalSOCdensity2 = (totalSOCTemp / thisLayer->dz) / gPerKg;//kg/m^3
     double cFraction = totalSOCdensity2 / gfProfile.bulkDensity[i];
