@@ -9,6 +9,7 @@
  *
  **************************************************************************************************/
 
+#include <algorithm>//For max().
 #include <cmath>
 #include <iomanip>
 #include <string>
@@ -28,32 +29,36 @@
 GFProfile::GFProfile()
 {
 	numLayers = 0;
-	t_ig = ProfileUndef;
 }
 
 /** Constructor
  *
  * This constructor makes an 'blank' profile of the specified size.  The soil properties are set to
  * invalid values that should be replaced after initialization.
+ * 
+ * @param[in] The number of profile layers to create.
  */
 GFProfile::GFProfile(const int numLayers)
 {
 	this->numLayers = numLayers;
-	t_ig = ProfileUndef;
-	
+
 	//Size the elements and set to invalid values:
 	thickness_cm.resize(numLayers, ProfileUndef);
 	layerDepth.resize(numLayers, ProfileUndef);
 	tempC.resize(numLayers, ProfileUndef);
+	t_ig.resize(numLayers, ProfileUndef);
 	bulkDensity.resize(numLayers, ProfileUndef);
 	inorganicPct.resize(numLayers, ProfileUndef);
 	moistureContentPct.resize(numLayers, ProfileUndef);
 	c_s.resize(numLayers, ProfileUndef);
-	
+
 	//Outputs:
 	burnt.resize(numLayers, false);
 	heatSink.resize(numLayers, 0.0);
 	heatSource.resize(numLayers, 0.0);
+
+	//Labels:
+	type.resize(numLayers);//Fill with empty strings.
 }
 
 /** Get the number of layers.
@@ -112,6 +117,12 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		Stop("Interpolate(): Invalid value for newLayerThickness: " + std::to_string(newLayerThickness));
 	}
 	//Check that newLayerThickness is some small round value?
+
+	//If the layer thickness or depths are off the interpolation may succeed but the output will be compromised:
+	if (!Validate())
+	{
+		Stop("Interpolate(): The soil column is not valid.");
+	}
 
 	//At the end we will have a set of new layers.  The bottom of the deepest layer should be pretty
 	//close to that of the current profile but will be a multiple of the new newLayerThickness:
@@ -187,7 +198,7 @@ void GFProfile::Interpolate(const double newLayerThickness)
 				//The original layers should have been nudged to regular positions and the distance
 				//between them should be some exact multiple of the new layer thickness.  Check to
 				//be sure:
-				if ((numNewLayers + 1) * newLayerThickness != deltaZ)
+				if (!FloatCompare((numNewLayers + 1) * newLayerThickness, deltaZ))
 				{
 					Stop("Distance between layers is not a multiple of the new layer thickness.");
 				}
@@ -229,7 +240,11 @@ void GFProfile::Interpolate(const double newLayerThickness)
  * between adjacent layers.  We could allow writing over intervening layers but the utility of that
  * is not clear.
  *
- * @returns Nothing,
+ * @note The proper interpolation for some properties, like t_ig, might not be linear and further
+ *       thought is needed.  An alternative could be to interpolate some properties and compute
+ *       others from those values.
+ *
+ * @returns Nothing.
  */
 void GFProfile::InterpolateBetween(const int topLayer, int bottomLayer, const int numNewLayers)
 {
@@ -271,6 +286,7 @@ void GFProfile::InterpolateBetween(const int topLayer, int bottomLayer, const in
 		layerDepth[firstNewLayer + i] = layerDepth[firstNewLayer + i - 1] + thickness_cm[firstNewLayer + i];
 		
 		tempC[firstNewLayer + i] = std::lerp(tempC[topLayer], tempC[bottomLayer], step);
+		t_ig[firstNewLayer + i] = std::lerp(t_ig[topLayer], t_ig[bottomLayer], step);
 		bulkDensity[firstNewLayer + i] = std::lerp(bulkDensity[topLayer],
 		                                           bulkDensity[bottomLayer], step);
 		inorganicPct[firstNewLayer + i] = std::lerp(inorganicPct[topLayer],
@@ -282,6 +298,7 @@ void GFProfile::InterpolateBetween(const int topLayer, int bottomLayer, const in
 		step += stepSize;
 	}
 	//Leave burnt, heatSink, and heatSource at their defaults.
+	//Leave type blank.
 }
 
 /** Add layers to the top of the profile, cloning the properties of the current top layer.
@@ -292,7 +309,7 @@ void GFProfile::InterpolateBetween(const int topLayer, int bottomLayer, const in
  *
  * @param[in] numNewLayers The number of layers to add.
  *
- * @returns Nothing,
+ * @returns Nothing.
  */
 void GFProfile::AddLayersToTop(const int numNewLayers)
 {
@@ -310,7 +327,9 @@ void GFProfile::AddLayersToTop(const int numNewLayers)
 		layerDepth.insert(layerDepth.begin(), layerThickness * i);
 	}
 
+	//Clone physical properties:
 	tempC.insert(tempC.begin(), numNewLayers, tempC[0]);
+	t_ig.insert(t_ig.begin(), numNewLayers, t_ig[0]);
 	bulkDensity.insert(bulkDensity.begin(), numNewLayers, bulkDensity[0]);
 	inorganicPct.insert(inorganicPct.begin(), numNewLayers, inorganicPct[0]);
 	moistureContentPct.insert(moistureContentPct.begin(), numNewLayers, moistureContentPct[0]);
@@ -320,6 +339,8 @@ void GFProfile::AddLayersToTop(const int numNewLayers)
 	burnt.insert(burnt.begin(), numNewLayers, false);
 	heatSink.insert(heatSink.begin(), numNewLayers, 0.0);
 	heatSource.insert(heatSource.begin(), numNewLayers, 0.0);
+
+	type.insert(type.begin(), numNewLayers, type[0]);//Copy the label.
 
 	numLayers = numLayers + numNewLayers;
 }
@@ -331,7 +352,7 @@ void GFProfile::AddLayersToTop(const int numNewLayers)
  *
  * @param[in] numNewLayers The number of layers to add.
  *
- * @returns Nothing,
+ * @returns Nothing.
 */
 void GFProfile::AddLayersToBottom(const int numNewLayers)
 {
@@ -347,7 +368,9 @@ void GFProfile::AddLayersToBottom(const int numNewLayers)
 		layerDepth.push_back(layerDepth[numLayers - 1 + i] + thickness_cm[numLayers - 1]);
 	}
 
+	//Clone physical properties:
 	tempC.insert(tempC.end(), numNewLayers, tempC[numLayers - 1]);
+	t_ig.insert(t_ig.end(), numNewLayers, t_ig[numLayers - 1]);
 	bulkDensity.insert(bulkDensity.end(), numNewLayers, bulkDensity[numLayers - 1]);
 	inorganicPct.insert(inorganicPct.end(), numNewLayers, inorganicPct[numLayers - 1]);
 	moistureContentPct.insert(moistureContentPct.end(), numNewLayers, moistureContentPct[numLayers - 1]);
@@ -358,6 +381,8 @@ void GFProfile::AddLayersToBottom(const int numNewLayers)
 	heatSink.insert(heatSink.end(), numNewLayers, 0.0);
 	heatSource.insert(heatSource.end(), numNewLayers, 0.0);
 
+	type.insert(type.end(), numNewLayers, type[numLayers - 1]);//Copy the label.
+
 	numLayers += numNewLayers;
 }
 
@@ -367,7 +392,7 @@ void GFProfile::AddLayersToBottom(const int numNewLayers)
  *                     shifted down).
  * @param[in] numNewLayers The number of layers to insert.
  *
- * @returns Nothing,
+ * @returns Nothing.
  */
 void GFProfile::InsertBlankLayers(const int insertAt, const int numNewLayers)
 {
@@ -379,8 +404,9 @@ void GFProfile::InsertBlankLayers(const int insertAt, const int numNewLayers)
 	thickness_cm.insert(thickness_cm.begin() + insertAt, numNewLayers, ProfileUndef);//Or add values?
 	layerDepth.insert(layerDepth.begin() + insertAt, numNewLayers, ProfileUndef);//Or add values?
 
-	//Insert and set to invalid values:
+	//Insert and set physical properties to invalid values:
 	tempC.insert(tempC.begin() + insertAt, numNewLayers, ProfileUndef);
+	t_ig.insert(t_ig.begin() + insertAt, numNewLayers, ProfileUndef);
 	bulkDensity.insert(bulkDensity.begin() + insertAt, numNewLayers, ProfileUndef);
 	inorganicPct.insert(inorganicPct.begin() + insertAt, numNewLayers, ProfileUndef);
 	moistureContentPct.insert(moistureContentPct.begin() + insertAt, numNewLayers, ProfileUndef);
@@ -390,6 +416,8 @@ void GFProfile::InsertBlankLayers(const int insertAt, const int numNewLayers)
 	burnt.insert(burnt.begin() + insertAt, numNewLayers, false);
 	heatSink.insert(heatSink.begin() + insertAt, numNewLayers, 0.0);
 	heatSource.insert(heatSource.begin() + insertAt, numNewLayers, 0.0);
+
+	type.insert(type.begin() + insertAt, numNewLayers, std::string());//Empty string.
 
 	numLayers += numNewLayers;
 }
@@ -436,8 +464,8 @@ bool GFProfile::Validate(const bool uniformLayers) const
 
 	//Make sure the number of property elements are consistant:
 	if (numLayers != thickness_cm.size() ||
-	    !SameLengths(thickness_cm, layerDepth, tempC, bulkDensity, inorganicPct, moistureContentPct,
-	                 c_s, burnt, heatSink, heatSource))
+	    !SameLengths(thickness_cm, layerDepth, tempC, t_ig, bulkDensity, inorganicPct,
+	                 moistureContentPct, c_s, burnt, heatSink, heatSource, type))
 	{
 		Warning("Some profile elements are not the same length.");
 		valid = false;
@@ -484,6 +512,12 @@ bool GFProfile::Validate(const bool uniformLayers) const
 		valid = false;
 	}
 
+	if (!InRange(t_ig, 200, 300))//This range is rough and might be a bit wider.
+	{
+		Warning("Unlikely temperature value(s).");
+		valid = false;
+	}
+
 	//Histisols can have low bulk densities approaching zero for some peats.  Compacted glacial till
 	//on the other hand approaches that of concrete to we need to give a pretty wide range.  Values
 	//pulled from figure 4.44 in:
@@ -525,7 +559,7 @@ bool GFProfile::EqualThickness() const
 	{
 		for (int l = 1; l < numLayers; l++)
 		{
-			if (thickness_cm[l] != thickness_cm[0])
+			if (!FloatCompare(thickness_cm[l], thickness_cm[0]))//It would be good if we didn't have to use this.
 			{
 				return false;
 			}
@@ -569,49 +603,6 @@ double GFProfile::GetBurnDepth() const
 std::ostream& GFProfile::Print(std::ostream& output) const
 {
 	output << "Ground fire soil profile:" << std::endl;
-	
-	//The following works but is can be hard to read at the layers increase:
-	/*output << "The column has " << numLayers << " layers." << std::endl;
-	output << "The soil ignition temperature is " << t_ig << " C." << std::endl;
-
-	//output << "Layer thickness (cm): " << thickness_cm << std::endl;
-	output << "Layer thickness (cm): ";
-	PrintVector(output, thickness_cm);
-	output << "Layer depth (cm to top): ";
-	PrintVector(output, layerDepth);
-	output << "Layer temperature (C): ";
-	PrintVector(output, tempC);
-	output << "Layer bulk density (kg/m^3): ";
-	PrintVector(output, bulkDensity);
-	
-	output << "Layer dry mass (kg/m^2/layer): ";
-	for (int i = 0; i < numLayers - 1; i++)
-	{
-		output << DrySoilMassKg(i) << ", ";
-	}
-	output << DrySoilMassKg(numLayers - 1) << std::endl;
-
-	output << "Layer % inorganic: ";
-	PrintVector(output, inorganicPct);
-	output << "Layer % moisture content: ";
-	PrintVector(output, moistureContentPct);
-	output << "Layer heat capacity (kJ/kg/K, AKA c_s): ";
-	PrintVector(output, c_s);
-
-	output << "Layer burnt: ";
-	output << std::boolalpha;//Print as burnt as strings.
-	//PrintVector(output, burnt);
-	for (int i = 0; i < burnt.size() - 1; i++)
-	{
-		output << burnt[i] << ", ";
-	}
-	output << burnt[burnt.size() - 1] << std::endl;
-	output << std::noboolalpha;
-	
-	output << "Layer heat sink: ";
-	PrintVector(output, heatSink);
-	output << "Layer heat source: ";
-	PrintVector(output, heatSource);*/
 
 	//Print layer properties in table form:
 	const int layerWidth = 6;
@@ -626,6 +617,17 @@ std::ostream& GFProfile::Print(std::ostream& output) const
 	const int burntWidth = 6;
 	const int sinkWidth = 10;
 	const int srcWidth = 12;
+
+	//If type labels are not provided for any of the layers drop the column:
+	int typeWidth = 0;
+	for (int i = 0; i < numLayers; i++)
+	{
+		typeWidth = std::max<int>(typeWidth, type[i].size());
+	}
+	if (typeWidth)
+	{
+		typeWidth += 1;
+	}
 
 	//Member name header:
 	output << std::setw(layerWidth) << " "
@@ -653,7 +655,13 @@ std::ostream& GFProfile::Print(std::ostream& output) const
 		<< std::setw(csWidth) << "Heat Capacity"
 		<< std::setw(burntWidth) << "Burnt"
 		<< std::setw(sinkWidth) << "Heat Sink"
-		<< std::setw(srcWidth) << "Heat Source" << std::endl;
+		<< std::setw(srcWidth) << "Heat Source";
+
+	if (typeWidth)
+	{
+		output << std::setw(typeWidth) << "Type";
+	}
+	output<< std::endl;
 
 	//Units header:
 	output << std::setw(layerWidth) << "#"
@@ -667,7 +675,13 @@ std::ostream& GFProfile::Print(std::ostream& output) const
 		<< std::setw(csWidth) << "kJ/kg/K"
 		<< std::setw(burntWidth) << " "
 		<< std::setw(sinkWidth) << "kJ/kg"
-		<< std::setw(srcWidth) << "kJ/kg" << std::endl;
+		<< std::setw(srcWidth) << "kJ/kg";
+
+	if (typeWidth)
+	{
+		output << std::setw(typeWidth) << " ";
+	}
+	output << std::endl;
 
 	//Values:
 	output << std::boolalpha;//Print as burnt as strings.
@@ -677,14 +691,20 @@ std::ostream& GFProfile::Print(std::ostream& output) const
 			<< std::setw(thickWidth) << std::fixed << std::setprecision(2) << thickness_cm[l]
 			<< std::setw(depthWidth) << std::fixed << std::setprecision(2) << layerDepth[l]
 			<< std::setw(tempWidth) << std::fixed << std::setprecision(2) << tempC[l]
-			<< std::setw(igWidth) << std::fixed << std::setprecision(1) << t_ig
+			<< std::setw(igWidth) << std::fixed << std::setprecision(1) << t_ig[l]
 			<< std::setw(bdWidth) << std::fixed << std::setprecision(1) << bulkDensity[l]
 			<< std::setw(inorgWidth) << std::fixed << std::setprecision(2) << inorganicPct[l]
 			<< std::setw(mcWidth) << std::fixed << std::setprecision(2) << moistureContentPct[l]
 			<< std::setw(csWidth) << std::fixed << std::setprecision(3) << c_s[l]
 			<< std::setw(burntWidth) << burnt[l]
 			<< std::setw(sinkWidth) << std::fixed << std::setprecision(2) << heatSink[l]
-			<< std::setw(srcWidth) << std::fixed << std::setprecision(2) << heatSource[l] << std::endl;
+			<< std::setw(srcWidth) << std::fixed << std::setprecision(2) << heatSource[l];
+
+		if (typeWidth)
+		{
+			output << std::setw(typeWidth) << type[l];
+		}
+		output << std::endl;
 	}
 	output << std::noboolalpha;
 	output.copyfmt(std::ios(nullptr));//Restore the previous print settings.
@@ -706,18 +726,20 @@ std::ostream& GFProfile::PrintDelimited(std::ostream& output, const char delim) 
 	output << "Layer" << delim << "LayerThickness" << delim << "LayerDepth" << delim <<
 	          "TempC" << delim << "t_ig" << delim << "BulkDensity" << delim <<
 	          "InorganicPct" << delim << "MoistureContentPct" << delim << "c_s" << delim <<
-	          "Burnt" << delim << "HeatSink" << delim << "HeatSource" << std::endl;//Or newline?
+	          "Burnt" << delim << "HeatSink" << delim << "HeatSource" << delim << "Type" <<
+	          std::endl;//Or newline?
 	//Omit the soil mass?
 
 	//Print the layer data in rows:
 	output << std::boolalpha;//Print as burnt as strings.
 	for (int l = 0; l < numLayers; l++)
 	{
-		//Consider rounding values...
+		//Consider rounding values?????
 		output << (l + 1) << delim << thickness_cm[l] << delim << layerDepth[l] << delim <<
-		          tempC[l] << delim << t_ig << delim << bulkDensity[l] << delim <<
+		          tempC[l] << delim << t_ig[l] << delim << bulkDensity[l] << delim <<
 		          inorganicPct[l] << delim << moistureContentPct[l] << delim << c_s[l] << delim <<
-		          burnt[l] << delim << heatSink[l] << delim << heatSource[l] << delim << std::endl;//Or newline?
+		          burnt[l] << delim << heatSink[l] << delim << heatSource[l] << delim << type[l] <<
+		          std::endl;//Or newline?
 	}
 	output << std::noboolalpha;
 

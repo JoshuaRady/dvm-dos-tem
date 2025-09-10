@@ -13,6 +13,7 @@
 #define GFPROFILE_H
 
 #include <iostream>//Or just <ostream>?
+#include <string>
 #include <vector>
 
 /** GFProfile Constants
@@ -29,8 +30,7 @@ const double ProfileUndef = -300.0;
 class GFProfile {
 	public:
 	
-	//Column properties:
-	double t_ig;//The soil temperature of ignition (C).  Currently homogeneous.
+	//Column properties: none. 
 	
 	//Layer properties:
 	//The ground fire calculation currently expects equal layer thicknesses but incoming profiles
@@ -39,6 +39,7 @@ class GFProfile {
 	std::vector <double> layerDepth;//Depth at top of layer (cm).
 	
 	std::vector <double> tempC;//Layer temperature in Celcius.
+	std::vector <double> t_ig;//The soil temperature of ignition (C).
 	std::vector <double> bulkDensity;//Dry soil mass per volume (kg/m^3).
 	std::vector <double> inorganicPct;//Percent inorganic content on a dry basis (~ ash content).
 	//Soil mostures content is the water mass per volume / dry soil mass per volume:
@@ -50,7 +51,11 @@ class GFProfile {
 	//The heat source and sink values can be helpful for understanding the results so we store them:
 	std::vector <double> heatSink;//kJ/kg
 	std::vector <double> heatSource;//kJ/kg
-	
+
+	//An optional field for a layer description, name, or label.  It is not used in calculations and
+	//is mainly for print outs.  Not all layers need to be filled out.
+	std::vector <std::string> type;
+
 	//Constructors:
 	GFProfile();
 	GFProfile(const int numLayers);
