@@ -127,7 +127,7 @@ public:
   // Wildfire ignitions modes: 0: explicit for TR/SC. 1: Use fire return interval, 2+: Reserved for future use.
   int fire_ignition_tr;
   int fire_ignition_sc;
-  //Turn on the revised process based wildfire model:
+  //Turn on the process based wildfire model:
   //The fire settings that follow only pertain if this is switch is set to true.
   bool fire_process_wildfire;
   bool fire_dynamic_fuel;//Calculate dynamic fuel moisture for dynamic fuel models:

@@ -149,7 +149,7 @@
         //"severity_eq":
         // ...
 
-        //Turn on the revised process based wildfire model:
+        //Turn on the process based wildfire model:
         //The fire settings that follow only pertain if this switch is set to true.
         "fire_process_wildfire": false,
 

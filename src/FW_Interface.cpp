@@ -4,7 +4,7 @@
  * Woodwell Climate Reseach Center
  * \date 2024
  *
- * @brief This file contains functions to connect the DVM-DOS-TEM WildFire class to the revised
+ * @brief This file contains functions to connect the DVM-DOS-TEM WildFire class to the process based
  * wildfire model components.
  *
  * This is currently a very rough draft, possibly a placeholder.  Everything including the name
@@ -43,7 +43,7 @@ const double gPerKg = 1000;//Move to FireweedUnits.h?
 
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
  *
- * This is the main entry point for the revised wildfire model.
+ * This is the main entry point for the process based wildfire model.
  * The function needs the ecosystem state, meteorology, and time of year as inputs.
  *
  * JMR_NOTE: I attempted multiple ways to pass this information in but ultimately found it necessary to
@@ -58,9 +58,9 @@ const double gPerKg = 1000;//Move to FireweedUnits.h?
  * for now.
  * @note Used in the process wildfire model only.
  */
-double WildFire::RevisedFire(const int monthIndex)//Name could change.
+double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
 {
-  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::RevisedFire()...";
+  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::ProcessWildfire()...";
 
   //Gather weather and environmental conditions:---------------------------
   double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
@@ -137,7 +137,7 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
   BOOST_LOG_SEV(glg, debug) << "Dump the spread calculations:";
   BOOST_LOG_SEV(glg, debug) << raData;
 //   {
-//   	BOOST_LOG_SEV(glg, debug) << "WildFire::RevisedFire() Spread rate calculation R = " << raData.R;
+//   	BOOST_LOG_SEV(glg, debug) << "WildFire::ProcessWildfire() Spread rate calculation R = " << raData.R;
 //   }
 
 
@@ -377,7 +377,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
  * @note This started as a hack and could be moved into CohortStatesToFuelLoading().  However, it
  * does make the code a bit more organized.
  * @note Used in the process wildfire model only.
- * #note Now that we have added access to Ground this could be revised to use that.
+ * @note Now that we have added access to Ground this could be revised to use that.
  */
 double WildFire::GetLitterRawC() const
 {
@@ -894,7 +894,7 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
 /** Calculate the fate of aboveground vegetation after fire using the process based wildfire model.
  *
  * This function determines the fractions of a given PFT that are combusted, are killed but are not
- * combusted, and that survive fire based on the revised process based wildfire model.
+ * combusted, and that survive fire based on the process based wildfire model.
  *
  * The fractions are returned via class data members.  (See notes in getBurnAbgVegetation)
  *

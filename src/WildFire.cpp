@@ -278,7 +278,7 @@ bool WildFire::isFireReturnDate(const int year, const int midx)
  *
  * @returns Nothing.
  *
- * FW_NOTE: This function has been heavily refactored to add the revised wildfire implementation.
+ * FW_NOTE: This function has been heavily refactored to add the process based wildfire implementation.
  * Large blocks of code have been removed to create WildFire::updateBurntOrgSoil() and
  * WildFire::burnVegetation().
  */
@@ -307,12 +307,12 @@ void WildFire::burn(const int year, const int midx) {
     // FW_NOTE: The only thing thing in fd that is updated in getBurnOrgSoilthick() is
     // fire_soid.burnthick so not much new info here.
   }
-  else// Use the revised process based wildfire implemenation:
+  else// Use the process based wildfire implemenation:
   {
-    BOOST_LOG_SEV(glg, info) << "Using the new/revised/process wildfire model.";
+    BOOST_LOG_SEV(glg, info) << "Using the process based wildfire model.";
 
-    // FW_NOTE: RevisedFire() does a lot more that get the burn depth.  This may not be the best place to call it.
-    burndepth = RevisedFire(midx);
+    // FW_NOTE: ProcessWildfire() does a lot more that get the burn depth.
+    burndepth = ProcessWildfire(midx);
   }
 
   // Update soil layers and carbon based on the burn depth:
@@ -339,8 +339,8 @@ void WildFire::burn(const int year, const int midx) {
   }
   else
   {
-    // FW_Note: The revised wildfire model does not yet handle the wood debris pool.
-    BOOST_LOG_SEV(glg, info) << "Revised wildfire model ignores wood debris for now.";
+    // FW_Note: The process based wildfire model does not yet handle the wood debris pool.
+    BOOST_LOG_SEV(glg, info) << "The process based wildfire model ignores wood debris for now.";
   }
 
   // summarize
@@ -621,7 +621,7 @@ double WildFire::getBurnOrgSoilthick(const int year) {
 /** Update soil layers and carbon based on the ground fire burn depth.
  *
  * The function does the following:
- * - If using the revised wildfire model burnt litter is removed.
+ * - If using the process based wildfire model burnt litter is removed.
  * - Soil carbon and nitrogen is removed from burned soil layers (via bdall).
  * - Root carbon and nitrogen is removed from burned soil layers (via cd).
  * - Carbon and nitrogen burned away is summed and returned in function arguments.
@@ -643,8 +643,8 @@ double WildFire::getBurnOrgSoilthick(const int year) {
  * FW_MOD: The following code was moved out of WildFire::burn().  Changes are primarily in
  * formatting and comments.
  *
- * FW_NOTE: If the revised wildfire model is running the "litter" that is burnt in the surface fire
- * is removed first, whether or not a ground fire occurs.  With the current code any remaining
+ * FW_NOTE: If the process based wildfire model is running the "litter" that is burnt in the surface
+ * fire is removed first, whether or not a ground fire occurs.  With the current code any remaining
  * litter may burn when ground fire occurs, but we should decide that is definitely what we want to
  * have happen.
  */
@@ -661,8 +661,8 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
                            //  and calculated below
   }
 
-  // The revised wildfire model handles litter burning explicitly.  The litter is part of the top
-  // orgnaic layer (Shallow organic / peat ~ I_FIB):
+  // The process based wildfire model handles litter burning explicitly.  The litter is part of the
+  // top orgnaic layer (Shallow organic / peat ~ I_FIB):
   if (md.fire_process_wildfire)
   {
     BOOST_LOG_SEV(glg, debug) << "Handling burnt 'litter' carbon...";
@@ -909,7 +909,7 @@ void WildFire::burnVegetation(const int year, const double r_burn2bg_cn[NUM_PFT]
       {
         getBurnAbgVegetation(ip, year);
       }
-      else// Use the revised process based wildfire implemenation:
+      else// Use the process based wildfire implemenation:
       {
         getAbgVegetationBurntFractionsProcess(ip);
       }
