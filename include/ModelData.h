@@ -118,7 +118,6 @@ public:
   bool dynamic_LAI; // True: calculate LAI as a function of vegc, False: use static_lai from CohortLookup 
   bool useseverity; // using fire severity inputs
 
-<<<<<<< HEAD
   // FW_MOD_START:
   // Switches to turn fire off for each run stage.  Fire in never on the pre-run stage:
   bool fire_on_EQ;
@@ -141,10 +140,9 @@ public:
   double fire_gf_layer_thickness;//The soil layer thickness for the simulation (cm)
   int fire_temp_fm;//A temporaty parameter to force fuel model choice.
   // FW_MOD_END.
-=======
+
   int cell_timelimit; //Time limit in seconds for cell computation time
   time_t cell_stime; //Start time per cell. Move to Runner?
->>>>>>> master
 
   bool outSiteDay;
 
