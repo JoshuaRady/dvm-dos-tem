@@ -161,7 +161,7 @@
         "fire_calculate_delta": false,
         //Ground fire model paramters and settings:
         //The fraction of aboveground fire heat that enters the soil:
-        "fire_heat_frac_to_soil": 0.1,
+        "fire_heat_frac_to_soil": 0.15,
         //The fraction of heat lost from the soil:
         "fire_gf_heat_loss_factor": 0.83,
         //The maximum heat penetration depth for the soil surface heat transfer approximation (cm):
