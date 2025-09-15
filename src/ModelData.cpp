@@ -120,6 +120,7 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   pid_tag           = controldata["calibration-IO"]["pid_tag"].asString();
   caldata_tree_loc  = controldata["calibration-IO"]["caldata_tree_loc"].asString();
 
+  cell_timelimit = controldata["model_settings"]["cell_timelimit"].asInt();
   dynamic_LAI       = controldata["model_settings"]["dynamic_lai"].asInt(); // checked in Cohort::updateMonthly_DIMVeg
   baseline_start = controldata["model_settings"]["baseline_start"].asInt();
   baseline_end   = controldata["model_settings"]["baseline_end"].asInt();
@@ -140,6 +141,12 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   fire_dynamic_fuel = controldata["module_settings"]["dsb"]["fire"]["fire_dynamic_fuel"].asBool();
   fire_moss_as_dead_fuel = controldata["module_settings"]["dsb"]["fire"]["fire_moss_as_dead_fuel"].asBool();
   fire_calculate_delta = controldata["module_settings"]["dsb"]["fire"]["fire_calculate_delta"].asBool();
+  fire_heat_frac_to_soil   = controldata["module_settings"]["dsb"]["fire"]["fire_heat_frac_to_soil"].asDouble();
+  fire_gf_heat_loss_factor = controldata["module_settings"]["dsb"]["fire"]["fire_gf_heat_loss_factor"].asDouble();
+  fire_gf_surface_pd       = controldata["module_settings"]["dsb"]["fire"]["fire_gf_surface_pd"].asDouble();
+  fire_gf_smolder_pd       = controldata["module_settings"]["dsb"]["fire"]["fire_gf_smolder_pd"].asDouble();
+  fire_gf_layer_thickness  = controldata["module_settings"]["dsb"]["fire"]["fire_gf_layer_thickness"].asDouble();
+  fire_temp_fm             = controldata["module_settings"]["dsb"]["fire"]["fire_temp_fm"].asInt();
   // FW_MOD_END.
 }
 

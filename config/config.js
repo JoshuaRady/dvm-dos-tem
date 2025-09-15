@@ -149,8 +149,8 @@
         //"severity_eq":
         // ...
 
-        //Turn on the revised process based wildfire model:
-        //The fire settings that follow only pertain if this is switch is set to true.
+        //Turn on the process based wildfire model:
+        //The fire settings that follow only pertain if this switch is set to true.
         "fire_process_wildfire": false,
 
         //Calculate dynamic fuel moisture for dynamic fuel models:
@@ -158,7 +158,21 @@
         //Should moss be treated as a dead fuel (true) or live fuel (false):
         "fire_moss_as_dead_fuel": true,
         //Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false):
-        "fire_calculate_delta": false
+        "fire_calculate_delta": false,
+        //Ground fire model paramters and settings:
+        //The fraction of aboveground fire heat that enters the soil:
+        "fire_heat_frac_to_soil": 0.15,
+        //The fraction of heat lost from the soil:
+        "fire_gf_heat_loss_factor": 0.83,
+        //The maximum heat penetration depth for the soil surface heat transfer approximation (cm):
+        "fire_gf_surface_pd": 1.0,
+        //The maximum heat penetration depth for the smoldering heat transfer approximation (cm):
+        "fire_gf_smolder_pd": 5.0,
+        //The soil layer thickness for the simulation (cm):
+        "fire_gf_layer_thickness": 1.0,
+        //A temporaty parameter to force fuel model choice:
+        //Default value of -1 indicates to ignore the setting.
+        "fire_temp_fm": -1
       }
       // Future disturbances go here...
       //"insect": { ... },
@@ -167,6 +181,7 @@
   },
 
   "model_settings": {
+    "cell_timelimit": 0, //Run time limit per cell in seconds. 0 for no limit.
     "dynamic_lai": 1,                   // from model (1) or from input (0)
     "baseline_start": 1901,  //start year for baseline EQ climate
     "baseline_end": 1931     //end year for baseline EQ climate

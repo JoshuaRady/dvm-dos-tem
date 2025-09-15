@@ -4,7 +4,7 @@
  * Woodwell Climate Reseach Center
  * \date 2024
  *
- * @brief This file contains functions to connect the DVM-DOS-TEM WildFire class to the revised
+ * @brief This file contains functions to connect the DVM-DOS-TEM WildFire class to the process based
  * wildfire model components.
  *
  * This is currently a very rough draft, possibly a placeholder.  Everything including the name
@@ -21,6 +21,7 @@
 #include "../include/TEMLogger.h"
 #include "../include/TEMUtilityFunctions.h"//For length_of_day().
 #include "../include/WildFire.h"
+#include "../include/Layer.h"
 
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedFuelTools.h"
@@ -28,7 +29,9 @@
 #include "FireweedMetUtils.h"
 #include "FireweedUtils.h"
 
-#include <cmath>//Temporary for isnan().
+#include "../include/GroundFire.h"
+
+#include <cmath>//For fmin().
 
 extern src::severity_logger< severity_level > glg;
 
@@ -40,7 +43,7 @@ const double gPerKg = 1000;//Move to FireweedUnits.h?
 
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
  *
- * This is the main entry point for the revised wildfire model.
+ * This is the main entry point for the process based wildfire model.
  * The function needs the ecosystem state, meteorology, and time of year as inputs.
  *
  * JMR_NOTE: I attempted multiple ways to pass this information in but ultimately found it necessary to
@@ -55,9 +58,9 @@ const double gPerKg = 1000;//Move to FireweedUnits.h?
  * for now.
  * @note Used in the process wildfire model only.
  */
-double WildFire::RevisedFire(const int monthIndex)//Name could change.
+double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
 {
-  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::RevisedFire()...";
+  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::ProcessWildfire()...";
 
   //Gather weather and environmental conditions:---------------------------
   double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
@@ -120,7 +123,7 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
   BOOST_LOG_SEV(glg, debug) << "Dumping the fuel model prior to fire:";
   BOOST_LOG_SEV(glg, debug) << fm;
 
-  //First to Rothermel & Albini spread rate model:
+  //First run the Rothermel & Albini spread rate model:
   //It takes a fuel model (and attendant data) and returns the calculation details.
   //M_f_ij does not need to be included since it is added to the fuel model object above.
   BOOST_LOG_SEV(glg, debug) << "Perform surface file spread rate calculations...";
@@ -134,7 +137,7 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
   BOOST_LOG_SEV(glg, debug) << "Dump the spread calculations:";
   BOOST_LOG_SEV(glg, debug) << raData;
 //   {
-//   	BOOST_LOG_SEV(glg, debug) << "WildFire::RevisedFire() Spread rate calculation R = " << raData.R;
+//   	BOOST_LOG_SEV(glg, debug) << "WildFire::ProcessWildfire() Spread rate calculation R = " << raData.R;
 //   }
 
 
@@ -143,23 +146,25 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
   BOOST_LOG_SEV(glg, debug) << "Dump the combustion calculations:";
   BOOST_LOG_SEV(glg, debug) << burnupOutput;
 
-  siteFM = fm;//Save input for use in getAbgVegetationBurntFractionsProcess().
+  siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
   siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
 
-  //Update litter, moss, and soil carbon stocks:
-  //Some of this could be done directly here but we could also use parts of the 'original' code like
-  // WildFire::updateBurntOrgSoil(), which I split out.
-
-
-  //Add crown fire!!!!!
+  //Simulate crown fire:---------------------------------------------------
+  //TBD!!!!!
 
   //Simulate ground fire:--------------------------------------------------
-  //Use the energy flux from the aboveground fire into the soil surface (RA + Burnup + crown) and
-  //the fire air temp (Burnup fire environmental temperature?) as input to the ground fire model:
-  //...
-  //Also pass in the soil profile conditions...
+  //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
+  //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
+  double abgFireEnergy = burnupOutput.history.IntegrateFireIntensity();//kJ/m^2
+  BOOST_LOG_SEV(glg, debug) << "Aboveground fire energy: " << abgFireEnergy << " kJ/m^2";
+  //Only a fraction of the heat of the aboveground fire enters the soil:
+  double fireHeatToSoil = abgFireEnergy * md.fire_heat_frac_to_soil;//kJ/m^2
+  BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
 
-  double burnDepth = SimulateGroundFire();
+  double burnDepth = SimulateGroundFire(fireHeatToSoil);
+
+  //Litter and soil carbon stocks are updated in WildFire::updateBurntOrgSoil().
+  //Moss and herbaceous carbon stocks are updated in WildFire::burnVegetation().
 
   //Match messaging of getBurnOrgSoilthick():
   BOOST_LOG_SEV(glg, debug) << "Setting the burn thickness in FirData...";
@@ -180,13 +185,23 @@ double WildFire::RevisedFire(const int monthIndex)//Name could change.
  *
  * @note Used in the process wildfire model only.
  */
-int GetMatchingFuelModel(const int cmt)
+int WildFire::GetMatchingFuelModel(const int cmt) const
 {
   //Get the number of the fuel model from the crosswalk in the parameter files.
   //This crosswalk needs to be made!!!!!
-  int fuelModelNumber = 161;//Temporarily hardwired.
-  //We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
+  int fuelModelNumber;
   
+  //Stub: Use a temporary value or a value supplied by the configuration file:
+  if (md.fire_temp_fm == -1)
+  {
+    fuelModelNumber = 161;//Temporarily hardwired.
+    //We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
+  }
+  else
+  {
+    fuelModelNumber = md.fire_temp_fm;
+    //We don't currently have a way to check that a fuel model number is valid.
+  }
   //There is a bare land fuel model by number but it doesn't have parameters.  Do we need to provide
   //a bare land parameter set or can we just signal the calling code that it should skip fire
   //calculations?
@@ -362,6 +377,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
  * @note This started as a hack and could be moved into CohortStatesToFuelLoading().  However, it
  * does make the code a bit more organized.
  * @note Used in the process wildfire model only.
+ * @note Now that we have added access to Ground this could be revised to use that.
  */
 double WildFire::GetLitterRawC() const
 {
@@ -825,12 +841,12 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
  * @note Used in the process wildfire model only.
  */
 BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raData,
-                                    const double tempAir, const double windSpeed)//CalculateSurfaceCombustion?
+                                    const double tempAir, const double windSpeed)//Will be const when added to WildFire.
 {
-  BOOST_LOG_SEV(glg, debug) << "Entering SimulateSurfaceCombustion()... [In progress]";
+  BOOST_LOG_SEV(glg, debug) << "Entering SimulateSurfaceCombustion()...";
 
   //Burnup takes a number of parameters:
-  //Wind and air temperature are needed (passed in):
+  //Wind and air temperature are needed (passed in).
 
   //Fuel properties are a superset of those in a standard fire behavior fuel model:
   //Leave all remaining properties at their default values set in BurnupFM().
@@ -842,28 +858,28 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
   double counting.  We treat smoldering ground fire as a separate stage too.  Duff in Burnup treated
   very simply as an additional source of heat rather than a full blown fuel.  Omitting duff seems
   reasonable but we should revisit this assumption in the future.*/
-  double duffLoading = 0;
-  double duffMoisture = 0;
+  double duffLoading = 0.0;
+  double duffMoisture = 0.0;
 
-  //Fire properties are obtained from the spread rate calculations:
-  //The model takes fire intensity and residence time.  These can be estimated form the spread rate
-  //calculations.
+  //Igniting fire properties are needed from the surface fire:
+  //The model takes fire intensity and residence time.  These can be estimated from the spread rate
+  //calculations and associated functions.
 
   //Fire intensity of the flaming front must be estimated.  The appropriate calculation to use is
-  //the question.  The reaction intensity represents the energy flux generated by the fire.  The
-  //extent to which this may need to be reduced to reflect energy lost needs to considered.
-  //double fireIntensity = fm.I_R / 60;//Convert kJ/m^2/min -> kW/m^2 kJ/m^2/min
-  //kJ/m^2/min = kJ/min/m^2 = kJ/(60 * s) /m^2 =  kJ/s / 60 /m^2 = kW / 60 /m^2 = (kW/m^2) / 60
-  //The heat source takes the propagating flux ratio, wind, and slope into consideration:
-  double fireIntensity = raData.heatSource / 60;//Convert kJ/m^2/min -> kW/m^2 kJ/m^2/min
+  //the question since Rothermel & Albini and Burnup terminology are not identical.
+  //The reaction intensity (I_R) represents the total energy generated by the fire per unit area and
+  //time (kJ/m^2/min).  The heat source uses the propagating flux ratio, wind, and slope to give the
+  //energy that heats fuel ahead of the fire from I_R.
+  double fireIntensity = raData.heatSource / 60.0;//Convert kJ/m^2/min -> kW/m^2
+  //kJ/m^2/min = kJ/min/m^2 = kJ/(60 * s)/m^2 =  kJ/s / 60 /m^2 = kW / 60 /m^2 = (kW/m^2) / 60
 
-  double t_r = ResidenceTime(raData.cSAV, Metric) * 60;//Convert minutes -> seconds.  Or fm.cSAV
+  double t_r = ResidenceTime(raData.cSAV, Metric) * 60.0;//Convert minutes -> seconds.  Or fm.cSAV
 
   //Simulation settings:
   //Start with example settings from FOFEM examples.  We can experiment with these.  Leave other at
   //their default values.
-  double dT = 15;
-  int nTimeSteps = 3000;
+  double dT = 15.0;//FW_PARAM?????
+  int nTimeSteps = 3000;//FW_PARAM?????
 
   //Call Burnup:
   //The simulation calculates the both consumption of fuels and the time evolution of the fire
@@ -878,7 +894,7 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
 /** Calculate the fate of aboveground vegetation after fire using the process based wildfire model.
  *
  * This function determines the fractions of a given PFT that are combusted, are killed but are not
- * combusted, and that survive fire based on the revised process based wildfire model.
+ * combusted, and that survive fire based on the process based wildfire model.
  *
  * The fractions are returned via class data members.  (See notes in getBurnAbgVegetation)
  *
@@ -1067,31 +1083,168 @@ double WildFire::GetLitterBurntFraction() const
  * This effectively replaces the functionality of WildFire::getBurnOrgSoilthick() in the original
  * wildfire implementation.
  *
- * This is currently a stub and a place to work out how this simulation phase connects to the other
- * phases of fire.  The ground fire model is currently under development elsewhere.
- *
- * Inputs (proposed):
- * - The structure and state of the soil column.
- * - Energy inputs from aboveground fire components.
- * Burnup produces energy over time so it may be better to link the calculations?
+ * @param fireHeatInput Total longwave heat input into the soil from the surface fire (kJ/m^2).
+ * @note Burnup produces energy over time so it may be better to link the calculations?
  *
  * @returns The soil burn depth from ground fire (meters).
  *
  * @note Used in the process wildfire model only.
  */
-double SimulateGroundFire()
+double WildFire::SimulateGroundFire(const double fireHeatInput) const
 {
-  BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()... [Stub]";
+  BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()...";
 
-  double burnDepth = 0;
-  
-  //Calculate if the energy output is sufficiency to ignite the surface layer.
-  //If not record that ignition failed and return.
-  
-  //Otherwise continue to calculate progressive smoldering downward.
-  //This is the same problem of drying and heating to combustion as we move down.  However, we can
-  //safely assume that the fire will not continue if we reach mineral soil, bedrock, permafrost, or
-  //the water table.
-  
+  GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
+  double burnDepth = DominoGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
+                                      md.fire_gf_surface_pd, md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
+
+  BOOST_LOG_SEV(glg, debug) << "Profile after DominoGroundFire():";
+  BOOST_LOG_SEV(glg, debug) << gfProfile;
+
   return burnDepth;
+}
+
+/** Get information about the soil profile and convert it to form that can be used by the ground
+ * fire model.
+ *
+ * The main model's soil representation is made up of layers with varying thickness.  This function
+ * creates a representation with layers of even thickness, converting, calculating, and
+ * interpolating layer properties needed by the ground fire model.
+ *
+ * Possible parameters could include the desired layer thickness.
+ *
+ * We assume that the fire will not continue if it reached mineral soil, bedrock, permafrost, or the
+ * water table.  However, permafrost is an annual property and can't be determined at a given month.
+ * Likewise the water table is calculated from the profile.  We must rely on temperature and water
+ * content to control this behavior.  [More?????]
+ * Moss is treated as a surface fuel.
+ * Snow needs to be considered.
+ *
+ * @returns A GFProfile object containing soil properties by layers of even thickness.
+ *
+ * @note Used in the process wildfire model only.
+ */
+GFProfile WildFire::GroundFireGetSoilProfile() const
+{
+  BOOST_LOG_SEV(glg, debug) << "Entering GroundFireGetSoilProfile()...";
+
+  //Only consider the organic horizon(s):
+  int numOrgLayers =  ground->organic.shlwnum + ground->organic.deepnum;
+
+  //Create an object to hold the profile data:
+  GFProfile gfProfile(numOrgLayers);
+
+  //Walk through the organic soil layers and copy / convert properties to our new profile:
+  Layer* thisLayer = ground->fstshlwl;
+  for (int i = 0; i < numOrgLayers; i++)
+  {
+    //Copy data from the source layer to the matching layer:
+    gfProfile.thickness_cm[i] = thisLayer->dz * 100.0;//Layer thickness (m -> cm).
+    gfProfile.layerDepth[i] = thisLayer->z * 100.0;//Depth at top of layer (m -> cm).
+    gfProfile.tempC[i] = thisLayer->tem;//Layer temperature in Celcius.
+
+    //The humic layers should probably have higher temperatures of ignition but more research is
+    //needed.  The values should parameters or be calculated from the level of decay.  They will be
+    //interpolated in the ground fire calculation.
+    if (thisLayer->isFibric)
+    {
+      gfProfile.t_ig[i] = 200.0;//FW_PARAM?????
+      gfProfile.type[i] = "Fibric";
+    }
+    else if (thisLayer->isHumic)
+    {
+      gfProfile.t_ig[i] = 200.0;//FW_PARAM?????
+      gfProfile.type[i] = "Humic";
+    }
+    else//Same as checking !thisLayer->isOrganic.
+    {
+      BOOST_LOG_SEV(glg, fatal) << "Layer is not an expected organic type.";
+    }
+
+    gfProfile.bulkDensity[i] = thisLayer->bulkden / gPerKg;//Dry soil mass per volume (g/m^3 -> kg/m^3).
+
+    //The organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is used
+    //for accounting but this will be somewhat less than the total organic, that which is lost on
+    //combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
+    //The following is a ratio value commonly used for soils but the value varies.  This is probably
+    //low for some histosols.  We can probably use our carbon pools to get more accurate.
+    const double SOCtoSOM_Ratio = 0.50;//Second initial value.  More research needed. FW_PARAM?????
+    double totalSOC = 0.0;//g/m^2(/layer)
+    if (i == 0)//We treat the rawc compartment of the top non-moss/fibric/shallow layer as litter:
+    {
+      totalSOC = thisLayer->soma + thisLayer->sompr + thisLayer->somcr;//g/m^2(/layer)
+
+      //FW_NOTE: If the rawc is not considered here it should also be subracted from the layer mass below!
+    }
+    else
+    {
+      totalSOC = thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr;//g/m^2(/layer)
+    }
+    //The soil organic carbon pools are in gC/m^2 per layer.  Use the layer depth to convert to density:
+    //(gC/m^2 / m) / g/Kg = kgC/m^3
+    double totalSOCdensity = (totalSOC / thisLayer->dz) / gPerKg;//kg/m^3
+    //Convert from carbon to organic matter:
+    double totalSOMdensity = totalSOCdensity / SOCtoSOM_Ratio;//kg/m^3
+    //Or:
+    //double totalSOMdensity = totalSOCdensity / thisLayer->cfrac;
+
+    //Even if the soil is purely organic it can't exceed a fraction of 1.0 so cap it:
+    double organicFraction = totalSOMdensity / gfProfile.bulkDensity[i];
+
+    //Temporary code to report on the carbon in more detail:
+    double totalSOCTemp = thisLayer->rawc + thisLayer->soma + thisLayer->sompr + thisLayer->somcr;//The total reguardless of layer.
+    double totalSOCdensity2 = (totalSOCTemp / thisLayer->dz) / gPerKg;//kg/m^3
+    double cFraction = totalSOCdensity2 / gfProfile.bulkDensity[i];
+    BOOST_LOG_SEV(glg, debug) << "True total carbon fraction of layer = " << cFraction;
+    if (organicFraction > 1.0)
+    {
+      BOOST_LOG_SEV(glg, debug) << "organicFraction = " << organicFraction;
+      BOOST_LOG_SEV(glg, debug) << "Layer carbon = " << totalSOCTemp;
+      BOOST_LOG_SEV(glg, debug) << "totalSOC = " << totalSOC;
+    }
+
+    organicFraction = fmin(organicFraction, 1.0);
+    gfProfile.inorganicPct[i] = (1.0 - organicFraction) * 100;//Percent inorganic content on a dry basis (~ ash content).
+
+    //Soil moisture content (%):
+    //This is the water mass per volume / dry soil mass per volume * 100%.
+    //Ice needs to be added to the ground fire model explicitly but for now we convert it to water.
+    //liq is liquid water and ice is ice content in kg/m^2 per layer.  Use the layer depth to convert to density:
+    //kg/m^2 / m = kg/m^3
+    double waterDensity = (thisLayer->liq + thisLayer->ice) / thisLayer->dz;//kg/m^3	Or moistureContent?????
+    
+    //kg/m^3 / kg/m^3 * 100% = %
+    gfProfile.moistureContentPct[i] = waterDensity / gfProfile.bulkDensity[i] * 100.0;//%
+
+    //Layer heat capacity (kJ/kg/K):
+    //vhcsolid is volumetric heat capacity (J/m^3/K) for dry compacted soil. Converting to specific
+    //heat capacity requires considering the pore fraction and the bulk density:
+    //(J/m^3/K * solid fraction) / kg/m^3 * 1000J/KJ = kJ/kg/K
+    gfProfile.c_s[i] = (thisLayer->vhcsolid * (1.0 - thisLayer->poro)) / gfProfile.bulkDensity[i] / 1000.0;//kJ/kg/K
+
+    thisLayer = thisLayer->nextl;
+  }
+
+  BOOST_LOG_SEV(glg, debug) << "Intial translated profile:";
+  BOOST_LOG_SEV(glg, debug) << gfProfile;
+
+  //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this:
+  gfProfile.Resurface();
+
+  BOOST_LOG_SEV(glg, debug) << "Profile after Resurface():";
+  BOOST_LOG_SEV(glg, debug) << gfProfile;
+
+  //Check the profile before interpolating:
+  if (!gfProfile.Validate())
+  {
+    BOOST_LOG_SEV(glg, fatal) << "Translated profile it not valid.";
+  }
+
+  //Convert to layers of equal thickness and interpolate the values in the original profile:
+  gfProfile.Interpolate(md.fire_gf_layer_thickness);
+
+  BOOST_LOG_SEV(glg, debug) << "Profile after Interpolate():";
+  BOOST_LOG_SEV(glg, debug) << gfProfile;
+
+  return gfProfile;
 }

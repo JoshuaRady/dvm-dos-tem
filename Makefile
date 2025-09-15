@@ -80,6 +80,8 @@ SOURCES= 	src/TEM.o \
 		src/SnowLayer.o \
 		src/SoilLayer.o \
 		src/FW_Interface.o \
+		src/GFProfile.o \
+		src/GroundFire.o \
 		external/Fireweed/C++/FireweedDeadFuelMoistureFosberg.o \
 		external/Fireweed/C++/FireweedFuelModels.o \
 		external/Fireweed/C++/FireweedFuelTools.o \
@@ -90,6 +92,7 @@ SOURCES= 	src/TEM.o \
 		external/Fireweed/C++/FireweedStringUtils.o \
 		external/Fireweed/C++/FireweedUnits.o \
 		external/Fireweed/C++/FireweedUtils.o \
+		external/Burnup/C++/BurnupHistory.o \
 		external/Burnup/C++/BurnupCore.o \
 		external/Burnup/C++/BurnupFuelModelInterface.o
 
@@ -138,6 +141,8 @@ OBJECTS =	ArgHandler.o \
 		SoilLayer.o \
 		TemperatureUpdator.o \
 		FW_Interface.o \
+		GFProfile.o \
+		GroundFire.o \
 		FireweedDeadFuelMoistureFosberg.o \
 		FireweedFuelModels.o \
 		FireweedFuelTools.o \
@@ -148,6 +153,7 @@ OBJECTS =	ArgHandler.o \
 		FireweedStringUtils.o \
 		FireweedUnits.o \
 		FireweedUtils.o \
+		BurnupHistory.o \
 		BurnupCore.o \
 		BurnupFuelModelInterface.o
 

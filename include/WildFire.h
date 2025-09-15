@@ -13,6 +13,7 @@
 #include "BgcData.h"
 #include "ModelData.h"//FW_MOD: Added
 #include "Climate.h"//FW_MOD: Added
+#include "Ground.h"//FW_MOD: Added
 #include "RestartData.h"
 
 #include "errorcode.h"
@@ -23,6 +24,7 @@
 
 #include "FireweedFuelModels.h"
 #include "BurnupFuelModelInterface.h"
+#include "GFProfile.h"
 
 using namespace std;
 
@@ -51,6 +53,7 @@ public:
   void setCohortLookup(CohortLookup* chtlup);
   void setModelData(ModelData* modelDataPtr);// FW_MOD
   void setClimate(Climate* climatePtr);// FW_MOD
+  void setGround(Ground* groundPtr);// FW_MOD
 
   void initializeParameter();
   void initializeState();
@@ -100,7 +103,7 @@ private:
   double slope;
   double asp;
   double elev;
-  float lat;//FW_MOD: Latitude is needed by the revised fire model.
+  float lat;//FW_MOD: Latitude is needed by the process based fire model.
 
   bool fri_derived;
 
@@ -125,13 +128,14 @@ private:
   EnvData * edall;
   BgcData * bd[NUM_PFT];
   BgcData * bdall;
-  ModelData md;// FW_MOD: The revised fire model has input file paths it needs.
-  Climate * climate;// FW_MOD: The revised fire model needs environmental conditions.
+  ModelData md;// FW_MOD: The process based fire model has input file paths it needs.
+  Climate * climate;// FW_MOD: The process based fire model needs environmental conditions.
+  Ground * ground;// FW_MOD: The process based fire model needs access to the soil layer properties.
 
   //FW_NOTE:
-  // The following are only used in the process based wildfire mode and will only be valid after
-  // RevisedFire() is called.  This is an initial implementation and we may find a different way to
-  // pass to functions that need them.  The names may change.
+  // The following two objects are only used in the process based wildfire mode and will only be
+  // valid after ProcessWildfire() is called.  This is an initial implementation and we may find a
+  // different way to pass the simulation data to functions that need them.  The names may change.
   FuelModel siteFM;// FW_MOD
   BurnupSim siteBU;// FW_MOD
 
@@ -146,9 +150,10 @@ private:
                       double& comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
                       double& reta_vegc, double& reta_vegn);// FW_MOD
 
- // FW_MOD_START: Functions for the revised wildfire implementation.
+ // FW_MOD_START: Functions for the process based wildfire implementation.
  // FW_NOTE: These functions are defined in FW_Interface.cpp for now.
- double RevisedFire(const int monthIndex);
+ double ProcessWildfire(const int monthIndex);
+ int GetMatchingFuelModel(const int cmt) const;
  
  void CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDead);
  double GetLitterRawC() const;
@@ -157,6 +162,9 @@ private:
 
  double GetMidflameWindSpeed() const;
  std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
+
+ double SimulateGroundFire(const double fireHeatInput) const;
+ GFProfile GroundFireGetSoilProfile() const;
  // FW_MOD_END.
 
   ////////

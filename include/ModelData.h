@@ -127,13 +127,22 @@ public:
   // Wildfire ignitions modes: 0: explicit for TR/SC. 1: Use fire return interval, 2+: Reserved for future use.
   int fire_ignition_tr;
   int fire_ignition_sc;
-  //Turn on the revised process based wildfire model:
+  //Turn on the process based wildfire model:
   //The fire settings that follow only pertain if this is switch is set to true.
   bool fire_process_wildfire;
   bool fire_dynamic_fuel;//Calculate dynamic fuel moisture for dynamic fuel models:
   bool fire_moss_as_dead_fuel;//Should moss be treated as a dead fuel (true) or live fuel (false).
   bool fire_calculate_delta;//Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false).
+  double fire_heat_frac_to_soil;//The fraction of aboveground fire heat that enters the soil.
+  double fire_gf_heat_loss_factor;//The fraction of heat lost from the soil.
+  double fire_gf_surface_pd;//The maximum heat penetration depth for the soil surface heat transfer approximation (cm).
+  double fire_gf_smolder_pd;//The maximum heat penetration depth for the smoldering heat transfer approximation (cm).
+  double fire_gf_layer_thickness;//The soil layer thickness for the simulation (cm)
+  int fire_temp_fm;//A temporaty parameter to force fuel model choice.
   // FW_MOD_END.
+
+  int cell_timelimit; //Time limit in seconds for cell computation time
+  time_t cell_stime; //Start time per cell. Move to Runner?
 
   bool outSiteDay;
 
