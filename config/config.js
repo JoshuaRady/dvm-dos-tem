@@ -170,7 +170,7 @@
         "fire_gf_smolder_pd": 5.0,
         //The soil layer thickness for the simulation (cm):
         "fire_gf_layer_thickness": 1.0,
-        //A temporaty parameter to force fuel model choice:
+        //A temporary parameter to force the fuel model choice:
         //Default value of -1 indicates to ignore the setting.
         "fire_temp_fm": -1
       }
