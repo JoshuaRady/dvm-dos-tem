@@ -1095,10 +1095,10 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
   BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()...";
 
   GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
-  double burnDepth = DominoGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
+  double burnDepth = DownwardGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
                                       md.fire_gf_surface_pd, md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
 
-  BOOST_LOG_SEV(glg, debug) << "Profile after DominoGroundFire():";
+  BOOST_LOG_SEV(glg, debug) << "Profile after DownwardGroundFire():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   return burnDepth;

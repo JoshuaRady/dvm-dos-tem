@@ -229,14 +229,14 @@ std::vector <double> HeatDistributionLinear(const int numLayers)
  *
  * @returns The burn depth (cm).  Additionally the GFProfile passed is updated on return.
  */
-double DominoGroundFire(GFProfile& soilCol, const double fireHeatInput,
-                        const double heatLossFactor, const double surfacePD, const double smolderPD,
-                        const int surfaceTM, const int smolderTM)
+double DownwardGroundFire(GFProfile& soilCol, const double fireHeatInput,
+                          const double heatLossFactor, const double surfacePD,
+                          const double smolderPD, const int surfaceTM, const int smolderTM)
 {
 	//Validity checking:
 	if (!soilCol.Validate())//This is may be overkill since Validate() will be called with interpolation.  However, in the testing setting is useful.
 	{
-		Stop("DominoGroundFire(): The soil column is not valid.");
+		Stop("DownwardGroundFire(): The soil column is not valid.");
 	}
 
 	if (fireHeatInput < 0.0)
@@ -253,7 +253,7 @@ double DominoGroundFire(GFProfile& soilCol, const double fireHeatInput,
 	//that.
 	if (!soilCol.EqualThickness())
 	{
-		Stop("DominoGroundFire(): Soil layers do not all have uniform thickness.");
+		Stop("DownwardGroundFire(): Soil layers do not all have uniform thickness.");
 	}
 	double layerThickness_cm = soilCol.thickness_cm[0];
 

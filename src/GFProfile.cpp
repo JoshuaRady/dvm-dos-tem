@@ -447,7 +447,7 @@ void GFProfile::Resurface()//Or AdjustDepths()
 /** Perform some checks on the profile to see if looks valid.
  *
  * @param[in] uniformLayers For a profile is ready to be used for a ground fire simulation with
- *                          DominoGroundFire() it should have layers of equal thickness.  Setting
+ *                          DownwardGroundFire() it should have layers of equal thickness.  Setting
  *                          this to true will add a check for this.
  *
  * @returns Whether the profile passed the checks.
