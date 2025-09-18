@@ -63,6 +63,20 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::ProcessWildfire()...";
 
   //Gather weather and environmental conditions:---------------------------
+  //If the snow depth is above the specified limit fire does not initiate.  The extinguishement
+  //depth may be non-zero.  We propose very small amounts of snow may not prevent a fire.  Also we
+  //only have one measure of snow thickness for the whole site.  In reality where there is a small
+  //amounts of snow on the ground it is likley that some areas will be bare and more condusive to
+  //a fire starting.  The appropriate extinguishment depth is an area that needs more research. 
+  //This has nothing to do with snow persisting under snow, AKA overwintering or zombie fires.
+  //That behavior is not yet represtneed in the model.
+  double snowDepth_cm = ground->snow.thick * 100.0;
+  if (snowDepth_cm > md.fire_max_snow)
+  {
+    BOOST_LOG_SEV(glg, info) << "Snow is too deep (" << snowDepth_cm << " cm) for ignition to start a fire.";
+    return 0.0;
+  }
+
   double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
   //Can we use temperature from climate instead?????
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
