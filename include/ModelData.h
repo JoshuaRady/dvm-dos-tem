@@ -130,7 +130,8 @@ public:
   //Turn on the process based wildfire model:
   //The fire settings that follow only pertain if this is switch is set to true.
   bool fire_process_wildfire;
-  bool fire_dynamic_fuel;//Calculate dynamic fuel moisture for dynamic fuel models:
+  double fire_max_snow;//The maximum snow depth (cm) where a fire can start, i.e. the extinguishment limit.
+  bool fire_dynamic_fuel;//Calculate dynamic fuel moisture for dynamic fuel models.
   bool fire_moss_as_dead_fuel;//Should moss be treated as a dead fuel (true) or live fuel (false).
   bool fire_calculate_delta;//Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false).
   double fire_heat_frac_to_soil;//The fraction of aboveground fire heat that enters the soil.
