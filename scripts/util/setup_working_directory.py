@@ -169,6 +169,13 @@ def cmdline_run(args):
   config['IO']['hist_exp_fire_file']   = os.path.join(input_data_path, 'historic-explicit-fire.nc')
   config['IO']['proj_exp_fire_file']   = os.path.join(input_data_path, 'projected-explicit-fire.nc')
 
+  # The process based fire model input files paths are in the repo:
+  config['IO']['fire_fuel_model_file'] = os.path.join(ddt_dir, config['IO']['fire_fuel_model_file'])
+  config['IO']['fire_fosberg_a_file']  = os.path.join(ddt_dir, config['IO']['fire_fosberg_a_file'])
+  config['IO']['fire_fosberg_b_file']  = os.path.join(ddt_dir, config['IO']['fire_fosberg_b_file'])
+  config['IO']['fire_fosberg_c_file']  = os.path.join(ddt_dir, config['IO']['fire_fosberg_c_file'])
+  config['IO']['fire_fosberg_d_file']  = os.path.join(ddt_dir, config['IO']['fire_fosberg_d_file'])
+
   # Make sure calibration data ends up in a directory that is named the same
   # as your new working directory.
   # NOTE: Seems like when the user runs the calibration-viewer.py and specifies
