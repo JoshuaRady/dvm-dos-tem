@@ -964,15 +964,9 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
     else//Mosses:
     {
       //Moss: Maps to either one (fine) dead fuel OR one live (herbaceous) fuel OR a mix of both:
-      //int deadMossIndex = 0;//Assumes moss is in the finest dead fuel class.
-      //int deadMossIndex = deadHerbIndex;
-      //int liveMossIndex = liveHerbIndex;
-
       if (treatMossAsDead)
       {
         int deadMossIndex = 0;//Assumes moss is in the finest dead fuel class.
-
-        //this->r_burn2ag_cn = siteBU.combustion_ij[deadMossIndex] / siteBU.w_o_ij_Initial[deadMossIndex];
         if (siteBU.w_o_ij_Initial[deadMossIndex] > 0.0)
         {
           this->r_burn2ag_cn = siteBU.combustion_ij[deadMossIndex] / siteBU.w_o_ij_Initial[deadMossIndex];
@@ -980,11 +974,12 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
       }
       else//Treat moss as a live fuel:
       {
+        //Considered using aliases:
+        //int deadMossIndex = deadHerbIndex;
+        //int liveMossIndex = liveHerbIndex;
         if (siteFM.type != Dynamic)
         {
           //Live moss maps to the live herbaceous fuel:
-
-          //this->r_burn2ag_cn = siteBU.combustion_ij[liveMossIndex] / siteBU.w_o_ij_Initial[liveMossIndex];
           //Do we also need to check LiveHerbaceousPresent()?
           if (siteBU.w_o_ij_Initial[liveHerbIndex] > 0.0)
           {
@@ -994,12 +989,6 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
         else//Dynamic fuel moisture:
         {
           //Dynamic live moss maps to the live herbaceous fuel and cured herbaceous fuel:
-          
-          //this->r_burn2ag_cn = (siteBU.combustion_ij[deadMossIndex] +
-          //                      siteBU.combustion_ij[liveHerbIndex]) /
-          //                     (siteBU.w_o_ij_Initial[deadMossIndex] +
-          //                      siteBU.w_o_ij_Initial[liveHerbIndex]);
-
           double totalInitialLoading = siteBU.w_o_ij_Initial[deadHerbIndex] + siteBU.w_o_ij_Initial[liveHerbIndex];
           if (totalInitialLoading > 0.0)
           {
