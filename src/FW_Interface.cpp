@@ -71,7 +71,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   //This has nothing to do with snow persisting under snow, AKA overwintering or zombie fires.
   //That behavior is not yet represtneed in the model.
   double snowDepth_cm = ground->snow.thick * 100.0;
-  if ((md.fire_max_snow > 0.0) && (snowDepth_cm > md.fire_max_snow))
+  if ((md.fire_max_snow >= 0.0) && (snowDepth_cm > md.fire_max_snow))
   {
     BOOST_LOG_SEV(glg, info) << "Snow is too deep (" << snowDepth_cm << " cm) for ignition to start a fire.";
     return 0.0;
