@@ -62,21 +62,9 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::ProcessWildfire()...";
 
-  //Gather weather and environmental conditions:---------------------------
-  //If the snow depth is above the specified limit fire does not initiate.  The extinguishement
-  //depth may be non-zero.  We propose very small amounts of snow may not prevent a fire.  Also we
-  //only have one measure of snow thickness for the whole site.  In reality where there is a small
-  //amounts of snow on the ground it is likley that some areas will be bare and more condusive to
-  //a fire starting.  The appropriate extinguishment depth is an area that needs more research. 
-  //This has nothing to do with snow persisting under snow, AKA overwintering or zombie fires.
-  //That behavior is not yet represtneed in the model.
-  double snowDepth_cm = ground->snow.thick * 100.0;
-  if ((md.fire_max_snow >= 0.0) && (snowDepth_cm > md.fire_max_snow))
-  {
-    BOOST_LOG_SEV(glg, info) << "Snow is too deep (" << snowDepth_cm << " cm) for ignition to start a fire.";
-    return 0.0;
-  }
+  double burnDepth = 0.0;//Return value.
 
+  //Gather weather and environmental conditions:---------------------------
   double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
   //Can we use temperature from climate instead?????
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
@@ -87,8 +75,9 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   //The percent slope is stored in the CohortData object and also in the wildfire object:
   double slopeSteepness = SlopePctToSteepness(cd->cell_slope);
 
-  //Shortwave radiation may be needed for more advanced moisture calculations added in the future.
+  double snowDepth_cm = ground->snow.thick * 100.0;//Snow can prevent fire.
 
+  //Shortwave radiation may be needed for more advanced moisture calculations added in the future.
 
   //Determine the fuel model for the location and set its parameters:------
 
@@ -105,77 +94,102 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   FuelModel fm = GetFuelModelFromCSV(md.fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
   fm.ConvertUnits(Metric);//Convert to metric units.
 
-  //Determine the surface fuels from the model vegetation and soil states and update the fuel
-  //loadings from their default values:
-  CohortStatesToFuelLoading(fm, md.fire_moss_as_dead_fuel);
+  siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
 
-  //Save the fuel loading prior to fire: (will be compared below...)
-  std::vector <double> fuelLoadingBefore = fm.w_o_ij;
-
-  //Calculate the fuel bed depth:
-  CalculateFuelBedDepth(fm, md.fire_calculate_delta);
-
-  //Calculate fuel moisture:
-  //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
-  //might change the fuel sizes.
-  std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);
-
-  //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
-  BOOST_LOG_SEV(glg, debug) << "Apply fuel moisture to fuel model...";
-  if (md.fire_dynamic_fuel)
+  //If the snow depth is above the specified limit fire does not initiate.  The extinguishement
+  //depth may be non-zero.  We propose very small amounts of snow may not prevent a fire.  Also we
+  //only have one measure of snow thickness for the whole site.  In reality where there is a small
+  //amounts of snow on the ground it is likley that some areas will be bare and more condusive to
+  //a fire starting.  The appropriate extinguishment depth is an area that needs more research. 
+  //This has nothing to do with snow persisting under snow, AKA overwintering or zombie fires, which
+  //are not yet represented in the model.
+  //If the fire does not initiate we can skip the fire calculations:
+  if ((md.fire_max_snow >= 0.0) && (snowDepth_cm > md.fire_max_snow))
   {
-    fm.CalculateDynamicFuelCuring(M_f_ij);
+    BOOST_LOG_SEV(glg, info) << "Snow is too deep (" << snowDepth_cm << " cm) for ignition to start a fire.";
+    
+    //For the remaining fire functions to complete properly we need to:
+    // - Store and return the burn depth/thickness (below).
+    // - Save the fuel model for use in getAbgVegetationBurntFractionsProcess().  We won't need the
+    //loading and fuel moisture information there so we can stop before caculating that.
+    siteFM = fm;
+    // - Save a BurnupSim object for use in getAbgVegetationBurntFractionsProcess().  Since the fire
+    //isn't burning we don't run Burnup but return an enmpty BurnupSim object with an flag
+    //indicating no fire burned.
+    BurnupSim mockOutput;
+    mockOutput.burnoutTime = -3.0;//FW_NOTE: Move into struct?
+    siteBU = mockOutput;
   }
   else
   {
-    fm.SetFuelMoisture(M_f_ij);
+    //Determine the surface fuels from the model vegetation and soil states and update the fuel
+    //loadings from their default values:
+    CohortStatesToFuelLoading(fm, md.fire_moss_as_dead_fuel);
+
+    //Save the fuel loading prior to fire: (will be compared below...)
+    std::vector <double> fuelLoadingBefore = fm.w_o_ij;
+
+    //Calculate the fuel bed depth:
+    CalculateFuelBedDepth(fm, md.fire_calculate_delta);
+
+    //Calculate fuel moisture:
+    //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
+    //might change the fuel sizes.
+    std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);
+
+    //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
+    BOOST_LOG_SEV(glg, debug) << "Apply fuel moisture to fuel model...";
+    if (md.fire_dynamic_fuel)
+    {
+      fm.CalculateDynamicFuelCuring(M_f_ij);
+    }
+    else
+    {
+      fm.SetFuelMoisture(M_f_ij);
+    }
+
+    //Feed fuels and weather conditions into the surface fire models:------
+
+    //Dump the fuel model if debugging:  This may be temporary?????
+    BOOST_LOG_SEV(glg, debug) << "Dumping the fuel model prior to fire:";
+    BOOST_LOG_SEV(glg, debug) << fm;
+
+    //First run the Rothermel & Albini spread rate model:
+    //It takes a fuel model (and attendant data) and returns the calculation details.
+    //M_f_ij does not need to be included since it is added to the fuel model object above.
+    BOOST_LOG_SEV(glg, debug) << "Perform surface file spread rate calculations...";
+    SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm, windSpeed, slopeSteepness);
+                                                        //M_f_ij,//fuel moisture
+                                                        //false,//useWindLimit
+                                                        //FALSE);//debug
+
+    //Dump the output of the spread rate calculations if debugging:
+    //JMR_NOTE: This may be overkill?????
+    BOOST_LOG_SEV(glg, debug) << "Dump the spread calculations:";
+    BOOST_LOG_SEV(glg, debug) << raData;
+
+    //Simulate the combustion of surface fuels:----------------------------
+    BurnupSim burnupOutput = SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
+    BOOST_LOG_SEV(glg, debug) << "Dump the combustion calculations:";
+    BOOST_LOG_SEV(glg, debug) << burnupOutput;
+
+    siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
+    siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
+
+    //Simulate crown fire:-------------------------------------------------
+    //TBD!!!!!
+
+    //Simulate ground fire:------------------------------------------------
+    //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
+    //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
+    double abgFireEnergy = burnupOutput.history.IntegrateFireIntensity();//kJ/m^2
+    BOOST_LOG_SEV(glg, debug) << "Aboveground fire energy: " << abgFireEnergy << " kJ/m^2";
+    //Only a fraction of the heat of the aboveground fire enters the soil:
+    double fireHeatToSoil = abgFireEnergy * md.fire_heat_frac_to_soil;//kJ/m^2
+    BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
+
+    burnDepth = SimulateGroundFire(fireHeatToSoil);
   }
-
-  //Feed fuels and weather conditions into the surface fire models:--------
-
-  //Dump the fuel model if debugging:  This may be temporary?????
-  BOOST_LOG_SEV(glg, debug) << "Dumping the fuel model prior to fire:";
-  BOOST_LOG_SEV(glg, debug) << fm;
-
-  //First run the Rothermel & Albini spread rate model:
-  //It takes a fuel model (and attendant data) and returns the calculation details.
-  //M_f_ij does not need to be included since it is added to the fuel model object above.
-  BOOST_LOG_SEV(glg, debug) << "Perform surface file spread rate calculations...";
-  SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm, windSpeed, slopeSteepness);
-                                                      //M_f_ij,//fuel moisture
-                                                      //false,//useWindLimit
-                                                      //FALSE);//debug
-
-  //Dump the output of the spread rate calculations if debugging:
-  //JMR_NOTE: This may be overkill?????
-  BOOST_LOG_SEV(glg, debug) << "Dump the spread calculations:";
-  BOOST_LOG_SEV(glg, debug) << raData;
-//   {
-//   	BOOST_LOG_SEV(glg, debug) << "WildFire::ProcessWildfire() Spread rate calculation R = " << raData.R;
-//   }
-
-
-  //Simulate the combustion of surface fuels:------------------------------
-  BurnupSim burnupOutput = SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
-  BOOST_LOG_SEV(glg, debug) << "Dump the combustion calculations:";
-  BOOST_LOG_SEV(glg, debug) << burnupOutput;
-
-  siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
-  siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
-
-  //Simulate crown fire:---------------------------------------------------
-  //TBD!!!!!
-
-  //Simulate ground fire:--------------------------------------------------
-  //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
-  //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
-  double abgFireEnergy = burnupOutput.history.IntegrateFireIntensity();//kJ/m^2
-  BOOST_LOG_SEV(glg, debug) << "Aboveground fire energy: " << abgFireEnergy << " kJ/m^2";
-  //Only a fraction of the heat of the aboveground fire enters the soil:
-  double fireHeatToSoil = abgFireEnergy * md.fire_heat_frac_to_soil;//kJ/m^2
-  BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
-
-  double burnDepth = SimulateGroundFire(fireHeatToSoil);
 
   //Litter and soil carbon stocks are updated in WildFire::updateBurntOrgSoil().
   //Moss and herbaceous carbon stocks are updated in WildFire::burnVegetation().
