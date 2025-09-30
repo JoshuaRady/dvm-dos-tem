@@ -1048,6 +1048,8 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
  */
 double WildFire::GetLitterBurntFraction() const
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::GetLitterBurntFraction()...";
+
   double litterBurntFraction = 0.0;//Return value.
   double litterInitial = 0.0;//The total dry litter mass before fire.
   double litterCombusted = 0.0;//The total dry litter mass after fire.
