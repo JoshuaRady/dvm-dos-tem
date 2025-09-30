@@ -941,7 +941,7 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
   this->r_dead2ag_cn = 0;
 
   //If for any reason fire didn't actually burn skip most of the calculations:
-  if (siteBU.burnoutTime < 0.0)
+  if (siteBU.burnoutTime > 0.0)
   {
     //Fuel types may contain one or more PFTs but since we are calculating rates we don't need to
     //separate them out.  The rate for all will apply to each.  Likewise the carbon to biomass
