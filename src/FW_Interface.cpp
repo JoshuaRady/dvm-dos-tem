@@ -1051,51 +1051,56 @@ double WildFire::GetLitterBurntFraction() const
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::GetLitterBurntFraction()...";
 
   double litterBurntFraction = 0.0;//Return value.
-  double litterInitial = 0.0;//The total dry litter mass before fire.
-  double litterCombusted = 0.0;//The total dry litter mass after fire.
 
-  int numDeadClasses = siteFM.NumDeadClasses();
-  for (int i = 0; i < numDeadClasses; i++)
+  //If for any reason fire didn't actually burn skip the calculation:
+  if (siteBU.burnoutTime > 0.0)
   {
-    //Skip any cured dynamic fuels:
-    //We don't need to check if this is a dynamic fuel model because DeadHerbaceousIndex() will
-    //return -1 if not.
-    if (i != siteFM.DeadHerbaceousIndex())
-    {
-      //If live moss has been combined with the fine dead fuel we need to separate it out:
-      if ((i == 0) && md.fire_moss_as_dead_fuel)
-      {
-        double fineBurntFraction = 0.0;
-        if (siteBU.w_o_ij_Initial[i] > 0.0)//Avoid divide by zero.
-        {
-          fineBurntFraction = siteBU.combustion_ij[i] / siteBU.w_o_ij_Initial[i];
-        }
+    double litterInitial = 0.0;//The total dry litter mass before fire.
+    double litterCombusted = 0.0;//The total dry litter mass after fire.
 
-        //All fuel in a size class burns at the same rate:
-        double fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetNonVascularBiomass();
-        litterInitial += fineLitterInitial;
-        litterCombusted += fineLitterInitial * fineBurntFraction;//Just the burnt fine litter.
-      }
-      else
+    int numDeadClasses = siteFM.NumDeadClasses();
+    for (int i = 0; i < numDeadClasses; i++)
+    {
+      //Skip any cured dynamic fuels:
+      //We don't need to check if this is a dynamic fuel model because DeadHerbaceousIndex() will
+      //return -1 if not.
+      if (i != siteFM.DeadHerbaceousIndex())
       {
-        litterInitial += siteBU.w_o_ij_Initial[i];
-        litterCombusted += siteBU.combustion_ij[i];
+        //If live moss has been combined with the fine dead fuel we need to separate it out:
+        if ((i == 0) && md.fire_moss_as_dead_fuel)
+        {
+          double fineBurntFraction = 0.0;
+          if (siteBU.w_o_ij_Initial[i] > 0.0)//Avoid divide by zero.
+          {
+            fineBurntFraction = siteBU.combustion_ij[i] / siteBU.w_o_ij_Initial[i];
+          }
+
+          //All fuel in a size class burns at the same rate:
+          double fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetNonVascularBiomass();
+          litterInitial += fineLitterInitial;
+          litterCombusted += fineLitterInitial * fineBurntFraction;//Just the burnt fine litter.
+        }
+        else
+        {
+          litterInitial += siteBU.w_o_ij_Initial[i];
+          litterCombusted += siteBU.combustion_ij[i];
+        }
       }
+    }
+
+    //We could check that litterInitial matches up with what we get from GetLitterRawC() here.
+    
+    if (litterInitial > 0.0)//Avoid divide by zero.
+    {
+      litterBurntFraction = litterCombusted / litterInitial;
+    }
+    
+    if (!ValidProportion(litterBurntFraction))
+    {
+      BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;
     }
   }
 
-  //We could check that litterInitial matches up with what we get from GetLitterRawC() here.
-  
-  if (litterInitial > 0.0)//Avoid divide by zero.
-  {
-    litterBurntFraction = litterCombusted / litterInitial;
-  }
-  
-  if (!ValidProportion(litterBurntFraction))
-  {
-    BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;
-  }
-  
   return litterBurntFraction;
 }
 
