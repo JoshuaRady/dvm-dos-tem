@@ -114,8 +114,9 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     //loading and fuel moisture information there so we can stop before caculating that.
     siteFM = fm;
     // - Save a BurnupSim object for use in getAbgVegetationBurntFractionsProcess().  Since the fire
-    //isn't burning we don't run Burnup but return an enmpty BurnupSim object with an flag
-    //indicating no fire burned.
+    //isn't burning we don't run Burnup but return an empty BurnupSim object with an flag
+    //indicating no fire burned.  The flag needs to be checked by subsequent code that uses siteBU
+    //since in this case the object's contents is not valid.
     BurnupSim mockOutput;
     mockOutput.burnoutTime = -3.0;//FW_NOTE: Move into struct?
     siteBU = mockOutput;
