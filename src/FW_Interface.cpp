@@ -932,8 +932,9 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
  */
 bool WildFire::FireBurned()//FireIgnited()?
 {
-  //We determine whether a fire should be simulated based on the model state.  The result will only
-  //be valid if this function is called after WildFire::burn() has been called.
+  //We determine whether a fire was simulated to have happen based on the model state.  The result
+  //will only be valid if this function is called internally after WildFire::ProcessWildfire() and
+  //externally /after WildFire::burn() has been called.
   if (!md.fire_process_wildfire)
   {
     return true;//This assumes that should_ignite() already returned true.
