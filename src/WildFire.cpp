@@ -320,117 +320,125 @@ void WildFire::burn(const int year, const int midx) {
     burndepth = ProcessWildfire(midx);
   }
 
-  // Update soil layers and carbon based on the burn depth:
-  // Calcuations are the same for both models.
-  // Variables to hold return values:
-  double burnedsolc = 0.0;
-  double burnedsoln = 0.0;
-  double r_burn2bg_cn[NUM_PFT];
-  updateBurntOrgSoil(burndepth, burnedsolc, burnedsoln, r_burn2bg_cn);
-
-  //Burning of woody debris:
-  BOOST_LOG_SEV(glg, info) << "Handle burnt woody debris...";
-  double wdebrisc = 0.0;
-  double wdebrisn = 0.0;
-  if (!md.fire_process_wildfire)// FW_MOD
+  //If the fire didn't ignite skip the post-burn calculations:
+  //FW_NOTE: I think this everything in the block can be skipped.  I think that if process WildFire
+  //model doesn't predict a fire the following will all cancel out with most calculations coming out
+  //to zero.  However, there is a lot going on here so I could be misisng something.  Testing will
+  //be infomative.
+  if (FireBurned())
   {
-    // all woody debris will burn out:
-    //double wdebrisc = bdall->m_sois.wdebrisc; //
-    //double wdebrisn = bdall->m_sois.wdebrisn; //
-    wdebrisc = bdall->m_sois.wdebrisc;
-    wdebrisn = bdall->m_sois.wdebrisn;
-    bdall->m_sois.wdebrisc = 0.0;
-    bdall->m_sois.wdebrisn = 0.0;
-  }
-  else
-  {
-    // FW_Note: The process based wildfire model does not yet handle the wood debris pool.
-    BOOST_LOG_SEV(glg, info) << "The process based wildfire model ignores wood debris for now.";
-  }
+    // Update soil layers and carbon based on the burn depth:
+    // Calcuations are the same for both models.
+    // Variables to hold return values:
+    double burnedsolc = 0.0;
+    double burnedsoln = 0.0;
+    double r_burn2bg_cn[NUM_PFT];
+    updateBurntOrgSoil(burndepth, burnedsolc, burnedsoln, r_burn2bg_cn);
 
-  // summarize
-  //BOOST_LOG_SEV(glg, info) << "Summarize...?";//FW_Note: This doesn't seem to be an accurate description.
-  BOOST_LOG_SEV(glg, info) << "Calcuate the fractions of burnt soil C & N emitted vs. left on site...";
-  double vola_solc = burnedsolc * (1.0 - firpar.r_retain_c) + wdebrisc;
-  double vola_soln = burnedsoln * (1.0 - firpar.r_retain_n) + wdebrisn;
-  double reta_solc = burnedsolc * firpar.r_retain_c;   //together with veg.-burned C return, This will be put into soil later
-  double reta_soln = burnedsoln * firpar.r_retain_n;   //together with veg.-burned N return, This will be put into soil later
-
-  //Live vegetation burning and mortality:
-  //The live vegetation mass that combusts, summed for all PFTs:
-  double comb_vegc = 0.0;
-  double comb_vegn = 0.0;
-
-  //The dead mass of roots (belowground vegetation):
-  double dead_bg_vegc = 0.0;
-  double dead_bg_vegn = 0.0;
-
-  // FW_NOTE: The follow blocks of code where already commented out and moved into the above.
-  //Writing out initial standing dead pools. These values will be
-  //used to compute the rate of decomposition of the standing dead - 
-  //1/9th of the original value per year.
-  //bdall->m_vegs.deadc0 = veg_2_dead_C;
-  //bdall->m_vegs.deadn0 = veg_2_dead_N;
-
-  //Writing out initial values of standing dead pools to the pools
-  //actually used for computation. These values will be decremented
-  //by 1/9th the original value per year.
-  //bdall->m_vegs.deadc = veg_2_dead_C;
-  //bdall->m_vegs.deadn = veg_2_dead_N;
-
-  // Retained burnt carbon and nitrogen:
-  double reta_vegc = 0.0;
-  double reta_vegn = 0.0;
-  burnVegetation(year, r_burn2bg_cn, comb_vegc, comb_vegn, dead_bg_vegc, dead_bg_vegn, reta_vegc, reta_vegn);
-
-  // Emissions calculations are the same for both models:
-  BOOST_LOG_SEV(glg, info) << "Save the fire emission and return data into 'fd'...";
-  //Summing the PFT specific fluxes to dead standing
-  for(int ip=0; ip<NUM_PFT; ip++){
-    fd->fire_v2dead.vegC += bd[ip]->m_vegs.deadc;
-    fd->fire_v2dead.strN += bd[ip]->m_vegs.deadn;
-  }
-  //fd->fire_v2dead.vegC = veg_2_dead_C; 
-  //fd->fire_v2dead.strN = veg_2_dead_N;
-  fd->fire_v2a.orgc =  comb_vegc - reta_vegc;
-  fd->fire_v2a.orgn =  comb_vegn - reta_vegn;
-  fd->fire_v2soi.abvc = reta_vegc;
-  fd->fire_v2soi.abvn = reta_vegn;
-  fd->fire_v2soi.blwc = dead_bg_vegc;
-  fd->fire_v2soi.blwn = dead_bg_vegn;
-  fd->fire_soi2a.orgc = vola_solc;
-  fd->fire_soi2a.orgn = vola_soln;
-
-  // the above 'v2a.orgn' and 'soi2a.orgn', will be as one of N source,
-  // which is depositing into soil evenly in one FRI
-  //- this will let the system -N balanced in a long-term, if NO
-  //  open-N cycle included
-  //This should occur every month post-fire. FIX
-  fd->fire_a2soi.orgn = (fd->fire_soi2a.orgn + fd->fire_v2a.orgn) / this->fri;
-
-  // Retained calcuations are the same for both models:
-  BOOST_LOG_SEV(glg, info) << "Handle retained combustion products...";// FW_MOD
-  //put the retained C/N into the first unburned soil layer's
-  //  chemically-resistant SOMC pool
-  // Note - this 'retained C' could be used as char-coal, if need to do so.
-  //        Then define the 'r_retain_c' in the model shall be workable
-  for (int il = 0; il < cd->m_soil.numsl; il++) {
-    double tsomc = bdall->m_sois.rawc[il] + bdall->m_sois.soma[il]
-                   + bdall->m_sois.sompr[il] + bdall->m_sois.somcr[il];
-
-    if(tsomc > 0. || il==cd->m_soil.numsl-1) {
-      // this may possibly put retac/n in the first mineral soil
-      bdall->m_sois.somcr[il] += reta_vegc + reta_solc;
-      bdall->m_sois.orgn[il]  += reta_vegn + reta_soln;
-      break;
+    //Burning of woody debris:
+    BOOST_LOG_SEV(glg, info) << "Handle burnt woody debris...";
+    double wdebrisc = 0.0;
+    double wdebrisn = 0.0;
+    if (!md.fire_process_wildfire)// FW_MOD
+    {
+      // all woody debris will burn out:
+      //double wdebrisc = bdall->m_sois.wdebrisc; //
+      //double wdebrisn = bdall->m_sois.wdebrisn; //
+      wdebrisc = bdall->m_sois.wdebrisc;
+      wdebrisn = bdall->m_sois.wdebrisn;
+      bdall->m_sois.wdebrisc = 0.0;
+      bdall->m_sois.wdebrisn = 0.0;
     }
-  }
+    else
+    {
+      // FW_Note: The process based wildfire model does not yet handle the wood debris pool.
+      BOOST_LOG_SEV(glg, info) << "The process based wildfire model ignores wood debris for now.";
+    }
 
-  //Need to copy 'bdall->m_soils' to other PFTs, because above
-  //  soil portion of 'bd' is done on 'bdall'
-  for (int ip=1; ip<NUM_PFT; ip++) {
-    if (cd->m_veg.vegcov[ip]>0.) {
-      bd[ip]->m_sois = bdall->m_sois;
+    // summarize
+    //BOOST_LOG_SEV(glg, info) << "Summarize...?";//FW_Note: This doesn't seem to be an accurate description.
+    BOOST_LOG_SEV(glg, info) << "Calcuate the fractions of burnt soil C & N emitted vs. left on site...";
+    double vola_solc = burnedsolc * (1.0 - firpar.r_retain_c) + wdebrisc;
+    double vola_soln = burnedsoln * (1.0 - firpar.r_retain_n) + wdebrisn;
+    double reta_solc = burnedsolc * firpar.r_retain_c;   //together with veg.-burned C return, This will be put into soil later
+    double reta_soln = burnedsoln * firpar.r_retain_n;   //together with veg.-burned N return, This will be put into soil later
+
+    //Live vegetation burning and mortality:
+    //The live vegetation mass that combusts, summed for all PFTs:
+    double comb_vegc = 0.0;
+    double comb_vegn = 0.0;
+
+    //The dead mass of roots (belowground vegetation):
+    double dead_bg_vegc = 0.0;
+    double dead_bg_vegn = 0.0;
+
+    // FW_NOTE: The follow blocks of code where already commented out and moved into the above.
+    //Writing out initial standing dead pools. These values will be
+    //used to compute the rate of decomposition of the standing dead - 
+    //1/9th of the original value per year.
+    //bdall->m_vegs.deadc0 = veg_2_dead_C;
+    //bdall->m_vegs.deadn0 = veg_2_dead_N;
+
+    //Writing out initial values of standing dead pools to the pools
+    //actually used for computation. These values will be decremented
+    //by 1/9th the original value per year.
+    //bdall->m_vegs.deadc = veg_2_dead_C;
+    //bdall->m_vegs.deadn = veg_2_dead_N;
+
+    // Retained burnt carbon and nitrogen:
+    double reta_vegc = 0.0;
+    double reta_vegn = 0.0;
+    burnVegetation(year, r_burn2bg_cn, comb_vegc, comb_vegn, dead_bg_vegc, dead_bg_vegn, reta_vegc, reta_vegn);
+
+    // Emissions calculations are the same for both models:
+    BOOST_LOG_SEV(glg, info) << "Save the fire emission and return data into 'fd'...";
+    //Summing the PFT specific fluxes to dead standing
+    for(int ip=0; ip<NUM_PFT; ip++){
+      fd->fire_v2dead.vegC += bd[ip]->m_vegs.deadc;
+      fd->fire_v2dead.strN += bd[ip]->m_vegs.deadn;
+    }
+    //fd->fire_v2dead.vegC = veg_2_dead_C; 
+    //fd->fire_v2dead.strN = veg_2_dead_N;
+    fd->fire_v2a.orgc =  comb_vegc - reta_vegc;
+    fd->fire_v2a.orgn =  comb_vegn - reta_vegn;
+    fd->fire_v2soi.abvc = reta_vegc;
+    fd->fire_v2soi.abvn = reta_vegn;
+    fd->fire_v2soi.blwc = dead_bg_vegc;
+    fd->fire_v2soi.blwn = dead_bg_vegn;
+    fd->fire_soi2a.orgc = vola_solc;
+    fd->fire_soi2a.orgn = vola_soln;
+
+    // the above 'v2a.orgn' and 'soi2a.orgn', will be as one of N source,
+    // which is depositing into soil evenly in one FRI
+    //- this will let the system -N balanced in a long-term, if NO
+    //  open-N cycle included
+    //This should occur every month post-fire. FIX
+    fd->fire_a2soi.orgn = (fd->fire_soi2a.orgn + fd->fire_v2a.orgn) / this->fri;
+
+    // Retained calcuations are the same for both models:
+    BOOST_LOG_SEV(glg, info) << "Handle retained combustion products...";// FW_MOD
+    //put the retained C/N into the first unburned soil layer's
+    //  chemically-resistant SOMC pool
+    // Note - this 'retained C' could be used as char-coal, if need to do so.
+    //        Then define the 'r_retain_c' in the model shall be workable
+    for (int il = 0; il < cd->m_soil.numsl; il++) {
+      double tsomc = bdall->m_sois.rawc[il] + bdall->m_sois.soma[il]
+                     + bdall->m_sois.sompr[il] + bdall->m_sois.somcr[il];
+
+      if(tsomc > 0. || il==cd->m_soil.numsl-1) {
+        // this may possibly put retac/n in the first mineral soil
+        bdall->m_sois.somcr[il] += reta_vegc + reta_solc;
+        bdall->m_sois.orgn[il]  += reta_vegn + reta_soln;
+        break;
+      }
+    }
+
+    //Need to copy 'bdall->m_soils' to other PFTs, because above
+    //  soil portion of 'bd' is done on 'bdall'
+    for (int ip=1; ip<NUM_PFT; ip++) {
+      if (cd->m_veg.vegcov[ip]>0.) {
+        bd[ip]->m_sois = bdall->m_sois;
+      }
     }
   }
 };
