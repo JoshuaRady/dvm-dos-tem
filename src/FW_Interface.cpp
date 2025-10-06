@@ -918,6 +918,33 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
   return output;
 }
 
+/** Did a wildfire ignite and consume fuels.
+ *
+ * With the classic wildfire model an ignition event specified via the input files will result in
+ * a fire, that is fire effect will be calculated.  However, with the process wildfire model a fire
+ * may not 'ignite' if condtion prevent it.  This function can be called by outside code following
+ * should_ignite() to know if a fire occured and downstream fire effects need to be calculated.
+ *
+ * @returns Did a wildfire actually burn.
+ *
+ * @note Added to extend functionality for the process wildfire model.
+ * @note Place after WildFire::should_ignite().
+ */
+bool WildFire::FireBurned()//FireIgnited()?
+{
+  //We determine whether a fire should be simulated based on the model state.  The result will only
+  //be valid if this function is called after WildFire::burn() has been called.
+  if (!md.fire_process_wildfire)
+  {
+    return true;//This assumes that should_ignite() already returned true.
+  }
+  else
+  {
+    //There are several ways a process based wildfire can fail.  See Burnup for more information.
+    return (siteBU.burnoutTime > 0.0);
+  }
+}
+
 //Place after WildFire::getBurnAbgVegetation().
 /** Calculate the fate of aboveground vegetation after fire using the process based wildfire model.
  *
