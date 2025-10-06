@@ -144,6 +144,11 @@ void WildFire::set_state_from_restartdata(const RestartData & rdata) {
  * @param[in] stage The run stage.
  *
  * @returns Should a wildfire ignition occur at this time?
+ * 
+ * @note With the addition of the process based wildfire model this function name may be lead to
+ *       some confusion.  The function determines if an ignition event should occur based on inputs
+ *       but a with the process based wildfire model an 'ignition' will only result in a fire that
+ *       is actually simulated if environmental conditions are appropriate.
  */
 bool WildFire::should_ignite(const int year, const int midx, const std::string& stage) {
 
