@@ -807,19 +807,19 @@ void Cohort::updateMonthly_Fir(const int & year, const int & midx, std::string s
           bdall->m_vegs.deadn   += bd[ip].m_vegs.deadn;
         }
       }
-  
+
       BOOST_LOG_SEV(glg, debug) << "Post-burn, assign the updated C/N pools to double linked layer matrix in ground...";
       soilbgc.assignCarbonBd2LayerMonthly();
-  
+
       BOOST_LOG_SEV(glg, debug) << "Post-burn, adjust soil structure...";
       ground.adjustSoilAfterburn(); // must call after soilbgc.assignCarbonBd2LayerMonthly()
-  
+
       BOOST_LOG_SEV(glg, debug) << "Post-burn, save the data back to 'bdall'...";
       soilbgc.assignCarbonLayer2BdMonthly();
-  
+
       BOOST_LOG_SEV(glg, debug) << "Post-burn, update all other pft's 'bd'...";
       assignSoilBd2pfts_monthly();
-  
+
       BOOST_LOG_SEV(glg, debug) << "Post-burn, update cd, ground, fine root fraction...";
       cd.yrsdist = 0;
       cd.mthsdist = 0;
