@@ -1279,7 +1279,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     thisLayer = thisLayer->nextl;
   }
 
-  BOOST_LOG_SEV(glg, debug) << "Intial translated profile:";
+  BOOST_LOG_SEV(glg, debug) << "Initial translated profile:";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this:
