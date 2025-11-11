@@ -62,6 +62,8 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::ProcessWildfire()...";
 
+  double burnDepth = 0.0;//Return value.
+
   //Gather weather and environmental conditions:---------------------------
   double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
   //Can we use temperature from climate instead?????
@@ -73,8 +75,9 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   //The percent slope is stored in the CohortData object and also in the wildfire object:
   double slopeSteepness = SlopePctToSteepness(cd->cell_slope);
 
-  //Shortwave radiation may be needed for more advanced moisture calculations added in the future.
+  double snowDepth_cm = ground->snow.thick * 100.0;//Snow can prevent fire.
 
+  //Shortwave radiation may be needed for more advanced moisture calculations added in the future.
 
   //Determine the fuel model for the location and set its parameters:------
 
@@ -91,77 +94,102 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   FuelModel fm = GetFuelModelFromCSV(md.fire_fuel_model_file, fuelModelNumber);//Or tab delimited!!!!!
   fm.ConvertUnits(Metric);//Convert to metric units.
 
-  //Determine the surface fuels from the model vegetation and soil states and update the fuel
-  //loadings from their default values:
-  CohortStatesToFuelLoading(fm, md.fire_moss_as_dead_fuel);
+  siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
 
-  //Save the fuel loading prior to fire: (will be compared below...)
-  std::vector <double> fuelLoadingBefore = fm.w_o_ij;
-
-  //Calculate the fuel bed depth:
-  CalculateFuelBedDepth(fm, md.fire_calculate_delta);
-
-  //Calculate fuel moisture:
-  //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
-  //might change the fuel sizes.
-  std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);
-
-  //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
-  BOOST_LOG_SEV(glg, debug) << "Apply fuel moisture to fuel model...";
-  if (md.fire_dynamic_fuel)
+  //If the snow depth is above the specified limit fire does not initiate.  The extinguishement
+  //depth may be non-zero.  We propose very small amounts of snow may not prevent a fire.  Also we
+  //only have one measure of snow thickness for the whole site.  In reality where there is a small
+  //amounts of snow on the ground it is likley that some areas will be bare and more condusive to
+  //a fire starting.  The appropriate extinguishment depth is an area that needs more research. 
+  //This has nothing to do with snow persisting under snow, AKA overwintering or zombie fires, which
+  //are not yet represented in the model.
+  //If the fire does not initiate we can skip the fire calculations:
+  if ((md.fire_max_snow >= 0.0) && (snowDepth_cm > md.fire_max_snow))
   {
-    fm.CalculateDynamicFuelCuring(M_f_ij);
+    BOOST_LOG_SEV(glg, info) << "Snow is too deep (" << snowDepth_cm << " cm) for ignition to start a fire.";
+    
+    //For the remaining fire functions to complete properly we need to:
+    // - Store and return the burn depth/thickness (below).
+    // - Save the fuel model for use in getAbgVegetationBurntFractionsProcess().  We won't need the
+    //loading and fuel moisture information there so we can stop before caculating that.
+    siteFM = fm;
+    // - Save a BurnupSim object for use in getAbgVegetationBurntFractionsProcess().  Since the fire
+    //isn't burning we don't run Burnup but return an empty BurnupSim object with an flag
+    //indicating no fire burned.  The flag needs to be checked by subsequent code that uses siteBU
+    //since in this case the object's contents is not valid.
+    BurnupSim mockOutput;
+    siteBU = mockOutput;
   }
   else
   {
-    fm.SetFuelMoisture(M_f_ij);
+    //Determine the surface fuels from the model vegetation and soil states and update the fuel
+    //loadings from their default values:
+    CohortStatesToFuelLoading(fm, md.fire_moss_as_dead_fuel);
+
+    //Save the fuel loading prior to fire: (will be compared below...)
+    std::vector <double> fuelLoadingBefore = fm.w_o_ij;
+
+    //Calculate the fuel bed depth:
+    CalculateFuelBedDepth(fm, md.fire_calculate_delta);
+
+    //Calculate fuel moisture:
+    //Note: It is better to calculate fuel moisture after calculating fuel loadings since that process
+    //might change the fuel sizes.
+    std::vector <double> M_f_ij = CalculateFuelMoisture(fm, monthIndex);
+
+    //Add the moisture to the fuel model possibly computing dynamic fuel moisture:
+    BOOST_LOG_SEV(glg, debug) << "Apply fuel moisture to fuel model...";
+    if (md.fire_dynamic_fuel)
+    {
+      fm.CalculateDynamicFuelCuring(M_f_ij);
+    }
+    else
+    {
+      fm.SetFuelMoisture(M_f_ij);
+    }
+
+    //Feed fuels and weather conditions into the surface fire models:------
+
+    //Dump the fuel model if debugging:  This may be temporary?????
+    BOOST_LOG_SEV(glg, debug) << "Dumping the fuel model prior to fire:";
+    BOOST_LOG_SEV(glg, debug) << fm;
+
+    //First run the Rothermel & Albini spread rate model:
+    //It takes a fuel model (and attendant data) and returns the calculation details.
+    //M_f_ij does not need to be included since it is added to the fuel model object above.
+    BOOST_LOG_SEV(glg, debug) << "Perform surface file spread rate calculations...";
+    SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm, windSpeed, slopeSteepness);
+                                                        //M_f_ij,//fuel moisture
+                                                        //false,//useWindLimit
+                                                        //FALSE);//debug
+
+    //Dump the output of the spread rate calculations if debugging:
+    //JMR_NOTE: This may be overkill?????
+    BOOST_LOG_SEV(glg, debug) << "Dump the spread calculations:";
+    BOOST_LOG_SEV(glg, debug) << raData;
+
+    //Simulate the combustion of surface fuels:----------------------------
+    BurnupSim burnupOutput = SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
+    BOOST_LOG_SEV(glg, debug) << "Dump the combustion calculations:";
+    BOOST_LOG_SEV(glg, debug) << burnupOutput;
+
+    siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
+    siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
+
+    //Simulate crown fire:-------------------------------------------------
+    //TBD!!!!!
+
+    //Simulate ground fire:------------------------------------------------
+    //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
+    //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
+    double abgFireEnergy = burnupOutput.history.IntegrateFireIntensity();//kJ/m^2
+    BOOST_LOG_SEV(glg, debug) << "Aboveground fire energy: " << abgFireEnergy << " kJ/m^2";
+    //Only a fraction of the heat of the aboveground fire enters the soil:
+    double fireHeatToSoil = abgFireEnergy * md.fire_heat_frac_to_soil;//kJ/m^2
+    BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
+
+    burnDepth = SimulateGroundFire(fireHeatToSoil);
   }
-
-  //Feed fuels and weather conditions into the surface fire models:--------
-
-  //Dump the fuel model if debugging:  This may be temporary?????
-  BOOST_LOG_SEV(glg, debug) << "Dumping the fuel model prior to fire:";
-  BOOST_LOG_SEV(glg, debug) << fm;
-
-  //First run the Rothermel & Albini spread rate model:
-  //It takes a fuel model (and attendant data) and returns the calculation details.
-  //M_f_ij does not need to be included since it is added to the fuel model object above.
-  BOOST_LOG_SEV(glg, debug) << "Perform surface file spread rate calculations...";
-  SpreadCalcs raData = SpreadCalcsRothermelAlbini_Het(fm, windSpeed, slopeSteepness);
-                                                      //M_f_ij,//fuel moisture
-                                                      //false,//useWindLimit
-                                                      //FALSE);//debug
-
-  //Dump the output of the spread rate calculations if debugging:
-  //JMR_NOTE: This may be overkill?????
-  BOOST_LOG_SEV(glg, debug) << "Dump the spread calculations:";
-  BOOST_LOG_SEV(glg, debug) << raData;
-//   {
-//   	BOOST_LOG_SEV(glg, debug) << "WildFire::ProcessWildfire() Spread rate calculation R = " << raData.R;
-//   }
-
-
-  //Simulate the combustion of surface fuels:------------------------------
-  BurnupSim burnupOutput = SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
-  BOOST_LOG_SEV(glg, debug) << "Dump the combustion calculations:";
-  BOOST_LOG_SEV(glg, debug) << burnupOutput;
-
-  siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
-  siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
-
-  //Simulate crown fire:---------------------------------------------------
-  //TBD!!!!!
-
-  //Simulate ground fire:--------------------------------------------------
-  //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
-  //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
-  double abgFireEnergy = burnupOutput.history.IntegrateFireIntensity();//kJ/m^2
-  BOOST_LOG_SEV(glg, debug) << "Aboveground fire energy: " << abgFireEnergy << " kJ/m^2";
-  //Only a fraction of the heat of the aboveground fire enters the soil:
-  double fireHeatToSoil = abgFireEnergy * md.fire_heat_frac_to_soil;//kJ/m^2
-  BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
-
-  double burnDepth = SimulateGroundFire(fireHeatToSoil);
 
   //Litter and soil carbon stocks are updated in WildFire::updateBurntOrgSoil().
   //Moss and herbaceous carbon stocks are updated in WildFire::burnVegetation().
@@ -890,6 +918,34 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
   return output;
 }
 
+/** Did a wildfire ignite and consume fuels.
+ *
+ * With the classic wildfire model an ignition event specified via the input files will result in
+ * a fire, that is fire effect will be calculated.  However, with the process wildfire model a fire
+ * may not 'ignite' if condtion prevent it.  This function can be called by outside code following
+ * should_ignite() to know if a fire occured and downstream fire effects need to be calculated.
+ *
+ * @returns Did a wildfire actually burn.
+ *
+ * @note Added to extend functionality for the process wildfire model.
+ * @note Place after WildFire::should_ignite().
+ */
+bool WildFire::FireBurned()//FireIgnited()?
+{
+  //We determine whether a fire was simulated to have happen based on the model state.  The result
+  //will only be valid if this function is called internally after WildFire::ProcessWildfire() and
+  //externally /after WildFire::burn() has been called.
+  if (!md.fire_process_wildfire)
+  {
+    return true;//This assumes that should_ignite() already returned true.
+  }
+  else
+  {
+    //There are several ways a process based wildfire can fail.  See Burnup for more information.
+    return (siteBU.burnoutTime > 0.0);
+  }
+}
+
 //Place after WildFire::getBurnAbgVegetation().
 /** Calculate the fate of aboveground vegetation after fire using the process based wildfire model.
  *
@@ -908,70 +964,30 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
  */
 void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name is a bit long!
 {
-  bool treatMossAsDead = md.fire_moss_as_dead_fuel;
-
-  //Where do we get the fuel model info from?
-  int liveHerbIndex = siteFM.LiveHerbaceousIndex();
-  int liveWoodyIndex = siteFM.LiveWoodyIndex();
-  int deadHerbIndex = siteFM.DeadHerbaceousIndex();
-
   //Reset rates to zero::
   this->r_burn2ag_cn = 0;
   this->r_dead2ag_cn = 0;
 
-  //Fuel types may contain one or more PFTs but since we are calculating rates we don't need to
-  //separate them out.  The rate for all will apply to each.  Likewise the carbon to biomass
-  //conversion cancels out so can be ignored.
-
-  //Parallel the PFT decision tree in CohortStatesToFuelLoading():
-  if (!cd->d_veg.ifwoody[pftIndex])
+  //If for any reason fire didn't actually burn skip most of the calculations:
+  if (siteBU.burnoutTime > 0.0)
   {
-    if (cd->d_veg.nonvascular[pftIndex] == 0)//Herbaceous PFTs:
-    {
-      //Herbs map to one fuel or two if dynamic moisture is on:
-      if (siteFM.type != Dynamic)
-      {
-        if (siteBU.w_o_ij_Initial[liveHerbIndex] > 0.0)
-        {
-          this->r_burn2ag_cn = siteBU.combustion_ij[liveHerbIndex] / siteBU.w_o_ij_Initial[liveHerbIndex];
-        }
-      }
-      else//Dynamic fuel moisture:
-      {
-        //Dynamic live moss maps to the live herbaceous fuel and cured herbaceous fuel:
-        double totalInitialLoading = siteBU.w_o_ij_Initial[deadHerbIndex] + siteBU.w_o_ij_Initial[liveHerbIndex];
-        if (totalInitialLoading > 0.0)
-        {
-            this->r_burn2ag_cn = (siteBU.combustion_ij[deadHerbIndex] +
-                                  siteBU.combustion_ij[liveHerbIndex]) / totalInitialLoading;
-        }
-      }
-    }
-    else//Mosses:
-    {
-      //Moss: Maps to either one (fine) dead fuel OR one live (herbaceous) fuel OR a mix of both:
-      //int deadMossIndex = 0;//Assumes moss is in the finest dead fuel class.
-      //int deadMossIndex = deadHerbIndex;
-      //int liveMossIndex = liveHerbIndex;
+    //Fuel types may contain one or more PFTs but since we are calculating rates we don't need to
+    //separate them out.  The rate for all will apply to each.  Likewise the carbon to biomass
+    //conversion cancels out so can be ignored.
 
-      if (treatMossAsDead)
-      {
-        int deadMossIndex = 0;//Assumes moss is in the finest dead fuel class.
+    //Get fuel indexes:
+    int liveHerbIndex = siteFM.LiveHerbaceousIndex();
+    int liveWoodyIndex = siteFM.LiveWoodyIndex();
+    int deadHerbIndex = siteFM.DeadHerbaceousIndex();
 
-        //this->r_burn2ag_cn = siteBU.combustion_ij[deadMossIndex] / siteBU.w_o_ij_Initial[deadMossIndex];
-        if (siteBU.w_o_ij_Initial[deadMossIndex] > 0.0)
-        {
-          this->r_burn2ag_cn = siteBU.combustion_ij[deadMossIndex] / siteBU.w_o_ij_Initial[deadMossIndex];
-        }
-      }
-      else//Treat moss as a live fuel:
+    //Parallel the PFT decision tree in CohortStatesToFuelLoading():
+    if (!cd->d_veg.ifwoody[pftIndex])
+    {
+      if (cd->d_veg.nonvascular[pftIndex] == 0)//Herbaceous PFTs:
       {
+        //Herbs map to one fuel or two if dynamic moisture is on:
         if (siteFM.type != Dynamic)
         {
-          //Live moss maps to the live herbaceous fuel:
-
-          //this->r_burn2ag_cn = siteBU.combustion_ij[liveMossIndex] / siteBU.w_o_ij_Initial[liveMossIndex];
-          //Do we also need to check LiveHerbaceousPresent()?
           if (siteBU.w_o_ij_Initial[liveHerbIndex] > 0.0)
           {
             this->r_burn2ag_cn = siteBU.combustion_ij[liveHerbIndex] / siteBU.w_o_ij_Initial[liveHerbIndex];
@@ -980,37 +996,68 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
         else//Dynamic fuel moisture:
         {
           //Dynamic live moss maps to the live herbaceous fuel and cured herbaceous fuel:
-          
-          //this->r_burn2ag_cn = (siteBU.combustion_ij[deadMossIndex] +
-          //                      siteBU.combustion_ij[liveHerbIndex]) /
-          //                     (siteBU.w_o_ij_Initial[deadMossIndex] +
-          //                      siteBU.w_o_ij_Initial[liveHerbIndex]);
-
           double totalInitialLoading = siteBU.w_o_ij_Initial[deadHerbIndex] + siteBU.w_o_ij_Initial[liveHerbIndex];
           if (totalInitialLoading > 0.0)
           {
-            this->r_burn2ag_cn = (siteBU.combustion_ij[deadHerbIndex] +
-                                  siteBU.combustion_ij[liveHerbIndex]) / totalInitialLoading;
+              this->r_burn2ag_cn = (siteBU.combustion_ij[deadHerbIndex] +
+                                    siteBU.combustion_ij[liveHerbIndex]) / totalInitialLoading;
           }
         }
       }
+      else//Mosses:
+      {
+        //Moss: Maps to either one (fine) dead fuel OR one live (herbaceous) fuel OR a mix of both:
+        if (md.fire_moss_as_dead_fuel)//Treat moss as a dead fuel:
+        {
+          int deadMossIndex = 0;//Assumes moss is in the finest dead fuel class.
+          if (siteBU.w_o_ij_Initial[deadMossIndex] > 0.0)
+          {
+            this->r_burn2ag_cn = siteBU.combustion_ij[deadMossIndex] / siteBU.w_o_ij_Initial[deadMossIndex];
+          }
+        }
+        else//Treat moss as a live fuel:
+        {
+          //Considered using aliases:
+          //int deadMossIndex = deadHerbIndex;
+          //int liveMossIndex = liveHerbIndex;
+          if (siteFM.type != Dynamic)
+          {
+            //Live moss maps to the live herbaceous fuel:
+            //Do we also need to check LiveHerbaceousPresent()?
+            if (siteBU.w_o_ij_Initial[liveHerbIndex] > 0.0)
+            {
+              this->r_burn2ag_cn = siteBU.combustion_ij[liveHerbIndex] / siteBU.w_o_ij_Initial[liveHerbIndex];
+            }
+          }
+          else//Dynamic fuel moisture:
+          {
+            //Dynamic live moss maps to the live herbaceous fuel and cured herbaceous fuel:
+            double totalInitialLoading = siteBU.w_o_ij_Initial[deadHerbIndex] + siteBU.w_o_ij_Initial[liveHerbIndex];
+            if (totalInitialLoading > 0.0)
+            {
+              this->r_burn2ag_cn = (siteBU.combustion_ij[deadHerbIndex] +
+                                    siteBU.combustion_ij[liveHerbIndex]) / totalInitialLoading;
+            }
+          }
+        }
 
-      this->r_dead2ag_cn = 0;//Currently there is not mortality besides combustion.
+        this->r_dead2ag_cn = 0;//Currently there is not mortality besides combustion.
+      }
     }
-  }
-  else//Woody PFTs:
-  {
-    if (IsShrub(cd->cmttype, pftIndex))
+    else//Woody PFTs:
     {
-      //Shrubs map to the live woody fuel:
-      this->r_burn2ag_cn = siteBU.combustion_ij[liveWoodyIndex] / siteBU.w_o_ij_Initial[liveWoodyIndex];
-      this->r_dead2ag_cn = 0;//Currently there is not mortality besides combustion.
-    }
-    else//Trees:
-    {
-      //Ignore trees for now.  Their burning will be added with crown fire:
-      this->r_burn2ag_cn = 0;
-      this->r_dead2ag_cn = 0;
+      if (IsShrub(cd->cmttype, pftIndex))
+      {
+        //Shrubs map to the live woody fuel:
+        this->r_burn2ag_cn = siteBU.combustion_ij[liveWoodyIndex] / siteBU.w_o_ij_Initial[liveWoodyIndex];
+        this->r_dead2ag_cn = 0;//Currently there is not mortality besides combustion.
+      }
+      else//Trees:
+      {
+        //Ignore trees for now.  Their burning will be added with crown fire:
+        this->r_burn2ag_cn = 0;
+        this->r_dead2ag_cn = 0;
+      }
     }
   }
 
@@ -1029,52 +1076,59 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
  */
 double WildFire::GetLitterBurntFraction() const
 {
+  BOOST_LOG_SEV(glg, debug) << "Entering WildFire::GetLitterBurntFraction()...";
+
   double litterBurntFraction = 0.0;//Return value.
-  double litterInitial = 0.0;//The total dry litter mass before fire.
-  double litterCombusted = 0.0;//The total dry litter mass after fire.
 
-  int numDeadClasses = siteFM.NumDeadClasses();
-  for (int i = 0; i < numDeadClasses; i++)
+  //If for any reason fire didn't actually burn skip the calculation:
+  if (siteBU.burnoutTime > 0.0)
   {
-    //Skip any cured dynamic fuels:
-    //We don't need to check if this is a dynamic fuel model because DeadHerbaceousIndex() will
-    //return -1 if not.
-    if (i != siteFM.DeadHerbaceousIndex())
-    {
-      //If live moss has been combined with the fine dead fuel we need to separate it out:
-      if ((i == 0) && md.fire_moss_as_dead_fuel)
-      {
-        double fineBurntFraction = 0.0;
-        if (siteBU.w_o_ij_Initial[i] > 0.0)//Avoid divide by zero.
-        {
-          fineBurntFraction = siteBU.combustion_ij[i] / siteBU.w_o_ij_Initial[i];
-        }
+    double litterInitial = 0.0;//The total dry litter mass before fire.
+    double litterCombusted = 0.0;//The total dry litter mass after fire.
 
-        //All fuel in a size class burns at the same rate:
-        double fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetNonVascularBiomass();
-        litterInitial += fineLitterInitial;
-        litterCombusted += fineLitterInitial * fineBurntFraction;//Just the burnt fine litter.
-      }
-      else
+    int numDeadClasses = siteFM.NumDeadClasses();
+    for (int i = 0; i < numDeadClasses; i++)
+    {
+      //Skip any cured dynamic fuels:
+      //We don't need to check if this is a dynamic fuel model because DeadHerbaceousIndex() will
+      //return -1 if not.
+      if (i != siteFM.DeadHerbaceousIndex())
       {
-        litterInitial += siteBU.w_o_ij_Initial[i];
-        litterCombusted += siteBU.combustion_ij[i];
+        //If live moss has been combined with the fine dead fuel we need to separate it out:
+        if ((i == 0) && md.fire_moss_as_dead_fuel)
+        {
+          double fineBurntFraction = 0.0;
+          if (siteBU.w_o_ij_Initial[i] > 0.0)//Avoid divide by zero.
+          {
+            fineBurntFraction = siteBU.combustion_ij[i] / siteBU.w_o_ij_Initial[i];
+          }
+
+          //All fuel in a size class burns at the same rate:
+          double fineLitterInitial = siteBU.w_o_ij_Initial[i] - GetNonVascularBiomass();
+          litterInitial += fineLitterInitial;
+          litterCombusted += fineLitterInitial * fineBurntFraction;//Just the burnt fine litter.
+        }
+        else
+        {
+          litterInitial += siteBU.w_o_ij_Initial[i];
+          litterCombusted += siteBU.combustion_ij[i];
+        }
       }
+    }
+
+    //We could check that litterInitial matches up with what we get from GetLitterRawC() here.
+    
+    if (litterInitial > 0.0)//Avoid divide by zero.
+    {
+      litterBurntFraction = litterCombusted / litterInitial;
+    }
+    
+    if (!ValidProportion(litterBurntFraction))
+    {
+      BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;
     }
   }
 
-  //We could check that litterInitial matches up with what we get from GetLitterRawC() here.
-  
-  if (litterInitial > 0.0)//Avoid divide by zero.
-  {
-    litterBurntFraction = litterCombusted / litterInitial;
-  }
-  
-  if (!ValidProportion(litterBurntFraction))
-  {
-    BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;
-  }
-  
   return litterBurntFraction;
 }
 
@@ -1095,10 +1149,10 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
   BOOST_LOG_SEV(glg, debug) << "Entering SimulateGroundFire()...";
 
   GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
-  double burnDepth = DominoGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
+  double burnDepth = DownwardGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
                                       md.fire_gf_surface_pd, md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
 
-  BOOST_LOG_SEV(glg, debug) << "Profile after DominoGroundFire():";
+  BOOST_LOG_SEV(glg, debug) << "Profile after DownwardGroundFire():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   return burnDepth;
@@ -1225,7 +1279,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     thisLayer = thisLayer->nextl;
   }
 
-  BOOST_LOG_SEV(glg, debug) << "Intial translated profile:";
+  BOOST_LOG_SEV(glg, debug) << "Initial translated profile:";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this:

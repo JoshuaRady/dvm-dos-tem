@@ -153,6 +153,10 @@
         //The fire settings that follow only pertain if this switch is set to true.
         "fire_process_wildfire": false,
 
+        //The maximum snow depth (cm) where a fire can start, i.e. the extinguishment limit.  Set to
+        //a negative value to ignore snow presence:
+        //FW_NOTE: This could be made CMT specific like vsmburn.
+        "fire_max_snow": 1.0,
         //Calculate dynamic fuel moisture for dynamic fuel models:
         "fire_dynamic_fuel": false,
         //Should moss be treated as a dead fuel (true) or live fuel (false):
