@@ -911,7 +911,7 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
 
   //Call Burnup:
   //The simulation calculates the both consumption of fuels and the time evolution of the fire
-  //behavior.  The output currently only contains the former.  Fire history wil be added.
+  //behavior.  The output currently only contains fire history limited to fire intensity.
   BurnupSim output = BurnupFM(fm, duffLoading, duffMoisture, tempAir, windSpeed, fireIntensity,
                               t_r, dT, nTimeSteps);
 
