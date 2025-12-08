@@ -172,7 +172,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     BurnupSim burnupOutput = SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
     BOOST_LOG_SEV(glg, debug) << "Dump the combustion calculations:";
     BOOST_LOG_SEV(glg, debug) << burnupOutput;
-    OOST_LOG_SEV(glg, debug) << burnupOutput.history;
+    BOOST_LOG_SEV(glg, debug) << burnupOutput.history;
 
     siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
     siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
