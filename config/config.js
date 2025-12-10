@@ -26,6 +26,7 @@
     "fire_fosberg_c_file": "external/Fireweed/Input_Files/NWGC_Fosberg_Table_C.txt",
     "fire_fosberg_d_file": "external/Fireweed/Input_Files/NWGC_Fosberg_Table_D.txt",
     "output_dir":         "output/",
+    "restart_from":       "", // default
     "output_spec_file":   "config/output_spec.csv",
     "output_monthly":     1, //JSON specific
     "output_nc_eq":       0,
@@ -64,7 +65,6 @@
     // running instances of dvmdostem from overwriting eachothers json files.
   },
   "stage_settings": {
-    "restart_mode": "restart",   // other options??
     "inter_stage_pause": false,
     //Per-stage module settings
     "pr": {
