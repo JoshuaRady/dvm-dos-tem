@@ -271,8 +271,10 @@ struct firepar_bgc {
 
   double r_retain_c;     //ratio of fire emitted C return
   double r_retain_n;     //ratio of fire emitted N return
+
+  int cmt2fm;//The fuel model to use for the current CMT. FW_MOD
   
-  firepar_bgc(): vsmburn(UIN_D), r_retain_c(UIN_D), r_retain_n(UIN_D) {
+  firepar_bgc(): vsmburn(UIN_D), r_retain_c(UIN_D), r_retain_n(UIN_D), cmt2fm(UIN_I) {
     for (int i = 0; i < NUM_FSEVR; ++i) {
       foslburn[i] = UIN_D;
     }

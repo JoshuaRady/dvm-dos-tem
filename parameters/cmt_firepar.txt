@@ -21,6 +21,7 @@
 0.50         //vsmburn:// // volume soil moisture to define wet soil for prevent organic layer burning//None
 0.10         //r_retain_c:// // ratio of burning residue C (retained into soil) //None
 0.10         //r_retain_n:// // ratio of burning residue N (retained into soil)//None
+161          //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT01 // Boreal Black Spruce // Calibrated for Murphy Dome.
 //EverTree  DecShrub    DecTree      Moss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -42,6 +43,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT02 // Boreal White Spruce Forest // Calibrated with Bonanza Creek climate.
 //EverTree  DecShrub    DecTree      Moss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -63,6 +65,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //  
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //  
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT03 // Boreal Deciduous Forest // Calibrated for Murphy Dome.
 //EverTree  DecShrub    DecTree      Moss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -84,6 +87,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT04 // Shrub Tundra // Calibrated for Toolik area.
 //Salix      Betula      Decid       EGreen       Sedges       Forbs        Grasses      Lichens      Feather      PFT9      // name: units // description // comment // refs
@@ -105,6 +109,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //    
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //    
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //    
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // Max of 10 PFTs over 1 soil column
 // PFT names should be CamelCase and must not have a period in them!
@@ -128,6 +133,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //    
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //    
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //    
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT06 // Wet Sedge Tundra // Calibrated for Toolik area.
 //Decid      Sedges      Grasses     Forbs        Lichens      Feather      Sphag        PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -149,6 +155,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //   
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //   
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //   
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT07 // Heath Tundra
 //Decid      EGreen      Forbs       Lichens      Grasses      Moss         PFT6         PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -170,6 +177,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //   
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //   
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //   
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT12 // Lowland Boreal Wet Shrubland
 //DecShrub   EvrShrub     DecTree      EvrTree      Forbs        Gram      Feather        Lichen    Equisetum        PFT9      // name: units // description // comment // refs
@@ -191,6 +199,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT20 // EML Shrub Tundra
 //Betnan     Carex       Ericoid      Feather     Lichen       OthMoss      Rubcha       Misc1        Misc2        Misc3     // name: units // description // comment // refs
@@ -212,6 +221,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //   
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //   
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //   
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT21 // EML Tussock Tundra // (updated-checked 8/5/22 joy)
 //Decidsh   Egreensh     Sedge      Forbs       Lichen        OMoss        Sphag         PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -233,6 +243,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT31 // Boreal Bog
 //DecShrub   EvrShrub     DecTree      EvrTree      Forbs        Gram         Feather      Lichen       Equisetum    Misc.     // name: units // description // comment // refs
@@ -254,6 +265,7 @@
 0.50    //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //
 0.10    //r_retain_c://  // ratio of burning residue C (retained into soil) //
 0.10    //r_retain_n://  // ratio of burning residue N (retained into soil) //
+161     //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT44 // Shrub Tundra Kougarok
 //Salix      Betula      Decid       EGreen       Sedges       Forbs        Grasses      Lichens      Feather      PFT9      // name: units // description // comment // refs
@@ -275,6 +287,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //   
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //   
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //   
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT50 // Shrub Tundra TVC // ##Values from Trail Valley###
 //  DecidShrub  EgreenShrub        Forbs        Sedge         Moss       Lichen         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -296,6 +309,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT51 // Tussock Tundra TVC // ##Values from Trail Valley###
 //Sedges     Sphagnum    Lichen       PFT3         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // 
@@ -317,6 +331,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT52 // Heath-lichen // ##Values from Trail Valley###
 // Lichen-plus         PFT1         PFT2         PFT3         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -338,6 +353,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT55 // Arctic Fen // Daring Creek
 // Sphagnum  EgreenShrub  Sedges         PFT3         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -359,6 +375,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT56 // Mixed Tundra // Darling Lake
 // Lichen  Sphag    EgreenShrub   DecidShrub        Sedge         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -380,6 +397,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT57 // Heath Tundra Daring Lake
 //      Lichen        Omoss  EgreenShrub    Graminoid   DecidShrub         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -401,6 +419,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT60 // PEAT PLATEAU // 
 //    EverTree    EricShrub       Lichen         Moss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -422,6 +441,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT65 // Mature Aspen // BOREAS
 //   DecidTree   DecidShrub         PFT2         PFT3         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -443,6 +463,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT66 // Mature Jack Pine // BOREAS
 // EGreenTree   DecidShrub    Lichen  Feathermoss      PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -464,6 +485,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT67 // Mixed Forest-Groundhog River
 //  DecidTrees  EGreenTree       Mosses         Forb         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -485,6 +507,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT69 // Black Spruce BOREAS// 
 // EGreenTree  DecidTree    Shrub     Sphagnum  FeatherMoss     Lichen        PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -506,6 +529,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT70 // Dwarf Shrub-Chokurdakh // 
 //  DecidShrub  EgreenShrub   Graminoids     Omoss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -527,6 +551,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT71 // Larch Forest - Yakutsk Spasskaya Pad // / 
 //       Larch    DecidTree       Shrubs   Graminoids         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -548,6 +573,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT73 // Tussock Tundra-Cherskii // 
 //    Sedge        Shrub         Moss         PFT3         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -569,6 +595,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================
 // CMT74 // Scots Pine-Zotino // 
 //  EgreenTree       Lichen   DwarfShrub         Moss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -590,4 +617,5 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
+161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161!//
 //===========================================================

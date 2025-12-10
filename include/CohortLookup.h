@@ -258,6 +258,8 @@ public:
   double r_retain_c; // 0.1 calculated from Harden et al., 2003 (ATHarden42003a)
   double r_retain_n; // 0.3 calculated from Harden et al., 2003 (ATHarden42003a)
 
+  int cmt2fm;//The fuel model to use for the current CMT. FW_MOD
+
 private:
 
   void assignVegDimension(string & dir);
