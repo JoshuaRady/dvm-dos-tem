@@ -905,10 +905,9 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
   double t_r = ResidenceTime(raData.cSAV, Metric) * 60.0;//Convert minutes -> seconds.  Or fm.cSAV
 
   //Simulation settings:
-  //Start with example settings from FOFEM examples.  We can experiment with these.  Leave other at
-  //their default values.
-  double dT = 15.0;//FW_PARAM?????
-  int nTimeSteps = 3000;//FW_PARAM?????
+  //We can experiment with these.  Leave other at their default values.
+  const double dT = 1.0;//1 second produces simulations with consistant burnout times. FW_PARAM?????
+  const int nTimeSteps = 45000;//This is 12.5 hours which may be excessive. FW_PARAM?????
 
   //Call Burnup:
   //The simulation calculates the both consumption of fuels and the time evolution of the fire
