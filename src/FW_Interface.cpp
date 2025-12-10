@@ -205,28 +205,31 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
 
 /** Determine the fuel model (number) matching a given community type:
  *
- * Each CMT has [will have] a predetermined fuel model assigned to it via a parameter file.
- * It needs to be determined if this will be the CMT parmameter file or an additional lookup table.
+ * Each CMT has a predetermined fuel model assigned to it via the CMT fire parameter file.
  *
- * @param[in] cmt The number of the CMT for this location.
+ * @param[in] cmt The number of the CMT for this location. [Currently ignored!]
  *
- * @returns The fuel model number (not the index) matching the CMT input.	STUB!!!!!
+ * @returns The fuel model number (not the index) matching the current CMT.
  *
  * @note Used in the process wildfire model only.
+ * 
+ * @note The CMT to fuel model crosswalk is specified in the CMT fire parameter file.  Only the
+ * values for the current site's CMT are loaded.  Therefore no lookup has to be done here and the
+ * CMT, which is implied, could be omitted.  However, this may change in the future with a CMT
+ * mapping to a differnt fuel model depening on other site factors like tree cover or drainage type.
+ * A separate lookup table might be needed in that case.  We leave the CMT paramter for now.
+ * The crosswalk is a work in progress with a placeholder value until fuel models are finalized.
+ * We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
  */
 int WildFire::GetMatchingFuelModel(const int cmt) const
 {
-  //Get the number of the fuel model from the crosswalk in the parameter files.
-  //This crosswalk needs to be made!!!!!
   int fuelModelNumber;
-  
-  //Stub: Use a temporary value or a value supplied by the configuration file:
-  if (md.fire_temp_fm == -1)
+
+  if (md.fire_temp_fm == -1)//Use the value supplied by the CMT parameter file:
   {
-    fuelModelNumber = 161;//Temporarily hardwired.
-    //We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
+    fuelModelNumber = firpar.cmt2fm;
   }
-  else
+  else//If provided override the fuel model with the value in the configuration file:
   {
     fuelModelNumber = md.fire_temp_fm;
     //We don't currently have a way to check that a fuel model number is valid.
@@ -234,7 +237,7 @@ int WildFire::GetMatchingFuelModel(const int cmt) const
   //There is a bare land fuel model by number but it doesn't have parameters.  Do we need to provide
   //a bare land parameter set or can we just signal the calling code that it should skip fire
   //calculations?
-  
+
   //If no match either throw an error or warn and return a default fuel model.
 
   return fuelModelNumber;
