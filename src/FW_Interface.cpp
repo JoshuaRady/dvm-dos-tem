@@ -40,7 +40,6 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
 //This could vary by PFT but many models use a single value.
 const double gPerKg = 1000;//Move to FireweedUnits.h?
 
-
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
  *
  * This is the main entry point for the process based wildfire model.
@@ -1183,6 +1182,11 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
  */
 GFProfile WildFire::GroundFireGetSoilProfile() const
 {
+  //The temperature of ignition of organic soil (C):
+  //Based on literature review by JMR 12/10/2025.
+  //This may be broken down by fibric and humic profile in the future if data becomes availalble.
+  const double t_ig_organic = 250.0;//FW_PARAM?????
+
   BOOST_LOG_SEV(glg, debug) << "Entering GroundFireGetSoilProfile()...";
 
   //Only consider the organic horizon(s):
@@ -1205,12 +1209,12 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //interpolated in the ground fire calculation.
     if (thisLayer->isFibric)
     {
-      gfProfile.t_ig[i] = 200.0;//FW_PARAM?????
+      gfProfile.t_ig[i] = t_ig_organic;
       gfProfile.type[i] = "Fibric";
     }
     else if (thisLayer->isHumic)
     {
-      gfProfile.t_ig[i] = 200.0;//FW_PARAM?????
+      gfProfile.t_ig[i] = t_ig_organic;
       gfProfile.type[i] = "Humic";
     }
     else//Same as checking !thisLayer->isOrganic.
