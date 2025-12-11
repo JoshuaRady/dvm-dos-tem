@@ -1224,12 +1224,12 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
     gfProfile.bulkDensity[i] = thisLayer->bulkden / gPerKg;//Dry soil mass per volume (g/m^3 -> kg/m^3).
 
-    //The organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is used
-    //for accounting but this will be somewhat less than the total organic, that which is lost on
-    //combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
-    //The following is a ratio value commonly used for soils but the value varies.  This is probably
-    //low for some histosols.  We can probably use our carbon pools to get more accurate.
-    const double SOCtoSOM_Ratio = 0.50;//Second initial value.  More research needed. FW_PARAM?????
+    //The soil organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is
+    //used for accounting but this will be less than the total soil organic mass, that which is lost
+    //on /combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
+    //A SOC to SOM ratio of 0.5 is commonly used for soils without much support.  We collected 
+    //literature data for histosols, specificlaly peats, and found support for this value.
+    const double SOCtoSOM_Ratio = 0.5;//FW_PARAM?????
     double totalSOC = 0.0;//g/m^2(/layer)
     if (i == 0)//We treat the rawc compartment of the top non-moss/fibric/shallow layer as litter:
     {
