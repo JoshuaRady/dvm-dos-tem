@@ -16,7 +16,7 @@
 
 #include "GFProfile.h"
 
-double SoilHeatOfCombustion(const double inorganicPct, const double organicHOC = 21.6);//FW_PARAM
+double SoilHeatOfCombustion(const double inorganicPct, const double organicHOC = 21.6);//WILDFIRE_PARAMETER
 double EffectiveSmolderingHOC(const double inorganicPct);
 double SoilHeatSink(const double moistureContentPct, const double t_int, const double t_ig, const double c_s);
 std::vector <double> HeatDistributionLinear(const int numLayers);

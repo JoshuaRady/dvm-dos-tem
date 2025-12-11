@@ -908,8 +908,8 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
 
   //Simulation settings:
   //We can experiment with these.  Leave other at their default values.
-  const double dT = 1.0;//1 second produces simulations with consistant burnout times. FW_PARAM?????
-  const int nTimeSteps = 45000;//This is 12.5 hours which may be excessive. FW_PARAM?????
+  const double dT = 1.0;//1 second produces simulations with consistant burnout times. WILDFIRE_PARAMETER
+  const int nTimeSteps = 45000;//This is 12.5 hours which may be excessive. WILDFIRE_PARAMETER
 
   //Call Burnup:
   //The simulation calculates the both consumption of fuels and the time evolution of the fire
@@ -1185,7 +1185,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   //The temperature of ignition of organic soil (C):
   //Based on literature review by JMR 12/10/2025.
   //This may be broken down by fibric and humic profile in the future if data becomes availalble.
-  const double t_ig_organic = 250.0;//FW_PARAM?????
+  const double t_ig_organic = 250.0;//WILDFIRE_PARAMETER
 
   BOOST_LOG_SEV(glg, debug) << "Entering GroundFireGetSoilProfile()...";
 
@@ -1229,7 +1229,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //on /combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
     //A SOC to SOM ratio of 0.5 is commonly used for soils without much support.  We collected 
     //literature data for histosols, specificlaly peats, and found support for this value.
-    const double SOCtoSOM_Ratio = 0.5;//FW_PARAM?????
+    const double SOCtoSOM_Ratio = 0.5;//WILDFIRE_PARAMETER
     double totalSOC = 0.0;//g/m^2(/layer)
     if (i == 0)//We treat the rawc compartment of the top non-moss/fibric/shallow layer as litter:
     {
