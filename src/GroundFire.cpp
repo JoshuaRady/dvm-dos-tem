@@ -48,9 +48,10 @@ const double c_i = 2.050;//The specific heat capacity of ice (kJ/kg/K at -10C).
  * 
  * @param[in] inorganicPct The percent organic content of the soil on the dry basis.
  * @param[in] organicHOC The (theoretical) heat of combustion for a purely organic soil (MJ/kg).
- * The peat moss in Frandsen 1987 has a heat of combustion of 20.6 MJ/kg at 3.7% inorganic.  We
- * can estimate that of 100% organic as:
- * 20.6 / (100 - 3.7) * 100 = 21.39148 MJ/kg
+ * We can estimate that from a soil's heat of combustion and it's inorganic / ash content as:
+ * soil HOC / (100% - soil % Ash) * 100% = organicHOC
+ * Our current mean value calculated from organic soils in the literature (duff & peat) is 21.6
+ * MJ/kg.
  *
  * @returns The soil heat of combustion (MJ/kg, ~net fuel heat content). (ΔH°c)
  */

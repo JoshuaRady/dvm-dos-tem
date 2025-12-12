@@ -113,6 +113,7 @@ void WildFire::initializeParameter() {
                                    //   organic layers
   firpar.r_retain_c = chtlu->r_retain_c;
   firpar.r_retain_n = chtlu->r_retain_n;
+  firpar.cmt2fm = chtlu->cmt2fm;//FW_MOD
 };
 
 void WildFire::initializeState() {

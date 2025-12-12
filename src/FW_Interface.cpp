@@ -40,7 +40,6 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
 //This could vary by PFT but many models use a single value.
 const double gPerKg = 1000;//Move to FireweedUnits.h?
 
-
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
  *
  * This is the main entry point for the process based wildfire model.
@@ -172,6 +171,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     BurnupSim burnupOutput = SimulateSurfaceCombustion(fm, raData, tempAir, windSpeed);
     BOOST_LOG_SEV(glg, debug) << "Dump the combustion calculations:";
     BOOST_LOG_SEV(glg, debug) << burnupOutput;
+    BOOST_LOG_SEV(glg, debug) << burnupOutput.history;
 
     siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
     siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
@@ -204,28 +204,31 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
 
 /** Determine the fuel model (number) matching a given community type:
  *
- * Each CMT has [will have] a predetermined fuel model assigned to it via a parameter file.
- * It needs to be determined if this will be the CMT parmameter file or an additional lookup table.
+ * Each CMT has a predetermined fuel model assigned to it via the CMT fire parameter file.
  *
- * @param[in] cmt The number of the CMT for this location.
+ * @param[in] cmt The number of the CMT for this location. [Currently ignored!]
  *
- * @returns The fuel model number (not the index) matching the CMT input.	STUB!!!!!
+ * @returns The fuel model number (not the index) matching the current CMT.
  *
  * @note Used in the process wildfire model only.
+ * 
+ * @note The CMT to fuel model crosswalk is specified in the CMT fire parameter file.  Only the
+ * values for the current site's CMT are loaded.  Therefore no lookup has to be done here and the
+ * CMT, which is implied, could be omitted.  However, this may change in the future with a CMT
+ * mapping to a differnt fuel model depening on other site factors like tree cover or drainage type.
+ * A separate lookup table might be needed in that case.  We leave the CMT paramter for now.
+ * The crosswalk is a work in progress with a placeholder value until fuel models are finalized.
+ * We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
  */
 int WildFire::GetMatchingFuelModel(const int cmt) const
 {
-  //Get the number of the fuel model from the crosswalk in the parameter files.
-  //This crosswalk needs to be made!!!!!
   int fuelModelNumber;
-  
-  //Stub: Use a temporary value or a value supplied by the configuration file:
-  if (md.fire_temp_fm == -1)
+
+  if (md.fire_temp_fm == -1)//Use the value supplied by the CMT parameter file:
   {
-    fuelModelNumber = 161;//Temporarily hardwired.
-    //We use TU1 = 161 since it is good for testing.  All fuel types are occupied and it is dynamic.
+    fuelModelNumber = firpar.cmt2fm;
   }
-  else
+  else//If provided override the fuel model with the value in the configuration file:
   {
     fuelModelNumber = md.fire_temp_fm;
     //We don't currently have a way to check that a fuel model number is valid.
@@ -233,7 +236,7 @@ int WildFire::GetMatchingFuelModel(const int cmt) const
   //There is a bare land fuel model by number but it doesn't have parameters.  Do we need to provide
   //a bare land parameter set or can we just signal the calling code that it should skip fire
   //calculations?
-  
+
   //If no match either throw an error or warn and return a default fuel model.
 
   return fuelModelNumber;
@@ -904,14 +907,13 @@ BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raDat
   double t_r = ResidenceTime(raData.cSAV, Metric) * 60.0;//Convert minutes -> seconds.  Or fm.cSAV
 
   //Simulation settings:
-  //Start with example settings from FOFEM examples.  We can experiment with these.  Leave other at
-  //their default values.
-  double dT = 15.0;//FW_PARAM?????
-  int nTimeSteps = 3000;//FW_PARAM?????
+  //We can experiment with these.  Leave other at their default values.
+  const double dT = 1.0;//1 second produces simulations with consistant burnout times. WILDFIRE_PARAMETER
+  const int nTimeSteps = 45000;//This is 12.5 hours which may be excessive. WILDFIRE_PARAMETER
 
   //Call Burnup:
   //The simulation calculates the both consumption of fuels and the time evolution of the fire
-  //behavior.  The output currently only contains the former.  Fire history wil be added.
+  //behavior.  The output currently only contains fire history limited to fire intensity.
   BurnupSim output = BurnupFM(fm, duffLoading, duffMoisture, tempAir, windSpeed, fireIntensity,
                               t_r, dT, nTimeSteps);
 
@@ -1180,6 +1182,11 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
  */
 GFProfile WildFire::GroundFireGetSoilProfile() const
 {
+  //The temperature of ignition of organic soil (C):
+  //Based on literature review by JMR 12/10/2025.
+  //This may be broken down by fibric and humic profile in the future if data becomes availalble.
+  const double t_ig_organic = 250.0;//WILDFIRE_PARAMETER
+
   BOOST_LOG_SEV(glg, debug) << "Entering GroundFireGetSoilProfile()...";
 
   //Only consider the organic horizon(s):
@@ -1202,12 +1209,12 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //interpolated in the ground fire calculation.
     if (thisLayer->isFibric)
     {
-      gfProfile.t_ig[i] = 200.0;//FW_PARAM?????
+      gfProfile.t_ig[i] = t_ig_organic;
       gfProfile.type[i] = "Fibric";
     }
     else if (thisLayer->isHumic)
     {
-      gfProfile.t_ig[i] = 200.0;//FW_PARAM?????
+      gfProfile.t_ig[i] = t_ig_organic;
       gfProfile.type[i] = "Humic";
     }
     else//Same as checking !thisLayer->isOrganic.
@@ -1217,12 +1224,12 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
     gfProfile.bulkDensity[i] = thisLayer->bulkden / gPerKg;//Dry soil mass per volume (g/m^3 -> kg/m^3).
 
-    //The organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is used
-    //for accounting but this will be somewhat less than the total organic, that which is lost on
-    //combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
-    //The following is a ratio value commonly used for soils but the value varies.  This is probably
-    //low for some histosols.  We can probably use our carbon pools to get more accurate.
-    const double SOCtoSOM_Ratio = 0.50;//Second initial value.  More research needed. FW_PARAM?????
+    //The soil organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is
+    //used for accounting but this will be less than the total soil organic mass, that which is lost
+    //on /combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
+    //A SOC to SOM ratio of 0.5 is commonly used for soils without much support.  We collected 
+    //literature data for histosols, specificlaly peats, and found support for this value.
+    const double SOCtoSOM_Ratio = 0.5;//WILDFIRE_PARAMETER
     double totalSOC = 0.0;//g/m^2(/layer)
     if (i == 0)//We treat the rawc compartment of the top non-moss/fibric/shallow layer as litter:
     {

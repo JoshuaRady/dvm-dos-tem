@@ -26,6 +26,7 @@
     "fire_fosberg_c_file": "external/Fireweed/Input_Files/NWGC_Fosberg_Table_C.txt",
     "fire_fosberg_d_file": "external/Fireweed/Input_Files/NWGC_Fosberg_Table_D.txt",
     "output_dir":         "output/",
+    "restart_from":       "", // default
     "output_spec_file":   "config/output_spec.csv",
     "output_monthly":     1, //JSON specific
     "output_nc_eq":       0,
@@ -64,7 +65,6 @@
     // running instances of dvmdostem from overwriting eachothers json files.
   },
   "stage_settings": {
-    "restart_mode": "restart",   // other options??
     "inter_stage_pause": false,
     //Per-stage module settings
     "pr": {
@@ -151,14 +151,14 @@
 
         //Turn on the process based wildfire model:
         //The fire settings that follow only pertain if this switch is set to true.
-        "fire_process_wildfire": false,
+        "fire_process_wildfire": true,
 
         //The maximum snow depth (cm) where a fire can start, i.e. the extinguishment limit.  Set to
         //a negative value to ignore snow presence:
         //FW_NOTE: This could be made CMT specific like vsmburn.
         "fire_max_snow": 1.0,
         //Calculate dynamic fuel moisture for dynamic fuel models:
-        "fire_dynamic_fuel": false,
+        "fire_dynamic_fuel": true,
         //Should moss be treated as a dead fuel (true) or live fuel (false):
         "fire_moss_as_dead_fuel": true,
         //Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false):
@@ -173,7 +173,7 @@
         //The maximum heat penetration depth for the smoldering heat transfer approximation (cm):
         "fire_gf_smolder_pd": 5.0,
         //The soil layer thickness for the simulation (cm):
-        "fire_gf_layer_thickness": 1.0,
+        "fire_gf_layer_thickness": 0.1,
         //A temporary parameter to force the fuel model choice:
         //Default value of -1 indicates to ignore the setting.
         "fire_temp_fm": -1

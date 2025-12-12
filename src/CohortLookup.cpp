@@ -490,7 +490,7 @@ void CohortLookup::assignFirePar(string &dircmt) {
 
   // get a list of data for the cmt number
   std::list<std::string> datalist = temutil::parse_parameter_file(
-      dircmt + "cmt_firepar.txt", temutil::cmtcode2num(this->cmtcode), 18
+      dircmt + "cmt_firepar.txt", temutil::cmtcode2num(this->cmtcode), 19
   );
 
   // pop each line off the front of the list
@@ -510,4 +510,5 @@ void CohortLookup::assignFirePar(string &dircmt) {
   temutil::pfll2data(datalist, vsmburn);
   temutil::pfll2data(datalist, r_retain_c);
   temutil::pfll2data(datalist, r_retain_n);
+  temutil::pfll2data(datalist, cmt2fm);//FW_MOD
 };
