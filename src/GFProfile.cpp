@@ -194,7 +194,9 @@ void GFProfile::Interpolate(const double newLayerThickness)
 			if (deltaZ != newLayerThickness)
 			{
 				//If not add layers to fill in between them:
-				int numNewLayers = (deltaZ / newLayerThickness) - 1.0;
+				//We use round() to avoid inappropriate rounding down when we cast to int. 
+				int numNewLayers = std::round((deltaZ / newLayerThickness)) - 1.0;
+				
 				//The original layers should have been nudged to regular positions and the distance
 				//between them should be some exact multiple of the new layer thickness.  Check to
 				//be sure:
