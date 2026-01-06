@@ -176,7 +176,11 @@
         "fire_gf_layer_thickness": 0.1,
         //A temporary parameter to force the fuel model choice:
         //Default value of -1 indicates to ignore the setting.
-        "fire_temp_fm": -1
+        "fire_temp_fm": -1,
+        //The following parameters to provide alternate meterology at the time of the fire
+        //(possibly temporary).
+        //Fire wind speed (m/min), -1 to ingnore:
+        "fire_windspeed": -1.0
       }
       // Future disturbances go here...
       //"insect": { ... },

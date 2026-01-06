@@ -665,7 +665,6 @@ void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
  * We need a sub-daily value ~ daily value?
  * The code has to do the following:
  * - Get the daily windspeed from the host model.
- *   Note: Windspeed is not yet available in DVM-DOS-TEM, but it should be soon.
  * - Calculate the windspeed at ~2m if the provided wind speed is at another height.
  * - Possibly: Estimate a sub-daily from a daily mean value.  The fire may occur on timescale where
  *   it occurs at a specific time of day.  In this case it would be good to estimate what the wind
@@ -680,25 +679,34 @@ void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
  * daily to sub-daily wind (see above).
  *
  * @note Used in the process wildfire model only.
+ * @note Windspeed is not yet available in DVM-DOS-TEM, but it should be soon.  This code returns
+ *       a stub value that may be overriden in the configuraiton file.
  */
 double WildFire::GetMidflameWindSpeed() const
 {
   double windSpeed;//Return value.
   
-  //Draft:
-  //If this is daily how do we know what day of the month it is?
-  //The wind speed will be provided as directional components in m/s at 2 meters.
-  //double u = edall.d_atms.EasternWindSpeed;//Zonal component U.		Confirm units!!!!!
-  //double v = edall.d_atms.NorthernWindSpeed;//Meridional component V.
-  //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));//Get the vector wind speed.
-  //windSpeed *= 60;//Convert from m/s to m/min.
-  //This a daily average value.  An afternoon value would probably be better.
+  if (md.fire_windspeed == -1)//Use the value supplied by the CMT parameter file:
+  {
+    //Draft:
+    //If this is daily how do we know what day of the month it is?
+    //The wind speed will be provided as directional components in m/s at 2 meters.
+    //double u = edall.d_atms.EasternWindSpeed;//Zonal component U.		Confirm units!!!!!
+    //double v = edall.d_atms.NorthernWindSpeed;//Meridional component V.
+    //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));//Get the vector wind speed.
+    //windSpeed *= 60;//Convert from m/s to m/min.
+    //This a daily average value.  An afternoon value would probably be better.
 
-  //Temporary stub, return an arbitrary value!!!!!:
-  //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
-  //6 * ftPerMi / 60 / ftPerM = 160.9344
-  windSpeed = 160.9344;
-  
+    //Temporary stub, return an arbitrary value!!!!!:
+    //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
+    //6 * ftPerMi / 60 / ftPerM = 160.9344
+    windSpeed = 160.9344;
+  }
+  else//If provided override with the windspeed from the configuration file:
+  {
+    windSpeed = md.fire_windspeed;
+  }
+
   return windSpeed;
 }
 

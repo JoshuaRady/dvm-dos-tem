@@ -154,6 +154,7 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   fire_gf_smolder_pd       = controldata["module_settings"]["dsb"]["fire"]["fire_gf_smolder_pd"].asDouble();
   fire_gf_layer_thickness  = controldata["module_settings"]["dsb"]["fire"]["fire_gf_layer_thickness"].asDouble();
   fire_temp_fm             = controldata["module_settings"]["dsb"]["fire"]["fire_temp_fm"].asInt();
+  fire_windspeed           = controldata["module_settings"]["dsb"]["fire"]["fire_windspeed"].asDouble();
   // FW_MOD_END.
 }
 
