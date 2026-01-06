@@ -161,6 +161,7 @@ private:
  double GetPFTBiomass(const int pftIndex) const;
  double GetNonVascularBiomass() const;
 
+ double GetAirTemperature() const;
  double GetMidflameWindSpeed() const;
  std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
 

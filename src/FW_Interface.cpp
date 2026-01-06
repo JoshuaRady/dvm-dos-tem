@@ -64,8 +64,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   double burnDepth = 0.0;//Return value.
 
   //Gather weather and environmental conditions:---------------------------
-  double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
-  //Can we use temperature from climate instead?????
+  double tempAir = GetAirTemperature().
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
   //We may also need it for duff moisture soon.
   
@@ -655,6 +654,21 @@ void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
   }
 }
 
+/** Get the air temperature at the time of fire.
+ *
+ * @returns The air temperature at the time of fire (C).
+ */
+double WildFire::GetAirTemperature() const
+{
+  double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
+  //Can we use temperature from climate instead?????
+  
+  //float tempAir = climate->tair[monthIndex]//Monthly
+  //float tempAir = climate->tair_d[dayOfYearIndex];
+  
+  return tempAir;
+}
+
 /** Get the wind speed at midflame height in m/min.
  *
  * The Rothermel Albini spread model takes midflame wind speed, an ill defined quantity representing
@@ -750,8 +764,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
   BOOST_LOG_SEV(glg, debug) << "Calculating dead fuel moisture:";//Temporary?????
 
   //Current air temperature:
-  //float tempAir = climate->tair[monthIndex]//Monthly
-  float tempAir = climate->tair_d[dayOfYearIndex];
+  double tempAir = GetAirTemperature();
 
   //Calculate current relative humidity:
 
