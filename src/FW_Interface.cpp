@@ -704,6 +704,7 @@ double WildFire::GetMidflameWindSpeed() const
   }
   else//If provided override with the windspeed from the configuration file:
   {
+    BOOST_LOG_SEV(glg, info) << "Wind speed obtained from config file.";
     windSpeed = md.fire_windspeed;
   }
 
