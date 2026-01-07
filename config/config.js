@@ -182,7 +182,9 @@
         //Fire wind speed (m/min), -1 to ingnore:
         "fire_windspeed": -1.0,
         //Air temperature at the time of the fire (C), -300 to ignore:
-        "fire_tempair": -300.0
+        "fire_tempair": -300.0,
+        //percent relative humidity at the time of fire (%), -1 to ingnore:
+        "fire_rh_pct": -1.0
       }
       // Future disturbances go here...
       //"insect": { ... },

@@ -744,28 +744,40 @@ double WildFire::GetMidflameWindSpeed() const
 
 /** Get the relative humidity at the time of fire.
  *
- * @returns The air temperature at the time of fire (C).
+ * @param dayOfYearIndex The day of the year to get the humidity for.
+ *
+ * @returns The percent relative humidity at the time of fire (%).
  */
 double WildFire::GetRelativeHumidity(const int dayOfYearIndex) const
 {
-  //Atmospheric pressure is needed for the the Fireweed code method.
-  //Sea level barometric pressure will be available soon but is not currently.  Use this along with
-  //cd->cell_elevation() to get the pressure at this elevation.
-  //p_hPa = Z;
+  double rhPct;
 
-  //Partial pressure of water vapor:
-  //This is an input variable.  There has been some discussion recently about the units of this.
-  //The docs say it is in hPa but it is used in the code as if it is in Pa
-  //(see Climate.cpp calculate_vpd()).
-  float P_Pa = climate->vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
+  if (md.fire_rh_pct == -1.0)//Use the value from the input stream:
+  {
+    //Atmospheric pressure is needed for the the Fireweed code method.
+    //Sea level barometric pressure will be available soon but is not currently.  Use this along with
+    //cd->cell_elevation() to get the pressure at this elevation.
+    //p_hPa = Z;
 
-  //Saturated vapor pressure:
-  //double P_s_hPa = SaturationVaporPressureBuck(tempAir, p_hPa);//Fireweed method returns hPa.
-  //This is a computed climate variable.
-  float P_s_Pa = climate->svp_d[dayOfYearIndex];//From the code this must be in Pa.
+    //Partial pressure of water vapor:
+    //This is an input variable.  There has been some discussion recently about the units of this.
+    //The docs say it is in hPa but it is used in the code as if it is in Pa
+    //(see Climate.cpp calculate_vpd()).
+    float P_Pa = climate->vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
 
-  //Use the pressures to calculate relative humidity:
-  double rhPct = RHfromVP(P_Pa, P_s_Pa);
+    //Saturated vapor pressure:
+    //double P_s_hPa = SaturationVaporPressureBuck(tempAir, p_hPa);//Fireweed method returns hPa.
+    //This is a computed climate variable.
+    float P_s_Pa = climate->svp_d[dayOfYearIndex];//From the code this must be in Pa.
+
+    //Use the pressures to calculate relative humidity:
+    rhPct = RHfromVP(P_Pa, P_s_Pa);
+  }
+  else//If provided override with the windspeed from the configuration file:
+  {
+    BOOST_LOG_SEV(glg, info) << "Relative humidity obtained from config file.";
+    rhPct = md.fire_rh_pct;
+  }
 
   return rhPct;
 }
