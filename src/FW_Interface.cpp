@@ -742,6 +742,34 @@ double WildFire::GetMidflameWindSpeed() const
   return windSpeed;
 }
 
+/** Get the relative humidity at the time of fire.
+ *
+ * @returns The air temperature at the time of fire (C).
+ */
+double WildFire::GetRelativeHumidity(const int dayOfYearIndex) const
+{
+  //Atmospheric pressure is needed for the the Fireweed code method.
+  //Sea level barometric pressure will be available soon but is not currently.  Use this along with
+  //cd->cell_elevation() to get the pressure at this elevation.
+  //p_hPa = Z;
+
+  //Partial pressure of water vapor:
+  //This is an input variable.  There has been some discussion recently about the units of this.
+  //The docs say it is in hPa but it is used in the code as if it is in Pa
+  //(see Climate.cpp calculate_vpd()).
+  float P_Pa = climate->vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
+
+  //Saturated vapor pressure:
+  //double P_s_hPa = SaturationVaporPressureBuck(tempAir, p_hPa);//Fireweed method returns hPa.
+  //This is a computed climate variable.
+  float P_s_Pa = climate->svp_d[dayOfYearIndex];//From the code this must be in Pa.
+
+  //Use the pressures to calculate relative humidity:
+  double rhPct = RHfromVP(P_Pa, P_s_Pa);
+
+  return rhPct;
+}
+
 /** Calculate fuel moisture based on recent weather:
  *
  * An alternative to calculating this at the time of fire would be to make fuel moisture a
@@ -776,7 +804,6 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
   //it currently returns 366 days.
   int dayOfYearIndex = temutil::day_of_year(monthIndex, dayOfMonthIndex);
 
-
   //Dead fuel moisture:---------------------------
   BOOST_LOG_SEV(glg, debug) << "Calculating dead fuel moisture:";//Temporary?????
 
@@ -784,25 +811,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
   double tempAir = GetAirTemperature();
 
   //Calculate current relative humidity:
-
-  //Atmospheric pressure is needed for the the Fireweed code method.
-  //Sea level barometric pressure will be available soon but is not currently.  Use this along with
-  //cd->cell_elevation() to get the pressure at this elevation.
-  //p_hPa = Z;
-
-  //Partial pressure of water vapor:
-  //This is an input variable.  There has been some discussion recently about the units of this.
-  //The docs say it is in hPa but it is used in the code as if it is in Pa
-  //(see Climate.cpp calculate_vpd()).
-  float P_Pa = climate->vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
-
-  //Saturated vapor pressure:
-  //double P_s_hPa = SaturationVaporPressureBuck(tempAir, p_hPa);//Fireweed method returns hPa.
-  //This is a computed climate variable.
-  float P_s_Pa = climate->svp_d[dayOfYearIndex];//From the code this must be in Pa.
-
-  //Use the pressures to calculate relative humidity:
-  double rhPct = RHfromVP(P_Pa, P_s_Pa);
+  double rhPct = GetRelativeHumidity(dayOfYearIndex);
 
   //We assume that fires occur in the mid-afternoon.  The exact hour might need to be shared across
   //the entire fire code.  The Fosberg model was originally devise with afternoon (~14:30) values in
