@@ -64,7 +64,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   double burnDepth = 0.0;//Return value.
 
   //Gather weather and environmental conditions:---------------------------
-  double tempAir = GetAirTemperature().
+  double tempAir = GetAirTemperature();
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
   //We may also need it for duff moisture soon.
   
@@ -656,16 +656,33 @@ void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
 
 /** Get the air temperature at the time of fire.
  *
+ * For calculating fire behavior the temperature at the time of fire is most important.  We don't
+ * know when in the fire occurs but we would like to calcualte midday to afternoon activity.  This
+ * function returns the daily temperature, which is itself interpoated from monthly values.  In the
+ * future we may use the min, mean, and max daily values to calculate a better approximation of the
+ * temperature at a time of day.  To provide a bit more control for now allow the temperature to be
+ * overiddin with a value in the configuration file.  This is limited as it will be applied to all
+ * fires across all dates and locations.
+ *
  * @returns The air temperature at the time of fire (C).
  */
 double WildFire::GetAirTemperature() const
 {
-  double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
-  //Can we use temperature from climate instead?????
-  
-  //float tempAir = climate->tair[monthIndex]//Monthly
-  //float tempAir = climate->tair_d[dayOfYearIndex];
-  
+  double tempAir;
+
+  if (md.fire_tempair == -300.0)//Use the value from the input stream:
+  {
+    tempAir = edall->d_atms.ta;//Daily air temp (at surface).
+    //Would it be better to get the temperature from climate instead?
+    //float tempAir = climate->tair[monthIndex]//Monthly
+    //float tempAir = climate->tair_d[dayOfYearIndex];
+  }
+  else//If provided override with the temperature from the configuration file:
+  {
+    BOOST_LOG_SEV(glg, info) << "Air temperature obtained from config file.";
+    tempAir = md.fire_tempair;
+  }
+
   return tempAir;
 }
 
@@ -700,7 +717,7 @@ double WildFire::GetMidflameWindSpeed() const
 {
   double windSpeed;//Return value.
   
-  if (md.fire_windspeed == -1)//Use the value supplied by the CMT parameter file:
+  if (md.fire_windspeed == -1.0)//Use the value from the input stream:
   {
     //Draft:
     //If this is daily how do we know what day of the month it is?

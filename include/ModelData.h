@@ -140,7 +140,8 @@ public:
   double fire_gf_smolder_pd;//The maximum heat penetration depth for the smoldering heat transfer approximation (cm).
   double fire_gf_layer_thickness;//The soil layer thickness for the simulation (cm)
   int fire_temp_fm;//A temporaty parameter to force fuel model choice.
-  double fire_windspeed;//A value to override the windspeed at the time of the fire.
+  double fire_windspeed;//A value to override the windspeed at the time of the fire (m/min).
+  double fire_tempair;//A value to override the /Air temperature at the time of the fire (C).
   // FW_MOD_END.
 
   int cell_timelimit; //Time limit in seconds for cell computation time

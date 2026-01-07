@@ -180,7 +180,9 @@
         //The following parameters to provide alternate meterology at the time of the fire
         //(possibly temporary).
         //Fire wind speed (m/min), -1 to ingnore:
-        "fire_windspeed": -1.0
+        "fire_windspeed": -1.0,
+        //Air temperature at the time of the fire (C), -300 to ignore:
+        "fire_tempair": -300.0
       }
       // Future disturbances go here...
       //"insect": { ... },
