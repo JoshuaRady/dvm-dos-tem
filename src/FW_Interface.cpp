@@ -1364,8 +1364,10 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   //Convert to layers of equal thickness and interpolate the values in the original profile:
   gfProfile.Interpolate(md.fire_gf_layer_thickness);
 
-  BOOST_LOG_SEV(glg, debug) << "Profile after Interpolate():";
-  BOOST_LOG_SEV(glg, debug) << gfProfile;
+  //This is not necissary since the profile is printed after the ground fire calculation.  The
+  //interpolated profile infomation witl not have changed:
+  //BOOST_LOG_SEV(glg, debug) << "Profile after Interpolate():";
+  //BOOST_LOG_SEV(glg, debug) << gfProfile;
 
   return gfProfile;
 }
