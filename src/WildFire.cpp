@@ -322,7 +322,7 @@ void WildFire::burn(const int year, const int midx) {
   }
 
   //If the fire didn't ignite skip the post-burn calculations:
-  //FW_NOTE: I think this everything in the block can be skipped.  I think that if process WildFire
+  //FW_NOTE: I think that everything in the block can be skipped.  I think that if process WildFire
   //model doesn't predict a fire the following will all cancel out with most calculations coming out
   //to zero.  However, there is a lot going on here so I could be misisng something.  Testing will
   //be infomative.
