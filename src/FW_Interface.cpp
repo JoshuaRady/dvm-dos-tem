@@ -198,6 +198,8 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   fd->fire_soid.burnthick = burnDepth;
 
   BOOST_LOG_SEV(glg, info) << "Final Calculated Organic Burn Thickness: " << burnDepth;
+  //This message is only here to have an invariant final line for searching the log:
+  BOOST_LOG_SEV(glg, debug) << "Leaving WildFire::ProcessWildfire().";
   return burnDepth;
 }
 
