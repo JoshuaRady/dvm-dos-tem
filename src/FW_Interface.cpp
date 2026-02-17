@@ -1349,7 +1349,9 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   }
 
   BOOST_LOG_SEV(glg, debug) << "Initial translated profile:";
+  gfProfile.SetPrintMode(-1);//Print with full numeric resolution to enable reimport (posibly temporary).
   BOOST_LOG_SEV(glg, debug) << gfProfile;
+  gfProfile.SetPrintMode(0);//Restore.
 
   //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this:
   gfProfile.Resurface();
