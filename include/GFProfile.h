@@ -71,9 +71,11 @@ class GFProfile {
 	void Resurface();
 	bool Validate(const bool uniformLayers = false) const;
 	bool EqualThickness() const;
+	double GetThickness() const;
 	double GetBurnDepth() const;
 	std::ostream& Print(std::ostream& output) const;
 	std::ostream& PrintDelimited(std::ostream& output, const char delim = '\t') const;
+	void SetPrintMode(const int mode);
 	
 	private:
 	
@@ -83,6 +85,10 @@ class GFProfile {
 	//public.  To avoid problems the number of layers should only changed using the public
 	//functions.  Use NumLayers() to get the count.
 	int numLayers;
+
+	int printMode;//Store the printing style for stream operator output.
+
+	friend std::ostream& operator<<(std::ostream& output, const GFProfile& gfProfile);
 };
 
 //External functions:

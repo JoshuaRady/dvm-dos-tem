@@ -12,9 +12,11 @@
 #include <algorithm>//For max().
 #include <cmath>
 #include <iomanip>
+#include <limits>
+#include <numeric>//For accumulate().
 #include <string>
 
-#include "../include/GFProfile.h"//Note: Difference from source repo.
+#include "GFProfile.h"
 #include "FireweedMessaging.h"
 #include "FireweedStringUtils.h"
 #include "FireweedUtils.h"
@@ -29,6 +31,7 @@
 GFProfile::GFProfile()
 {
 	numLayers = 0;
+	printMode = 0;
 }
 
 /** Constructor
@@ -41,6 +44,7 @@ GFProfile::GFProfile()
 GFProfile::GFProfile(const int numLayers)
 {
 	this->numLayers = numLayers;
+	printMode = 0;
 
 	//Size the elements and set to invalid values:
 	thickness_cm.resize(numLayers, ProfileUndef);
@@ -355,6 +359,9 @@ void GFProfile::AddLayersToTop(const int numNewLayers)
  * @param[in] numNewLayers The number of layers to add.
  *
  * @returns Nothing.
+ *
+ * @note Bug!  This function assumes there is at least one exixting layer and will crash if called
+ * on an empty profile.
 */
 void GFProfile::AddLayersToBottom(const int numNewLayers)
 {
@@ -492,8 +499,10 @@ bool GFProfile::Validate(const bool uniformLayers) const
 		}
 		else
 		{
-			//if (layerDepth[i] != (layerDepth[i - 1] + thickness_cm[i - 1]))
-			if (! FloatCompare(layerDepth[i], (layerDepth[i - 1] + thickness_cm[i - 1])))
+			//if (! FloatCompare(layerDepth[i], (layerDepth[i - 1] + thickness_cm[i - 1])))
+			//Allow a tenth of a millimeter difference.  This is needed due to rounding issues
+			//when output from Print() is reimorted.
+			if (! FloatCompare(layerDepth[i], (layerDepth[i - 1] + thickness_cm[i - 1]), 0.02))
 			{
 				Warning("Layer dimensions not consistant for layer index " + std::to_string(i));
 				valid = false;
@@ -572,11 +581,20 @@ bool GFProfile::EqualThickness() const
 	return true;
 }
 
+/** Get the thickness of the whole soil profile.
+ *
+ * @returns The total thickness of the soil profile (cm).
+ */ 
+double GFProfile::GetThickness() const
+{
+	return accumulate(thickness_cm.begin(), thickness_cm.end(), 0);
+}
+
 /** Get the simulated depth of burn, AKA burn thickness.
  *
  * @returns Burn depth (cm).
  * 
- # @note We could add checking that the a simulation has been completed successfully.  If it hasn't
+ * @note We could add checking that the a simulation has been completed successfully.  If it hasn't
  * a nonsense value will be returned.
  */ 
 double GFProfile::GetBurnDepth() const
@@ -686,7 +704,7 @@ std::ostream& GFProfile::Print(std::ostream& output) const
 	output << std::endl;
 
 	//Values:
-	output << std::boolalpha;//Print as burnt as strings.
+	output << std::boolalpha;//Print burnt as strings.
 	for (int l = 0; l < numLayers; l++)
 	{
 		output << std::setw(layerWidth) << l + 1
@@ -733,10 +751,11 @@ std::ostream& GFProfile::PrintDelimited(std::ostream& output, const char delim) 
 	//Omit the soil mass?
 
 	//Print the layer data in rows:
-	output << std::boolalpha;//Print as burnt as strings.
+	output << std::boolalpha;//Print burnt as strings.
+	//Print so numbers are round-trip guaranteed and can be reingested faithfully:
+	output << std::setprecision(std::numeric_limits<double>::max_digits10);
 	for (int l = 0; l < numLayers; l++)
 	{
-		//Consider rounding values?????
 		output << (l + 1) << delim << thickness_cm[l] << delim << layerDepth[l] << delim <<
 		          tempC[l] << delim << t_ig[l] << delim << bulkDensity[l] << delim <<
 		          inorganicPct[l] << delim << moistureContentPct[l] << delim << c_s[l] << delim <<
@@ -744,8 +763,23 @@ std::ostream& GFProfile::PrintDelimited(std::ostream& output, const char delim) 
 		          std::endl;//Or newline?
 	}
 	output << std::noboolalpha;
+	output.copyfmt(std::ios(nullptr));//Restore the previous print settings.
 
 	return output;
+}
+
+/** Set the print mode to use with the stream operator. 
+ *
+ * @param mode Pass 0 or greater for a human readable table or a negative value for tab delimited.
+ *
+ * @returns Nothing.
+ *
+ * @note We may make sybolic constants for the value of mode.  In futre might use postive values to
+ * aler the number of digits?
+ */ 
+void GFProfile::SetPrintMode(const int mode)
+{
+	printMode = mode;
 }
 
 //External functions:-------------------------------------------------------------------------------
@@ -755,6 +789,13 @@ std::ostream& GFProfile::PrintDelimited(std::ostream& output, const char delim) 
  */
 std::ostream& operator<<(std::ostream& output, const GFProfile& gfProfile)
 {
-	gfProfile.Print(output);
+	if (gfProfile.printMode >= 0)
+	{
+		gfProfile.Print(output);
+	}
+	else
+	{
+		gfProfile.PrintDelimited(output);
+	}
 	return output;
 }
