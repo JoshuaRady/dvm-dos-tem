@@ -32,6 +32,8 @@
 #include "../include/GroundFire.h"
 
 #include <cmath>//For fmin().
+#include <iomanip>
+#include <limits>
 
 extern src::severity_logger< severity_level > glg;
 
@@ -1291,7 +1293,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
     //The soil organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is
     //used for accounting but this will be less than the total soil organic mass, that which is lost
-    //on /combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
+    //on combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
     //A SOC to SOM ratio of 0.5 is commonly used for soils without much support.  We collected 
     //literature data for histosols, specificlaly peats, and found support for this value.
     const double SOCtoSOM_Ratio = 0.5;//WILDFIRE_PARAMETER
