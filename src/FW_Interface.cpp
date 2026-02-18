@@ -1349,8 +1349,11 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   }
 
   BOOST_LOG_SEV(glg, debug) << "Initial translated profile:";
-  gfProfile.SetPrintMode(-1);//Print with full numeric resolution to enable reimport (posibly temporary).
-  BOOST_LOG_SEV(glg, debug) << gfProfile;
+  //BOOST_LOG_SEV(glg, debug) << gfProfile;
+  //Print with full numeric resolution to enable exact reimport.  We match the default description
+  //line and start the profile on a new line for automated log searches.
+  gfProfile.SetPrintMode(-1);
+  BOOST_LOG_SEV(glg, debug) << "Ground fire soil profile:" << '\n' << gfProfile;
   gfProfile.SetPrintMode(0);//Restore.
 
   //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this:
@@ -1367,11 +1370,8 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
   //Convert to layers of equal thickness and interpolate the values in the original profile:
   gfProfile.Interpolate(md.fire_gf_layer_thickness);
-
-  //This is not necissary since the profile is printed after the ground fire calculation.  The
-  //interpolated profile infomation witl not have changed:
-  //BOOST_LOG_SEV(glg, debug) << "Profile after Interpolate():";
-  //BOOST_LOG_SEV(glg, debug) << gfProfile;
+  //It is not necissary to print the profile here since it will be printed after the ground fire
+  //calculation.  The interpolated profile infomation witl not have changed.
 
   return gfProfile;
 }
