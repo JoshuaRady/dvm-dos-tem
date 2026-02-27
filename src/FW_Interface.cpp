@@ -831,6 +831,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
 
   //Calculate current relative humidity:
   double rhPct = GetRelativeHumidity(dayOfYearIndex);
+  BOOST_LOG_SEV(glg, debug) << "Relative humidity: " << rhPct;//How many digits do we need?
 
   //We assume that fires occur in the mid-afternoon.  The exact hour might need to be shared across
   //the entire fire code.  The Fosberg model was originally devise with afternoon (~14:30) values in
