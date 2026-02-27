@@ -831,7 +831,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
 
   //Calculate current relative humidity:
   double rhPct = GetRelativeHumidity(dayOfYearIndex);
-  BOOST_LOG_SEV(glg, debug) << "Relative humidity: " << rhPct;//How many digits do we need?
+  BOOST_LOG_SEV(glg, debug) << "Percent relative humidity: " << rhPct;//How many digits do we need?
 
   //We assume that fires occur in the mid-afternoon.  The exact hour might need to be shared across
   //the entire fire code.  The Fosberg model was originally devise with afternoon (~14:30) values in
@@ -839,10 +839,11 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
   int hourOfDay = 15;
 
   //The percent slope is stored in he CohortData object and also in the wildfire object:
+  //Note: Slope is also duplicated in the Wildfire object.
   double slopePct = cd->cell_slope;//Percent
+  BOOST_LOG_SEV(glg, debug) << "Percent slope: " << slopePct;
 
   //Get the aspect:
-  //Slope is also duplicated in the Wildfire object.
   double aspect = cd->cell_aspect;//Degrees
 
   //Shading should take into consideration both cloudiness and canopy cover:
