@@ -178,7 +178,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
 
     //Simulate crown fire:-------------------------------------------------
-    //TBD!!!!!
+    SimulateCrownFire();
 
     //Simulate ground fire:------------------------------------------------
     //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
@@ -1201,6 +1201,42 @@ double WildFire::GetLitterBurntFraction() const
   }
 
   return litterBurntFraction;
+}
+
+/** Simulate crown fire ....
+ * 
+ * 
+ *
+ * @returns ... Whether a crown fire orcurs?
+ *
+ * @note Used in the process wildfire model only.
+ */
+void WildFire::SimulateCrownFire()
+{
+  BOOST_LOG_SEV(glg, debug) << "Entering SimulateCrownFire()...";
+  
+  //Check to see if the CMT can ecologically have a crown fire:
+  
+  if (canCrown)
+  {
+    //Gather crown fire model inputs:
+    
+    //Calculate CFB:
+    //double CFB = CrownFractionBurned(...);
+    
+    if (CFB > 0)//A crown fire initiates.
+    {
+      //Calculate crown combustion fraction (~fvcomb).  Store?
+      //Derive total mortality from correlaiton with combustion.
+      //Calculate dead flux (~fvdead).  Store?
+      
+      //Calculate crown fire heat per area...
+      //Calculate fraction of heat into soil?
+    }
+    
+  }
+  //Report if a crown fire occurred.
+  //Report important crown fire numbers.
 }
 
 /** Simulate ground fire returning the burn depth.

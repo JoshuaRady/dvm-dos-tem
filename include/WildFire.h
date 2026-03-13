@@ -166,6 +166,8 @@ private:
   double GetRelativeHumidity(const int dayOfYearIndex) const;
   std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
 
+  void WildFire::SimulateCrownFire();
+
   double SimulateGroundFire(const double fireHeatInput) const;
   GFProfile GroundFireGetSoilProfile() const;
   // FW_MOD_END.
