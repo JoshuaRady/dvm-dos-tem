@@ -511,4 +511,6 @@ void CohortLookup::assignFirePar(string &dircmt) {
   temutil::pfll2data(datalist, r_retain_c);
   temutil::pfll2data(datalist, r_retain_n);
   temutil::pfll2data(datalist, cmt2fm);//FW_MOD
+  temutil::pfll2data(datalist, cbd);//FW_MOD
+  temutil::pfll2data(datalist, cbh);//FW_MOD
 };
