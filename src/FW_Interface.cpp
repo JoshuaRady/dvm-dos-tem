@@ -749,6 +749,23 @@ double WildFire::GetMidflameWindSpeed() const
   return windSpeed;
 }
 
+/** Get the wind reduction factor.
+ *
+ * Wind speed decreases with elevation due to interaction with the surface (friction /
+ * turbulence) and is a function of roughness length / vegetation density [more...]/
+ *
+ * This is currenltly a stub.  A calculation or input parameters may be added.
+ *
+ * @returns WRF, the wind reduction used factor to estimate midflame wind speed from open (6.1 m)
+ *          windspeed (fraction, midflame wind speed / open wind speed).
+ *
+ * @note Used in the process wildfire model only.
+ */
+double WildFire::GetWindReductionFactor() const
+{
+  return 0.15;
+}
+
 /** Get the relative humidity at the time of fire.
  *
  * @param dayOfYearIndex The day of the year to get the humidity for.
@@ -1243,7 +1260,7 @@ void WildFire::SimulateCrownFire()
   {
     //Gather crown fire model inputs:
     //The site's fuel model is saved in siteFM and reflects the pre-fire states.
-    //double WRF = GetWindReductionFactor();
+    double WRF = GetWindReductionFactor();
     double U = GetMidflameWindSpeed();
     //double O
     double slopeSteepness = SlopePctToSteepness(cd->cell_slope);//Or pass in?
