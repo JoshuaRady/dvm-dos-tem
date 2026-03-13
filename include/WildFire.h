@@ -165,6 +165,7 @@ private:
   double GetMidflameWindSpeed() const;
   double GetRelativeHumidity(const int dayOfYearIndex) const;
   std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
+  double WildFire::CalculateFoliarMoistureContent() const;
 
   void WildFire::SimulateCrownFire();
 

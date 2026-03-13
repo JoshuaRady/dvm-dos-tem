@@ -927,6 +927,28 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
   return M_f_ij;
 }
 
+/** Calculate conifer foliar moisture content.
+ *
+ * The moisture cotent of conifir needles typcally varies from around 75 - 150%.  It varies by tree
+ & species, season, location, elevation, and needle age.  It is not stongly responsive to
+ * envioromental conditions.
+ * 
+ * This function is little more than a stub that returns the a typical value of 100% recommened in
+ * the absence of other infromation (Scott & Reinhardt 2001).  It may be improved in the future.
+ * The month of year and species information are candidates that could be used to better inform
+ * values.
+ *
+ * Could add @param[in] monthIndex The current month as a zero based index.
+ #
+ * @returns FMC Foliar moisture content of (conifer) canopy (%, water weight/dry fuel weight x 100).
+ *
+ * @note Used in the process wildfire model only.
+ */
+double WildFire::CalculateFoliarMoistureContent() const
+{
+	return 100.0;
+}
+
 /** Simulate combustion of surface fuels.
  *
  * We simulate surface fuel combustion with the Burnup model of Albini 1995.
@@ -1225,7 +1247,7 @@ void WildFire::SimulateCrownFire()
     double U = GetMidflameWindSpeed();
     //double O
     double slopeSteepness = SlopePctToSteepness(cd->cell_slope);//Or pass in?
-    //double FMC = CalculateFoliarMoistureContent();
+    double FMC = CalculateFoliarMoistureContent();
     //double CBD = GetCBD(firpar.cbd);
     FuelModel fuelModel10 = GetFuelModelFromCSV(md.fire_fuel_model_file, 10);
     
