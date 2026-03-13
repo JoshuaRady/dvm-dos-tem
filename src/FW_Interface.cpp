@@ -1216,13 +1216,21 @@ void WildFire::SimulateCrownFire()
   BOOST_LOG_SEV(glg, debug) << "Entering SimulateCrownFire()...";
   
   //Check to see if the CMT can ecologically have a crown fire:
-  
-  if (canCrown)
+  //Negative prameter values for CBD and CBH signal that the this CMT can't crown.
+  if (firpar.cbd > 0.0)
   {
     //Gather crown fire model inputs:
+    //The site's fuel model is saved in siteFM and reflects the pre-fire states.
+    //double WRF = GetWindReductionFactor();
+    double U = GetMidflameWindSpeed();
+    //double O
+    double slopeSteepness = SlopePctToSteepness(cd->cell_slope);//Or pass in?
+    //double FMC = CalculateFoliarMoistureContent();
+    //double CBD = GetCBD(firpar.cbd);
+    FuelModel fuelModel10 = GetFuelModelFromCSV(md.fire_fuel_model_file, 10);
     
     //Calculate CFB:
-    //double CFB = CrownFractionBurned(...);
+    //double CFB = CrownFractionBurned(siteFM, O????, WRF, U????, slopeSteepness, CBD, firpar.cbh, FMC, fuelModel10);
     
     if (CFB > 0)//A crown fire initiates.
     {
