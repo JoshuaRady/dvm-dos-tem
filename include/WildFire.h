@@ -151,24 +151,24 @@ private:
                       double& comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
                       double& reta_vegc, double& reta_vegn);// FW_MOD
 
- // FW_MOD_START: Functions for the process based wildfire implementation.
- // FW_NOTE: These functions are defined in FW_Interface.cpp for now.
- double ProcessWildfire(const int monthIndex);
- int GetMatchingFuelModel(const int cmt) const;
- 
- void CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDead);
- double GetLitterRawC() const;
- double GetPFTBiomass(const int pftIndex) const;
- double GetNonVascularBiomass() const;
+  // FW_MOD_START: Functions for the process based wildfire implementation.
+  // FW_NOTE: These functions are defined in FW_Interface.cpp for now.
+  double ProcessWildfire(const int monthIndex);
+  int GetMatchingFuelModel(const int cmt) const;
 
- double GetAirTemperature() const;
- double GetMidflameWindSpeed() const;
- double GetRelativeHumidity(const int dayOfYearIndex) const;
- std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
+  void CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDead);
+  double GetLitterRawC() const;
+  double GetPFTBiomass(const int pftIndex) const;
+  double GetNonVascularBiomass() const;
 
- double SimulateGroundFire(const double fireHeatInput) const;
- GFProfile GroundFireGetSoilProfile() const;
- // FW_MOD_END.
+  double GetAirTemperature() const;
+  double GetMidflameWindSpeed() const;
+  double GetRelativeHumidity(const int dayOfYearIndex) const;
+  std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
+
+  double SimulateGroundFire(const double fireHeatInput) const;
+  GFProfile GroundFireGetSoilProfile() const;
+  // FW_MOD_END.
 
   ////////
   // MAYBE get rid of all these???
