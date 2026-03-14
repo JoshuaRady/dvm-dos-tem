@@ -966,6 +966,34 @@ double WildFire::CalculateFoliarMoistureContent() const
 	return 100.0;
 }
 
+/** Get the canopy bulk density for the stand.
+*
+* This returns a value but there is a bit of work to make it robust.
+*
+* @returns CBD Canopy bulk density, the dry mass of canopy fuel, primarily foliage (needles) and
+*              fine branches, per volume of the canopy (kg/m^3).  AKA crown bulk density.
+*/
+double WildFire::GetCanopyBulkDensty() const
+{
+  double CBD = 0;
+  
+  if (firpar.cbd > 0.0)
+  {
+    CBD = firpar.cbd;
+    //It the value is passed in we should do some sanity checks on it.
+    //Can we use the canopy fuel / m^2 to see if is needs to be redauced?
+    
+  }
+  else
+  {
+    //To compute CBD we need to fuel mass and canopy valume.  We can get foliage mass per area and
+    //estimate a corresponding fine branch (an bark) biomass.  We don't have a way to know the
+    //canopy depth. 
+  }
+  
+  return CBD;
+}
+
 /** Simulate combustion of surface fuels.
  *
  * We simulate surface fuel combustion with the Burnup model of Albini 1995.
@@ -1265,13 +1293,13 @@ void WildFire::SimulateCrownFire()
     //double O
     double slopeSteepness = SlopePctToSteepness(cd->cell_slope);//Or pass in?
     double FMC = CalculateFoliarMoistureContent();
-    //double CBD = GetCBD(firpar.cbd);
+    double CBD = GetCanopyBulkDensty();
     FuelModel fuelModel10 = GetFuelModelFromCSV(md.fire_fuel_model_file, 10);
     
     //Calculate CFB:
     //double CFB = CrownFractionBurned(siteFM, O????, WRF, U????, slopeSteepness, CBD, firpar.cbh, FMC, fuelModel10);
     
-    if (CFB > 0)//A crown fire initiates.
+    if (CFB > 0.0)//A crown fire initiates.
     {
       //Calculate crown combustion fraction (~fvcomb).  Store?
       //Derive total mortality from correlaiton with combustion.
