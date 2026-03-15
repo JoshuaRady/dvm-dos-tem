@@ -972,6 +972,8 @@ double WildFire::CalculateFoliarMoistureContent() const
 *
 * @returns CBD Canopy bulk density, the dry mass of canopy fuel, primarily foliage (needles) and
 *              fine branches, per volume of the canopy (kg/m^3).  AKA crown bulk density.
+*
+* @note Used in the process wildfire model only.
 */
 double WildFire::GetCanopyBulkDensty() const
 {
@@ -992,6 +994,24 @@ double WildFire::GetCanopyBulkDensty() const
   }
   
   return CBD;
+}
+
+/** Get the crown base height for the stand.
+*
+* @returns CBH Crown base height (m). AKA canopy base height, live crown base height (LCBH), z in
+*              original Van Wagner notation.
+*
+* @note Used in the process wildfire model only.
+* @note This currently just returns the parameter value but we add age adjustment etc.
+*/
+double WildFire::GetCrownBaseHeight() const
+{
+  /*if (firpar.cbh <= 0.0)
+  {
+    //Missing value, throw an error.
+  }*/
+  
+  return firpar.cbh;
 }
 
 /** Simulate combustion of surface fuels.
@@ -1294,6 +1314,7 @@ void WildFire::SimulateCrownFire()
     double slopeSteepness = SlopePctToSteepness(cd->cell_slope);//Or pass in?
     double FMC = CalculateFoliarMoistureContent();
     double CBD = GetCanopyBulkDensty();
+    double CBH = GetCrownBaseHeight();
     FuelModel fuelModel10 = GetFuelModelFromCSV(md.fire_fuel_model_file, 10);
     
     //Calculate CFB:
