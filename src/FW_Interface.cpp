@@ -1015,16 +1015,26 @@ double WildFire::GetCanopyBulkDensty() const
 *              original Van Wagner notation.
 *
 * @note Used in the process wildfire model only.
-* @note This currently just returns the parameter value but we add age adjustment etc.
+* @note This currently just returns the parameter value (or a stub) but we may add age adjustment
+*       etc. to the output.
+* #note CBH is only valid for forests and we could check for that.
 */
 double WildFire::GetCrownBaseHeight() const
 {
-  /*if (firpar.cbh <= 0.0)
-  {
-    //Missing value, throw an error.
-  }*/
+  double CBH = 0;
   
-  return firpar.cbh;
+  if (firpar.cbh <= 0.0)
+  {
+    CBH = firpar.cbh;
+  }
+  else
+  {
+    //In the future a missing value may be treated as an error.
+    //For now provide a stub value to allow for testing while values are compiled. 
+    CBH = 5.0;
+  }
+  
+  return CBH;
 }
 
 /** Simulate combustion of surface fuels.
