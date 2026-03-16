@@ -749,17 +749,20 @@ double WildFire::GetMidflameWindSpeed() const
   return windSpeed;
 }
 
-/** Get the wind reduction factor.
+/** Get the wind reduction factor for the site.
  *
- * Wind speed decreases with elevation due to interaction with the surface (friction /
- * turbulence) and is a function of roughness length / vegetation density [more...]/
+ * The wind reduction factor is a function of forest stand density and structure and commonly
+ * ranges from 0.1 for a dense fully sheltered stand to 0.3 for sparce partially sheltered stands.
+ * 0.4 would be normally be considered unsheltered but is also used as a special value in the crown
+ * fire calculations of Rothermel 1991.
  *
  * This is currenltly a stub.  A calculation or input parameters may be added.
  *
- * @returns WRF, the wind reduction used factor to estimate midflame wind speed from open (6.1 m)
- *          windspeed (fraction, midflame wind speed / open wind speed).
+ * @returns WRF, the wind reduction factor used to estimate midflame wind speed (U) from open
+ *          (6.1 m) windspeed (O), (fraction, midflame wind speed / open wind speed).
  *
  * @note Used in the process wildfire model only.
+ * @note This currently only intended for use with forested CMTs with crowning potential.
  */
 double WildFire::GetWindReductionFactor() const
 {
