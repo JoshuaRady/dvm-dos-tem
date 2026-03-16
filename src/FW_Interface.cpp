@@ -1307,7 +1307,7 @@ void WildFire::SimulateCrownFire()
   
   //Check to see if the CMT can ecologically have a crown fire:
   //Negative prameter values for CBD and CBH signal that the this CMT can't crown.
-  if (firpar.cbd > 0.0)
+  if (firpar.cbd > 0.0 && firpar.cbh > 0.0)
   {
     //Gather crown fire model inputs:
     //The site's fuel model is saved in siteFM and reflects the pre-fire states.
