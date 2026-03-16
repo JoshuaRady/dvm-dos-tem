@@ -982,18 +982,28 @@ double WildFire::GetCanopyBulkDensty() const
 {
   double CBD = 0;
   
+  //To calculate the canopy / crown fuel load (CFL):
+  //Loop through the CMT's PFTs.
+  //For all coniferous tree PFTs sum the foilage carbon. = leaf compartment = bd[pftIndex]->m_vegs.c[I_leaf]
+  //We assume that decidous leaves may burn but due to their moisture they are heat sinks to neutral
+  //and don't contrbute to crown fire behavior.
+  //Multiply by C2B to get the biomass.
+  //Multiply by some scaling factor to add fine branch (and bark?) biomass.  Use pipe model assumption.
+  
   if (firpar.cbd > 0.0)
   {
     CBD = firpar.cbd;
     //It the value is passed in we should do some sanity checks on it.
-    //Can we use the canopy fuel / m^2 to see if is needs to be redauced?
+    //Can we use the canopy fuel / m^2 to see if is needs to be reduced?
     
   }
   else
   {
-    //To compute CBD we need to fuel mass and canopy valume.  We can get foliage mass per area and
-    //estimate a corresponding fine branch (an bark) biomass.  We don't have a way to know the
-    //canopy depth. 
+    //To compute CBD we need fuel mass and canopy volume.  We can get foliage mass per area and
+    //estimate a corresponding fine branch (an bark) biomass from that.  We don't have a way to know
+    //the canopy depth in the model at this time.
+    
+    CBD = 0.15;//An initial stub value for when an input it missing.
   }
   
   return CBD;
