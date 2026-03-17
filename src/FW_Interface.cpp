@@ -23,6 +23,7 @@
 #include "../include/WildFire.h"
 #include "../include/Layer.h"
 
+#include "FireweedCrownFireScottReinhardt.h"
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedFuelTools.h"
 #include "FireweedLiveFuelMoistureGSI.h"
@@ -1333,7 +1334,6 @@ void WildFire::SimulateCrownFire()
     //The site's fuel model is saved in siteFM and reflects the pre-fire states.
     double WRF = GetWindReductionFactor();
     double U = GetMidflameWindSpeed();
-    //double O
     double slopeSteepness = SlopePctToSteepness(cd->cell_slope);//Or pass in?
     double FMC = CalculateFoliarMoistureContent();
     double CBD = GetCanopyBulkDensty();
@@ -1341,8 +1341,9 @@ void WildFire::SimulateCrownFire()
     FuelModel fuelModel10 = GetFuelModelFromCSV(md.fire_fuel_model_file, 10);
     
     //Calculate CFB:
-    //double CFB = CrownFractionBurned(siteFM, O????, WRF, U????, slopeSteepness, CBD, firpar.cbh, FMC, fuelModel10);
-    
+    double CFB = CrownFractionBurned(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10,
+                                     'U');
+
     if (CFB > 0.0)//A crown fire initiates.
     {
       //Calculate crown combustion fraction (~fvcomb).  Store?
@@ -1376,7 +1377,7 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
 
   GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
   double burnDepth = DownwardGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
-                                      md.fire_gf_surface_pd, md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
+                                        md.fire_gf_surface_pd, md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
 
   BOOST_LOG_SEV(glg, debug) << "Profile after DownwardGroundFire():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
