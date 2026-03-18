@@ -1236,9 +1236,34 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
       }
       else//Trees:
       {
-        //Ignore trees for now.  Their burning will be added with crown fire:
-        this->r_burn2ag_cn = 0;
-        this->r_dead2ag_cn = 0;
+        //For our purposes trees only burn by crown fire, indicated by a CFB is greater than 0:
+        if (CFB > 0.0)
+        {
+          //The extent of combustion is a linear function of the crown fraction burned:
+          //We assume the maximum tree consumption is 0.35.  This is currently true for all tree
+          //PFTs but this could change with an update to the parameter file.  We could get
+          //fvcomb_sev5 for this PFT and use that but since the dead pool flux calculation depends
+          //on the current value things could break.
+          double burntFrac = 0.35 * CFB;
+
+          //Calculate the total mortality (burnt + flux to dead pool) from the burnt fraction:
+          //We fit an equation to the relationship between the extisting severity level parameters
+          //to match the relationship in a continueous fashion:
+          double totalMortFrac = 1.168170 * (1 - exp(-5.354249 * burntFrac);
+
+          //We expect conifers to drive crown fire behavior but for mixed forests we assume that
+          //decidous trees experiance comparable combustion and mortaity.  This may not be true but
+          //we lack infomation to support a better scheme and this is constent with the previous
+          //model.
+          this->r_burn2ag_cn = burntFrac;
+          this->r_dead2ag_cn = totalMortFrac - burntFrac;
+        }
+        else
+        {
+          //Note: If CFB = 0 the above calculations should yield zeros, but let's not take chances.
+          this->r_burn2ag_cn = 0;
+          this->r_dead2ag_cn = 0;
+        }
       }
     }
   }
@@ -1342,16 +1367,14 @@ void WildFire::SimulateCrownFire()
     
     //Calculate CFB:
     CFB = CrownFractionBurned(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10, 'U');
+    //The rown combustion fraction is stored for use in getAbgVegetationBurntFractionsProcess() to
+    //derive combustion and non-combustion mortality.
 
     if (CFB > 0.0)//A crown fire initiates.
     {
       BOOST_LOG_SEV(glg, info) << "Crown fire occured.  CFB = " << CFB;
-      
-      //Calculate crown combustion fraction (~fvcomb).  Store?
-      //Derive total mortality from correlaiton with combustion.
-      //Calculate dead flux (~fvdead).  Store?
-      
-      //Calculate crown fire heat per area...
+
+      //Calculate crown fire heat per area: ADD!!!!!
       //Calculate fraction of heat into soil?
     }
     else
@@ -1359,7 +1382,6 @@ void WildFire::SimulateCrownFire()
       BOOST_LOG_SEV(glg, info) << "Crown fire did not occur.";
     }
   }
-  //Report important crown fire numbers.
 }
 
 /** Simulate ground fire returning the burn depth.
