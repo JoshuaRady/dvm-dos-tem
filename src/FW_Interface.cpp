@@ -1345,6 +1345,8 @@ void WildFire::SimulateCrownFire()
 
     if (CFB > 0.0)//A crown fire initiates.
     {
+      BOOST_LOG_SEV(glg, info) << "Crown fire occured.  CFB = " << CFB;
+      
       //Calculate crown combustion fraction (~fvcomb).  Store?
       //Derive total mortality from correlaiton with combustion.
       //Calculate dead flux (~fvdead).  Store?
@@ -1352,9 +1354,11 @@ void WildFire::SimulateCrownFire()
       //Calculate crown fire heat per area...
       //Calculate fraction of heat into soil?
     }
-    
+    else
+    {
+      BOOST_LOG_SEV(glg, info) << "Crown fire did not occur.";
+    }
   }
-  //Report if a crown fire occurred.
   //Report important crown fire numbers.
 }
 
