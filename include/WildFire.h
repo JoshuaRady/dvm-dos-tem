@@ -134,11 +134,12 @@ private:
   Ground * ground;// FW_MOD: The process based fire model needs access to the soil layer properties.
 
   //FW_NOTE:
-  // The following two objects are only used in the process based wildfire mode and will only be
+  // The following thee objects are only used in the process based wildfire mode and will only be
   // valid after ProcessWildfire() is called.  This is an initial implementation and we may find a
-  // different way to pass the simulation data to functions that need them.  The names may change.
+  // different way to pass the simulation data to functions that need them.
   FuelModel siteFM;// FW_MOD
   BurnupSim siteBU;// FW_MOD
+  double CFB;// FW_MOD
 
   bool isFireReturnDate(const int year, const int midx);// FW_MOD
   double getBurnOrgSoilthick(const int year);
