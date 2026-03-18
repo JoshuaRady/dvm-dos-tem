@@ -1341,8 +1341,7 @@ void WildFire::SimulateCrownFire()
     FuelModel fuelModel10 = GetFuelModelFromCSV(md.fire_fuel_model_file, 10);
     
     //Calculate CFB:
-    double CFB = CrownFractionBurned(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10,
-                                     'U');
+    CFB = CrownFractionBurned(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10, 'U');
 
     if (CFB > 0.0)//A crown fire initiates.
     {
