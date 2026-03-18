@@ -179,7 +179,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
 
     //Simulate crown fire:-------------------------------------------------
-    std::vector <double> cHPAs = SimulateCrownFire();
+    std::vector <double> crowFireCHPAs = SimulateCrownFire();
 
     //Simulate ground fire:------------------------------------------------
     //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
@@ -1341,15 +1341,18 @@ double WildFire::GetLitterBurntFraction() const
 
 /** Simulate crown fire.
  * 
- * @returns If no crown fire occurs an empty vector.  If a crown fire occurs a vector with the heat
- *          per unit area (HPA) for the whole fire, the surface component, and the crown component
- *          in that order (kJ/m^2).  CFB is also updated.
+ * @returns A vector of the heat per unit area (HPA) of the surface fire component, the crown fire
+ *          component, and of the whole fire in that order (kJ/m^2).  If no crown fire occurs the
+ *          vector will be all zeros.  CFB is also updated.
  *
+ * @note We return a vector of 0s because is seems a bit safer than returning an empty vector.
+ *       However, the calling code will do better to check if CFB > 0 to determine if a crown fire
+ *       occured.
  * @note Used in the process wildfire model only.
  */
 std::vector <double> WildFire::SimulateCrownFire()
 {
-  std::vector <double> cHPAs;
+  std::vector <double> cHPAs = {0, 0, 0};
 
   BOOST_LOG_SEV(glg, debug) << "Entering SimulateCrownFire()...";
 
@@ -1385,7 +1388,7 @@ std::vector <double> WildFire::SimulateCrownFire()
     }
   }
 
-  return cHPAs;//When not fire occurs we could return 0s?
+  return cHPAs;
 }
 
 /** Simulate ground fire returning the burn depth.
