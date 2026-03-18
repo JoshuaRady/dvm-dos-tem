@@ -179,7 +179,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
 
     //Simulate crown fire:-------------------------------------------------
-    SimulateCrownFire();
+    std::vector <double> cHPAs = SimulateCrownFire();
 
     //Simulate ground fire:------------------------------------------------
     //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
@@ -1339,18 +1339,20 @@ double WildFire::GetLitterBurntFraction() const
   return litterBurntFraction;
 }
 
-/** Simulate crown fire ....
+/** Simulate crown fire.
  * 
- * 
- *
- * @returns ... Whether a crown fire orcurs?
+ * @returns If no crown fire occurs an empty vector.  If a crown fire occurs a vector with the heat
+ *          per unit area (HPA) for the whole fire, the surface component, and the crown component
+ *          in that order (kJ/m^2).  CFB is also updated.
  *
  * @note Used in the process wildfire model only.
  */
-void WildFire::SimulateCrownFire()
+std::vector <double> WildFire::SimulateCrownFire()
 {
+  std::vector <double> cHPAs;
+
   BOOST_LOG_SEV(glg, debug) << "Entering SimulateCrownFire()...";
-  
+
   //Check to see if the CMT can ecologically have a crown fire:
   //Negative prameter values for CBD and CBH signal that the this CMT can't crown.
   if (firpar.cbd > 0.0 && firpar.cbh > 0.0)
@@ -1364,24 +1366,26 @@ void WildFire::SimulateCrownFire()
     double CBD = GetCanopyBulkDensty();
     double CBH = GetCrownBaseHeight();
     FuelModel fuelModel10 = GetFuelModelFromCSV(md.fire_fuel_model_file, 10);
-    
+
     //Calculate CFB:
     CFB = CrownFractionBurned(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10, 'U');
-    //The rown combustion fraction is stored for use in getAbgVegetationBurntFractionsProcess() to
+    //The crown combustion fraction is stored for use in getAbgVegetationBurntFractionsProcess() to
     //derive combustion and non-combustion mortality.
 
     if (CFB > 0.0)//A crown fire initiates.
     {
       BOOST_LOG_SEV(glg, info) << "Crown fire occured.  CFB = " << CFB;
 
-      //Calculate crown fire heat per area: ADD!!!!!
-      //Calculate fraction of heat into soil?
+      //Calculate crown fire heat per area:
+      cHPAs = CrownComponentHPA(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10, 'U');
     }
     else
     {
       BOOST_LOG_SEV(glg, info) << "Crown fire did not occur.";
     }
   }
+
+  return cHPAs;//When not fire occurs we could return 0s?
 }
 
 /** Simulate ground fire returning the burn depth.

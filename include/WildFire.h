@@ -171,7 +171,7 @@ private:
   double WildFire::GetCanopyBulkDensty() const;
   double WildFire::GetCrownBaseHeight() const
 
-  void WildFire::SimulateCrownFire();
+  std::vector <double> WildFire::SimulateCrownFire();
 
   double SimulateGroundFire(const double fireHeatInput) const;
   GFProfile GroundFireGetSoilProfile() const;
