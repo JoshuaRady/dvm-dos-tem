@@ -184,7 +184,16 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     //Simulate ground fire:------------------------------------------------
     //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
     //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
-    double abgFireHPA = burnupOutput.history.IntegrateFireIntensity();//Aboveground heat per area, kJ/m^2
+    double surfFireHPA = burnupOutput.history.IntegrateFireIntensity();//Surface fire heat per area, kJ/m^2
+    double abgFireHPA = surfFireHPA;
+    if (CFB > 0.0)
+    {
+      //The surface HPA is calculated by both Burnup and the crown fire model.  They should be
+      //similar.  Report them so we can be check.
+      
+      
+    }
+    
     //Report with full numerical precission so it can be re-imported:
     BOOST_LOG_SEV(glg, debug) << "Aboveground fire heat per area (HPA): "
                               << std::setprecision(std::numeric_limits<double>::max_digits10)
