@@ -1039,6 +1039,35 @@ double WildFire::GetCrownBaseHeight() const
   return CBH;
 }
 
+/* Get the canopy fuel load for the stand.
+*
+* Canopy fuel consist of foliage (needles), some degree of fine branches, bark (lichen?)...
+* Crown fire models focus on coniferous crowns...
+*
+* @returns CFL, canopy fuel load per area (kg/m^2).  AKA crown fuel load.
+*/
+double WildFire::GetCanopyFuelLoad() const
+{
+  double CFL = 0.0;
+
+  //To calculate the canopy / crown fuel load (CFL):
+  //Loop through the CMT's PFTs.
+  for (int pftIndex = 0; pftIndex < NUM_PFT; pftIndex++)
+  {
+    if (cd->d_veg.nonvascular[pftIndex] != 0)
+    {
+      
+    }
+  }
+
+  //For all coniferous tree PFTs sum the foilage carbon. = leaf compartment = bd[pftIndex]->m_vegs.c[I_leaf]
+  //We assume that decidous leaves may burn but due to their moisture they are heat sinks to neutral
+  //and don't contrbute to crown fire behavior.
+  //Multiply by C2B to get the biomass.
+  //Multiply by some scaling factor to add fine branch (and bark?) biomass.  Use pipe model assumption.
+  
+}
+
 /** Simulate combustion of surface fuels.
  *
  * We simulate surface fuel combustion with the Burnup model of Albini 1995.
