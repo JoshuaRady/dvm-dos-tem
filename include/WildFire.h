@@ -169,7 +169,8 @@ private:
   std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
   double WildFire::CalculateFoliarMoistureContent() const;
   double WildFire::GetCanopyBulkDensty() const;
-  double WildFire::GetCrownBaseHeight() const
+  double WildFire::GetCrownBaseHeight() const;
+  double WildFire::GetCanopyFuelLoad() const;
 
   std::vector <double> WildFire::SimulateCrownFire();
 

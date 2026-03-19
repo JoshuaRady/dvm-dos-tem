@@ -1041,31 +1041,37 @@ double WildFire::GetCrownBaseHeight() const
 
 /* Get the canopy fuel load for the stand.
 *
-* Canopy fuel consist of foliage (needles), some degree of fine branches, bark (lichen?)...
-* Crown fire models focus on coniferous crowns...
+* Canopy fuel consist of foliage (needles), some degree of fine branches, as well as some bark
+* lichen etc. in some cases.  Crown fire models focus on coniferous crowns so this function returns
+* an estimate of coniferous fuel.
 *
 * @returns CFL, canopy fuel load per area (kg/m^2).  AKA crown fuel load.
 */
 double WildFire::GetCanopyFuelLoad() const
 {
   double CFL = 0.0;
+  /*Estimate the non-foliage fuel as a ratio to the foliage (e.g. 0.5 means 5 g of branches etc.
+  burn for every 10 of foliage.  Fine branches directly supply needles so this ratio is an
+  expression of a pipe model allometry.  Other crown fuel like bark may not scale so directly.  It
+  is also the case that the ratio probalbly increases with fire intensity but that is beyond what we
+  have data to support at this time.*/
+  const double nonFoliageFuelRatio = 0.5;//Uniformed intial guestimate.  Move to parameter?
 
   //To calculate the canopy / crown fuel load (CFL):
   //Loop through the CMT's PFTs.
   for (int pftIndex = 0; pftIndex < NUM_PFT; pftIndex++)
   {
-    if (cd->d_veg.nonvascular[pftIndex] != 0)
+    //For all coniferous tree PFTs:
+    if (cd->d_veg.ifwoody[pftIndex] && !IsShrub(cd->cmttype, pftIndex) && !cd->d_veg.ifdeciwoody[pftIndex])//cd->d_veg.TBD_CONIFER_FLAG[pftIndex] == ?????)
     {
-      
+      //Foilage and non-foilage carbon converted to dry biomass:
+      CFL += bd[pftIndex]->m_vegs.c[I_leaf] * nonFoliageFuelRatio * c2b;
     }
+    //We assume that decidous leaves may burn but due to their moisture they are heat sinks to
+    //neutral at best and don't contrbute to crown fire behavior.
   }
 
-  //For all coniferous tree PFTs sum the foilage carbon. = leaf compartment = bd[pftIndex]->m_vegs.c[I_leaf]
-  //We assume that decidous leaves may burn but due to their moisture they are heat sinks to neutral
-  //and don't contrbute to crown fire behavior.
-  //Multiply by C2B to get the biomass.
-  //Multiply by some scaling factor to add fine branch (and bark?) biomass.  Use pipe model assumption.
-  
+  return CFL;
 }
 
 /** Simulate combustion of surface fuels.
