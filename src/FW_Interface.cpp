@@ -530,7 +530,7 @@ void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& dist
  *
  * The vegetation parameter files include names for most of the PFTS, but only in comments, which
  * are not imported.  These include DecShrub and EvrShrub.  The order of PFTs in a CMT are also not
- * systematic.  The only approach that remains is to check the PFT numbers agains their CMTs.  This
+ * systematic.  The only approach that remains is to check the PFT numbers against their CMTs.  This
  * requires knowledge of the CMT file (cmt_bgcvegetation.txt).  Since the CMTs will change in due
  * course this implementation is not robust and should be replaced soon.
  *
@@ -990,15 +990,7 @@ double WildFire::CalculateFoliarMoistureContent() const
 */
 double WildFire::GetCanopyBulkDensty() const
 {
-  double CBD = 0;
-  
-  //To calculate the canopy / crown fuel load (CFL):
-  //Loop through the CMT's PFTs.
-  //For all coniferous tree PFTs sum the foilage carbon. = leaf compartment = bd[pftIndex]->m_vegs.c[I_leaf]
-  //We assume that decidous leaves may burn but due to their moisture they are heat sinks to neutral
-  //and don't contrbute to crown fire behavior.
-  //Multiply by C2B to get the biomass.
-  //Multiply by some scaling factor to add fine branch (and bark?) biomass.  Use pipe model assumption.
+  double CBD = 0.0;
   
   if (firpar.cbd > 0.0)
   {
@@ -1031,7 +1023,7 @@ double WildFire::GetCanopyBulkDensty() const
 */
 double WildFire::GetCrownBaseHeight() const
 {
-  double CBH = 0;
+  double CBH = 0.0;
   
   if (firpar.cbh <= 0.0)
   {
