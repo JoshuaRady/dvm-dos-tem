@@ -632,6 +632,39 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
   return false;
 }
 
+/** Is this PFT a tree (and what kind)?
+ *
+ * Currently there is no tree flag so we have to use other information to infer a PFT is a tree.
+ * This may be replaced by a flag or wrap a flag later.  i.e:
+ * cd->d_veg.TBD_TREE_FLAG[pftIndex] == ?????)
+ *
+ * This function has dependacies on a particular version of the parameter file via IsShrub().  
+ *
+ * @param[in] cmtNumber The CMT number.
+ * @param[in] pftIdx The index of the PFT to check.
+ *
+ * @returns Postive if a tree (1 = conifer, 2 = decidous), 0 if not a tree.
+ */
+int IsTree(const int cmtNumber, const int pftIdx)
+{
+  int treeCode = 0;
+
+  if (cd->d_veg.ifwoody[pftIndex] && !IsShrub(cd->cmttype, pftIndex)
+  {
+    if (!cd->d_veg.ifdeciwoody[pftIndex])
+    {
+      treeCode = 1;//Conifer
+    }
+    else
+    {
+      treeCode = 2;//Decidous
+    }
+    //Larch might deserve it's own class.
+  }
+
+  return treeCode;
+}
+
 /** Calculate the fuel bed depth and update it in the fuel model passed.
  *
  * Standard fuel models include a fuel bed depth among their default values.  We need a way to
@@ -1057,12 +1090,11 @@ double WildFire::GetCanopyFuelLoad() const
   have data to support at this time.*/
   const double nonFoliageFuelRatio = 0.5;//Uniformed intial guestimate.  Move to parameter?
 
-  //To calculate the canopy / crown fuel load (CFL):
   //Loop through the CMT's PFTs.
   for (int pftIndex = 0; pftIndex < NUM_PFT; pftIndex++)
   {
-    //For all coniferous tree PFTs:
-    if (cd->d_veg.ifwoody[pftIndex] && !IsShrub(cd->cmttype, pftIndex) && !cd->d_veg.ifdeciwoody[pftIndex])//cd->d_veg.TBD_CONIFER_FLAG[pftIndex] == ?????)
+    //Add up canopy fuel for all coniferous tree PFTs:
+    if (IsTree() == 1)
     {
       //Foilage and non-foilage carbon converted to dry biomass:
       CFL += bd[pftIndex]->m_vegs.c[I_leaf] * nonFoliageFuelRatio * c2b;

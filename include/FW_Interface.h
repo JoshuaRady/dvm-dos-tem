@@ -20,6 +20,7 @@
 void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& distribSAVs,
                                  std::vector <double>& distribWts);
 bool IsShrub(const int cmtNumber, const int pftIdx);
+int IsTree(const int cmtNumber, const int pftIdx);
 void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic = true);
 BurnupSim SimulateSurfaceCombustion(const FuelModel& fm, const SpreadCalcs raData, const double tempAir, 
                                     const double windSpeed);
