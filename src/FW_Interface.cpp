@@ -569,7 +569,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
-    case 5://Tussock Tundra (2022)
+    case 5://Tussock Tundra
       if (pftIdx >= 0 && pftIdx <= 2)//Betula, Decid, EGreen
       {
         return true;
@@ -583,7 +583,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
-    case 7://Heath Tundra (2019)
+    case 7://Heath Tundra
       if (pftIdx >= 0 && pftIdx <= 1)//Decid, EGreen
       {
         return true;
@@ -624,6 +624,106 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
         return true;
       }
       break;
+
+    case 50://Shrub Tundra TVC
+      if (pftIdx >= 0 && pftIdx <= 1)//DecidShrub, EgreenShrub
+      {
+        return true;
+      }
+      break;
+
+    case 51://Tussock Tundra TVC
+      return false;
+      break;
+
+    case 52://Heath-lichen (Trail Valley)
+      return false;
+      break;
+
+    case 55://Arctic Fen (Daring Creek)
+      if (pftIdx == 1)//EgreenShrub
+      {
+        return true;
+      }
+      break;
+
+    case 56://Mixed Tundra (Darling Lake)
+      if (pftIdx >= 2 && pftIdx <= 3)//EgreenShrub, DecidShrub
+      {
+        return true;
+      }
+      break;
+
+    case 57://Heath Tundra (Daring Lake)
+      if (pftIdx == 2 || pftIdx == 4)//EgreenShrub, DecidShrub
+      {
+        return true;
+      }
+      break;
+
+    case XXXXX://
+      if (pftIdx >= 0 && pftIdx <= 3)//
+      {
+        return true;
+      }
+      break;
+
+    case XXXXX://
+      if (pftIdx >= 0 && pftIdx <= 3)//
+      {
+        return true;
+      }
+      break;
+
+    case XXXXX://
+      if (pftIdx >= 0 && pftIdx <= 3)//
+      {
+        return true;
+      }
+      break;
+
+    case XXXXX://
+      if (pftIdx >= 0 && pftIdx <= 3)//
+      {
+        return true;
+      }
+      break;
+
+    case XXXXX://
+      if (pftIdx >= 0 && pftIdx <= 3)//
+      {
+        return true;
+      }
+      break;
+
+    case XXXXX://
+      if (pftIdx >= 0 && pftIdx <= 3)//
+      {
+        return true;
+      }
+      break;
+
+    case XXXXX://
+      if (pftIdx >= 0 && pftIdx <= 3)//
+      {
+        return true;
+      }
+      break;
+
+    case XXXXX://
+      if (pftIdx >= 0 && pftIdx <= 3)//
+      {
+        return true;
+      }
+      break;
+
+    case XXXXX://
+      if (pftIdx >= 0 && pftIdx <= 3)//
+      {
+        return true;
+      }
+      break;
+
 
     default:
       BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT.";
