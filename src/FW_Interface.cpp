@@ -1096,6 +1096,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
  */
 double WildFire::CalculateFoliarMoistureContent() const
 {
+	BOOST_LOG_SEV(glg, info) << "Stub value for foliar moisture content used.";
 	return 100.0;
 }
 
@@ -1124,7 +1125,8 @@ double WildFire::GetCanopyBulkDensty() const
     //To compute CBD we need fuel mass and canopy volume.  We can get foliage mass per area and
     //estimate a corresponding fine branch (an bark) biomass from that.  We don't have a way to know
     //the canopy depth in the model at this time.
-    
+
+    BOOST_LOG_SEV(glg, info) << "Stub value for canopy bulk density used.";
     CBD = 0.15;//An initial stub value for when an input it missing.
   }
   
@@ -1139,7 +1141,7 @@ double WildFire::GetCanopyBulkDensty() const
 * @note Used in the process wildfire model only.
 * @note This currently just returns the parameter value (or a stub) but we may add age adjustment
 *       etc. to the output.
-* #note CBH is only valid for forests and we could check for that.
+* @note CBH is only valid for forests and we could check for that.
 */
 double WildFire::GetCrownBaseHeight() const
 {
@@ -1152,7 +1154,8 @@ double WildFire::GetCrownBaseHeight() const
   else
   {
     //In the future a missing value may be treated as an error.
-    //For now provide a stub value to allow for testing while values are compiled. 
+    //For now provide a stub value to allow for testing while values are compiled.
+    BOOST_LOG_SEV(glg, info) << "Stub value for crown base height used.";
     CBH = 5.0;
   }
   
