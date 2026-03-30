@@ -1395,7 +1395,7 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
       }
       else//Trees:
       {
-        //For our purposes trees only burn by crown fire, indicated by a CFB is greater than 0:
+        //For our purposes trees only burn by crown fire, indicated by a CFB greater than 0:
         if (CFB > 0.0)
         {
           //The extent of combustion is a linear function of the crown fraction burned:
@@ -1516,7 +1516,7 @@ std::vector <double> WildFire::SimulateCrownFire()
   BOOST_LOG_SEV(glg, debug) << "Entering SimulateCrownFire()...";
 
   //Check to see if the CMT can ecologically have a crown fire:
-  //Negative prameter values for CBD and CBH signal that the this CMT can't crown.
+  //Negative prameter values for CBD and CBH signal that this CMT can't crown.
   if (firpar.cbd > 0.0 && firpar.cbh > 0.0)
   {
     //Gather crown fire model inputs:
@@ -1539,7 +1539,8 @@ std::vector <double> WildFire::SimulateCrownFire()
       BOOST_LOG_SEV(glg, info) << "Crown fire occured.  CFB = " << CFB;
 
       //Calculate crown fire heat per area:
-      cHPAs = CrownComponentHPA(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10, 'U');
+      double CFL = GetCanopyFuelLoad();
+      cHPAs = CrownComponentHPA(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, CFL, fuelModel10, 'U');
     }
     else
     {
