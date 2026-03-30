@@ -896,6 +896,7 @@ double WildFire::GetMidflameWindSpeed() const
  */
 double WildFire::GetWindReductionFactor() const
 {
+  BOOST_LOG_SEV(glg, info) << "Stub value for wind reduction factor used.";
   return 0.15;
 }
 
