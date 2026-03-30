@@ -611,7 +611,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
-    case 31://Boreal Bog
+    case 31://Boreal Bog (Based on PFT order in all parameter files except cmt_firepar.txt, which differs)
       if (pftIdx >= 2 && pftIdx <= 3)//DecShrub, EvrShrub
       {
         return true;
@@ -633,9 +633,6 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       break;
 
     case 51://Tussock Tundra TVC
-      return false;
-      break;
-
     case 52://Heath-lichen (Trail Valley)
       return false;
       break;
@@ -661,69 +658,59 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
-    case XXXXX://
-      if (pftIdx >= 0 && pftIdx <= 3)//
+    case 60://Peat Plateau
+      if (pftIdx == 1)//EricShrub
       {
         return true;
       }
       break;
 
-    case XXXXX://
-      if (pftIdx >= 0 && pftIdx <= 3)//
+    case 65://Mature Aspen (BOREAS)
+    case 66://Mature Jack Pine (BOREAS)
+      if (pftIdx == 1)//DecidShrub
       {
         return true;
       }
       break;
 
-    case XXXXX://
-      if (pftIdx >= 0 && pftIdx <= 3)//
+    case 67://Mixed Forest (Groundhog Rover)
+      return false;
+      break;
+
+    case 69://Black Spruce (BOREAS)
+      if (pftIdx == 2)//Shrub
       {
         return true;
       }
       break;
 
-    case XXXXX://
-      if (pftIdx >= 0 && pftIdx <= 3)//
+    case 70://Dwarf Shrub (Chokurdakh)
+      if (pftIdx >= 0 && pftIdx <= 1)//DecidShrub, EgreenShrub
       {
         return true;
       }
       break;
 
-    case XXXXX://
-      if (pftIdx >= 0 && pftIdx <= 3)//
+    case 71://Larch Forest (Yakutsk Spasskaya Pad)
+      if (pftIdx == 2)//Shrubs
       {
         return true;
       }
       break;
 
-    case XXXXX://
-      if (pftIdx >= 0 && pftIdx <= 3)//
+    case 73://Tussock Tundra (Cherskii)
+      if (pftIdx == 1)//Shrub
       {
         return true;
       }
       break;
 
-    case XXXXX://
-      if (pftIdx >= 0 && pftIdx <= 3)//
+    case 74://Scots Pine (Zotino)
+      if (pftIdx = 2)//DwarfShrub
       {
         return true;
       }
       break;
-
-    case XXXXX://
-      if (pftIdx >= 0 && pftIdx <= 3)//
-      {
-        return true;
-      }
-      break;
-
-    case XXXXX://
-      if (pftIdx >= 0 && pftIdx <= 3)//
-      {
-        return true;
-      }
-      break;
-
 
     default:
       BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT.";
