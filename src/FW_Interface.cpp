@@ -186,7 +186,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
     double surfFireHPA = burnupOutput.history.IntegrateFireIntensity();//Surface fire heat per area, kJ/m^2
     double abgFireHPA = surfFireHPA;
-    double fireHeatFracToSoil = md.fire_heat_frac_to_soil;
+    double fireHeatFracToSoil = md.fire_heat_frac_to_soil;//For surface and passive crown fire.
 
     if (CFB > 0.0)
     {
@@ -203,8 +203,12 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
       //For 'active' crown fire calculate the heat fraction into the soil:
       if (CFB >= 0.8)
       {
-        //Get the total fire intensity...
-        fireHeatFracToSoil = ...
+        //We estimated a relationship between crown fire intensity and heat into the soil based on
+        //Thompson, Wotton, & Waddington 2015.  More support is needed.
+        //We model the relationship above CFB = 0.8 as exponential decay with the parameters
+        //a = 0.3753007, k = -1/4792.0683714, a maximum value of 0.35, and a minimum of 0.14.
+        fireHeatFracToSoil = 0.3753007 * exp(-fireIntensity/4792.0683714) + 0.14;
+        fireHeatFracToSoil = fmin(fireHeatFracToSoil, 0.35);
       }
       //For passive crown fire we use the surface fire parameter.
     }
