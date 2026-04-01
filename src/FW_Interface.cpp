@@ -207,7 +207,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
         //Thompson, Wotton, & Waddington 2015.  More support is needed.
         //We model the relationship above CFB = 0.8 as exponential decay with the parameters
         //a = 0.3753007, k = -1/4792.0683714, a maximum value of 0.35, and a minimum of 0.14.
-        fireHeatFracToSoil = 0.3753007 * exp(-fireIntensity/4792.0683714) + 0.14;
+        fireHeatFracToSoil = 0.3753007 * exp(-totalFireIntensity/4792.0683714) + 0.14;
         fireHeatFracToSoil = fmin(fireHeatFracToSoil, 0.35);
       }
       //For passive crown fire we use the surface fire parameter.
@@ -725,7 +725,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       break;
 
     case 74://Scots Pine (Zotino)
-      if (pftIdx = 2)//DwarfShrub
+      if (pftIdx == 2)//DwarfShrub
       {
         return true;
       }
@@ -1204,7 +1204,7 @@ double WildFire::GetCanopyFuelLoad() const
   for (int pftIndex = 0; pftIndex < NUM_PFT; pftIndex++)
   {
     //Add up canopy fuel for all coniferous tree PFTs:
-    if (IsTree() == 1)
+    if (IsTree(cd->cmttype, pftIndex) == 1)
     {
       //Foilage and non-foilage carbon converted to dry biomass:
       CFL += bd[pftIndex]->m_vegs.c[I_leaf] * nonFoliageFuelRatio * c2b;
@@ -1427,7 +1427,7 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
           //Calculate the total mortality (burnt + flux to dead pool) from the burnt fraction:
           //We fit an equation to the relationship between the extisting severity level parameters
           //to match the relationship in a continueous fashion:
-          double totalMortFrac = 1.168170 * (1 - exp(-5.354249 * burntFrac);
+          double totalMortFrac = 1.168170 * (1.0 - exp(-5.354249 * burntFrac));
 
           //We expect conifers to drive crown fire behavior but for mixed forests we assume that
           //decidous trees experiance comparable combustion and mortaity.  This may not be true but
@@ -1521,7 +1521,7 @@ double WildFire::GetLitterBurntFraction() const
  * 
  * @returns A vector of the heat per unit area (HPA) of the surface fire component, the crown fire
  *          component, and of the whole fire in that order (kJ/m^2).  If no crown fire occurs the
- *          vector will be all zeros.  CFB and totalFireIntensity is also updated.
+ *          vector will be all zeros.  CFB and totalFireIntensity are also updated.
  *
  * @note We return a vector of 0s because is seems a bit safer than returning an empty vector.
  *       However, the calling code will do better to check if CFB > 0 to determine if a crown fire

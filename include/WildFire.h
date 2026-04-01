@@ -165,15 +165,15 @@ private:
 
   double GetAirTemperature() const;
   double GetMidflameWindSpeed() const;
-  double WildFire::GetWindReductionFactor() const;
+  double GetWindReductionFactor() const;
   double GetRelativeHumidity(const int dayOfYearIndex) const;
   std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
-  double WildFire::CalculateFoliarMoistureContent() const;
-  double WildFire::GetCanopyBulkDensty() const;
-  double WildFire::GetCrownBaseHeight() const;
-  double WildFire::GetCanopyFuelLoad() const;
+  double CalculateFoliarMoistureContent() const;
+  double GetCanopyBulkDensty() const;
+  double GetCrownBaseHeight() const;
+  double GetCanopyFuelLoad() const;
 
-  std::vector <double> WildFire::SimulateCrownFire();
+  std::vector <double> SimulateCrownFire();
 
   double SimulateGroundFire(const double fireHeatInput) const;
   GFProfile GroundFireGetSoilProfile() const;
