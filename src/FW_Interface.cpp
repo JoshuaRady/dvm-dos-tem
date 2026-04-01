@@ -1517,7 +1517,7 @@ double WildFire::GetLitterBurntFraction() const
  * 
  * @returns A vector of the heat per unit area (HPA) of the surface fire component, the crown fire
  *          component, and of the whole fire in that order (kJ/m^2).  If no crown fire occurs the
- *          vector will be all zeros.  CFB is also updated.
+ *          vector will be all zeros.  CFB and fireIntensity is also updated.
  *
  * @note We return a vector of 0s because is seems a bit safer than returning an empty vector.
  *       However, the calling code will do better to check if CFB > 0 to determine if a crown fire
@@ -1556,6 +1556,10 @@ std::vector <double> WildFire::SimulateCrownFire()
       //Calculate crown fire heat per area:
       double CFL = GetCanopyFuelLoad();
       cHPAs = CrownComponentHPA(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, CFL, fuelModel10, 'U');
+
+      //Calculate and store Byram's fire intensity:
+      fireIntensity = CrownFireIntensity(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, CFL,
+                                         fuelModel10, 'U');
     }
     else
     {
