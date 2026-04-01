@@ -140,7 +140,7 @@ private:
   FuelModel siteFM;// FW_MOD
   BurnupSim siteBU;// FW_MOD
   double CFB;// FW_MOD
-  double fireIntensity;// FW_MOD Only set during crown fire at this time.
+  double totalFireIntensity;// FW_MOD Only set during crown fire at this time.
 
   bool isFireReturnDate(const int year, const int midx);// FW_MOD
   double getBurnOrgSoilthick(const int year);

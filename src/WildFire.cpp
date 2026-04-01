@@ -64,7 +64,7 @@ WildFire::WildFire(const std::string& fri_fname,
   this->elev = cell_elevation;
   this->lat = cell_latitude;// FW_MOD
   this->CFB = 0.0;// FW_MOD	
-  this->fireIntensity = 0.0;// FW_MOD
+  this->totalFireIntensity = 0.0;// FW_MOD
   setModelData(modelDataPtr);// FW_MOD
 
   BOOST_LOG_SEV(glg, debug) << "Done making WildFire object.";
