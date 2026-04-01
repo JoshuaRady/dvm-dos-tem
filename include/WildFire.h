@@ -163,6 +163,8 @@ private:
   double GetPFTBiomass(const int pftIndex) const;
   double GetNonVascularBiomass() const;
 
+  int IsTree(const int cmtNumber, const int pftIdx) const;
+
   double GetAirTemperature() const;
   double GetMidflameWindSpeed() const;
   double GetWindReductionFactor() const;

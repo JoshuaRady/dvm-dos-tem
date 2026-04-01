@@ -751,13 +751,13 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
  *
  * @returns Postive if a tree (1 = conifer, 2 = decidous), 0 if not a tree.
  */
-int IsTree(const int cmtNumber, const int pftIdx)
+int WildFire::IsTree(const int cmtNumber, const int pftIdx) const
 {
   int treeCode = 0;
 
-  if (cd->d_veg.ifwoody[pftIndex] && !IsShrub(cd->cmttype, pftIndex)
+  if (cd->d_veg.ifwoody[pftIdx] && !IsShrub(cd->cmttype, pftIdx))
   {
-    if (!cd->d_veg.ifdeciwoody[pftIndex])
+    if (!cd->d_veg.ifdeciwoody[pftIdx])
     {
       treeCode = 1;//Conifer
     }
