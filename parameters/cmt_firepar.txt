@@ -46,8 +46,8 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 163    //cmt2fm:// // The matching fuel model.  Provisionally FM TU3 / 163 //
--2.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--2.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+0.224   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT02 // Boreal White Spruce Forest // Calibrated with Bonanza Creek climate.
 //EverTree  DecShrub    DecTree      Moss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -576,8 +576,8 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 163    //cmt2fm:// // The matching fuel model.  Provisionally FM TU3 / 163 //
--2.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--2.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+0.224   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT70 // Dwarf Shrub-Chokurdakh // 
 //  DecidShrub  EgreenShrub   Graminoids     Omoss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
