@@ -218,6 +218,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
                               << std::setprecision(std::numeric_limits<double>::max_digits10)
                               << abgFireHPA << " kJ/m^2";
     //Only a fraction of the heat of the aboveground fire enters the soil:
+    BOOST_LOG_SEV(glg, debug) << "Heat fraction to soil: " << fireHeatFracToSoil;
     double fireHeatToSoil = abgFireHPA * fireHeatFracToSoil;//kJ/m^2
     BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
 
@@ -887,6 +888,7 @@ double WildFire::GetMidflameWindSpeed() const
     //Temporary stub, return an arbitrary value!!!!!:
     //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
     //6 * ftPerMi / 60 / ftPerM = 160.9344
+    BOOST_LOG_SEV(glg, info) << "Stub value for wind speed used.";
     windSpeed = 160.9344;
   }
   else//If provided override with the windspeed from the configuration file:
@@ -1132,13 +1134,13 @@ double WildFire::CalculateFoliarMoistureContent() const
 double WildFire::GetCanopyBulkDensty() const
 {
   double CBD = 0.0;
-  
+
   if (firpar.cbd > 0.0)
   {
     CBD = firpar.cbd;
     //It the value is passed in we should do some sanity checks on it.
-    //Can we use the canopy fuel / m^2 to see if is needs to be reduced?
-    
+    //Can we use the canopy fuel / m^2 to see if it needs to be reduced?
+    //I haven't come with a way to do the check yet.
   }
   else
   {
@@ -1149,7 +1151,7 @@ double WildFire::GetCanopyBulkDensty() const
     BOOST_LOG_SEV(glg, info) << "Stub value for canopy bulk density used.";
     CBD = 0.15;//An initial stub value for when an input it missing.
   }
-  
+
   return CBD;
 }
 
@@ -1548,6 +1550,12 @@ std::vector <double> WildFire::SimulateCrownFire()
     double CBH = GetCrownBaseHeight();
     FuelModel fuelModel10 = GetFuelModelFromCSV(md.fire_fuel_model_file, 10);
 
+    BOOST_LOG_SEV(glg, debug) << "WRF = " << WRF;
+    //Wind and slope are printed elsewhere, but we could print them here too.
+    BOOST_LOG_SEV(glg, debug) << "FMC = " << FMC;
+    BOOST_LOG_SEV(glg, debug) << "CBD = " << CBD;
+    BOOST_LOG_SEV(glg, debug) << "CBH = " << CBH;
+
     //Calculate CFB:
     CFB = CrownFractionBurned(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10, 'U');
     //The crown combustion fraction is stored for use in getAbgVegetationBurntFractionsProcess() to
@@ -1555,7 +1563,7 @@ std::vector <double> WildFire::SimulateCrownFire()
 
     if (CFB > 0.0)//A crown fire initiates.
     {
-      BOOST_LOG_SEV(glg, info) << "Crown fire occured.  CFB = " << CFB;
+      BOOST_LOG_SEV(glg, info) << "Crown fire occured. CFB = " << CFB;
 
       //Calculate crown fire heat per area:
       double CFL = GetCanopyFuelLoad();
