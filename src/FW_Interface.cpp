@@ -1209,7 +1209,7 @@ double WildFire::GetCanopyFuelLoad() const
     if (IsTree(cd->cmttype, pftIndex) == 1)
     {
       //Foilage and non-foilage carbon converted to dry biomass:
-      CFL += bd[pftIndex]->m_vegs.c[I_leaf] * nonFoliageFuelRatio * c2b;
+      CFL += bd[pftIndex]->m_vegs.c[I_leaf] * nonFoliageFuelRatio * c2b / gPerKg;
     }
     //We assume that decidous leaves may burn but due to their moisture they are heat sinks to
     //neutral at best and don't contrbute to crown fire behavior.
