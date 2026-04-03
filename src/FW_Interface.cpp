@@ -1169,7 +1169,7 @@ double WildFire::GetCrownBaseHeight() const
 {
   double CBH = 0.0;
   
-  if (firpar.cbh <= 0.0)
+  if (firpar.cbh > 0.0)
   {
     CBH = firpar.cbh;
   }
