@@ -1567,6 +1567,7 @@ std::vector <double> WildFire::SimulateCrownFire()
 
       //Calculate crown fire heat per area:
       double CFL = GetCanopyFuelLoad();
+      BOOST_LOG_SEV(glg, debug) << "CFL = " << CFL << " kg/m^2";
       cHPAs = CrownComponentHPA(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, CFL, fuelModel10, 'U');
 
       //Calculate and store Byram's fire intensity:
