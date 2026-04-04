@@ -1573,6 +1573,7 @@ std::vector <double> WildFire::SimulateCrownFire()
       //Calculate and store Byram's fire intensity:
       totalFireIntensity = CrownFireIntensity(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, CFL,
                                               fuelModel10, 'U');//kW/m
+      BOOST_LOG_SEV(glg, debug) << "Total fire intensity = " << totalFireIntensity << " kW/m";
     }
     else
     {
