@@ -888,7 +888,7 @@ double WildFire::GetMidflameWindSpeed() const
     //Temporary stub, return an arbitrary value!!!!!:
     //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
     //6 * ftPerMi / 60 / ftPerM = 160.9344
-    BOOST_LOG_SEV(glg, info) << "Stub value for wind speed used.";
+    BOOST_LOG_SEV(glg, debug) << "Stub value for wind speed used.";
     windSpeed = 160.9344;
   }
   else//If provided override with the windspeed from the configuration file:
@@ -917,7 +917,7 @@ double WildFire::GetMidflameWindSpeed() const
  */
 double WildFire::GetWindReductionFactor() const
 {
-  BOOST_LOG_SEV(glg, info) << "Stub value for wind reduction factor used.";
+  BOOST_LOG_SEV(glg, debug) << "Stub value for wind reduction factor used.";
   return 0.15;
 }
 
@@ -1118,7 +1118,7 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
  */
 double WildFire::CalculateFoliarMoistureContent() const
 {
-	BOOST_LOG_SEV(glg, info) << "Stub value for foliar moisture content used.";
+	BOOST_LOG_SEV(glg, debug) << "Stub value for foliar moisture content used.";
 	return 100.0;
 }
 
@@ -1148,7 +1148,7 @@ double WildFire::GetCanopyBulkDensty() const
     //estimate a corresponding fine branch (an bark) biomass from that.  We don't have a way to know
     //the canopy depth in the model at this time.
 
-    BOOST_LOG_SEV(glg, info) << "Stub value for canopy bulk density used.";
+    BOOST_LOG_SEV(glg, debug) << "Stub value for canopy bulk density used.";
     CBD = 0.15;//An initial stub value for when an input it missing.
   }
 
@@ -1177,7 +1177,7 @@ double WildFire::GetCrownBaseHeight() const
   {
     //In the future a missing value may be treated as an error.
     //For now provide a stub value to allow for testing while values are compiled.
-    BOOST_LOG_SEV(glg, info) << "Stub value for crown base height used.";
+    BOOST_LOG_SEV(glg, debug) << "Stub value for crown base height used.";
     CBH = 5.0;
   }
   
