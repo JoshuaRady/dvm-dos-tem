@@ -178,51 +178,66 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
     siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
 
-    //Simulate crown fire:-------------------------------------------------
-    std::vector <double> crownFireCHPAs = SimulateCrownFire();
-
-    //Simulate ground fire:------------------------------------------------
-    //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
-    //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
-    double surfFireHPA = burnupOutput.history.IntegrateFireIntensity();//Surface fire heat per area, kJ/m^2
-    double abgFireHPA = surfFireHPA;
-    double fireHeatFracToSoil = md.fire_heat_frac_to_soil;//For surface and passive crown fire.
-
-    if (CFB > 0.0)
+    if (FireBurned())
     {
-      //The surface HPA is calculated by both Burnup and the crown fire model.  They should be
-      //similar.  Report them so we can be check.
-      BOOST_LOG_SEV(glg, debug) << "Surface fire HPA from Burnup: " << surfFireHPA << " kJ/m^2";;
-      BOOST_LOG_SEV(glg, debug) << "Surface fire HPA from Scott & Reinhart 2021: "
-                                << crownFireCHPAs[0] << " kJ/m^2";;
-      BOOST_LOG_SEV(glg, debug) << "Crown fire HPA from Scott & Reinhart 2021: "
-                                << crownFireCHPAs[1] << " kJ/m^2";;
+      BOOST_LOG_SEV(glg, info) << "Surface fire ignited.";
+  
+      //Simulate crown fire:-------------------------------------------------
+      std::vector <double> crownFireCHPAs = SimulateCrownFire();
 
-      abgFireHPA += crownFireCHPAs[1];
+      //Simulate ground fire:------------------------------------------------
+      //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
+      //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
+      double surfFireHPA = burnupOutput.history.IntegrateFireIntensity();//Surface fire heat per area, kJ/m^2
+      double abgFireHPA = surfFireHPA;
+      double fireHeatFracToSoil = md.fire_heat_frac_to_soil;//For surface and passive crown fire.
 
-      //For 'active' crown fire calculate the heat fraction into the soil:
-      if (CFB >= 0.8)
+      if (CFB > 0.0)
       {
-        //We estimated a relationship between crown fire intensity and heat into the soil based on
-        //Thompson, Wotton, & Waddington 2015.  More support is needed.
-        //We model the relationship above CFB = 0.8 as exponential decay with the parameters
-        //a = 0.3753007, k = -1/4792.0683714, a maximum value of 0.35, and a minimum of 0.14.
-        fireHeatFracToSoil = 0.3753007 * exp(-totalFireIntensity/4792.0683714) + 0.14;
-        fireHeatFracToSoil = fmin(fireHeatFracToSoil, 0.35);
+        //The surface HPA is calculated by both Burnup and the crown fire model.  They should be
+        //similar.  Report them so we can be check.
+        BOOST_LOG_SEV(glg, debug) << "Surface fire HPA from Burnup: " << surfFireHPA << " kJ/m^2";;
+        BOOST_LOG_SEV(glg, debug) << "Surface fire HPA from Scott & Reinhart 2021: "
+                                  << crownFireCHPAs[0] << " kJ/m^2";;
+        BOOST_LOG_SEV(glg, debug) << "Crown fire HPA from Scott & Reinhart 2021: "
+                                  << crownFireCHPAs[1] << " kJ/m^2";;
+
+        abgFireHPA += crownFireCHPAs[1];
+
+        //For 'active' crown fire calculate the heat fraction into the soil:
+        if (CFB >= 0.8)
+        {
+          //We estimated a relationship between crown fire intensity and heat into the soil based on
+          //Thompson, Wotton, & Waddington 2015.  More support is needed.
+          //We model the relationship above CFB = 0.8 as exponential decay with the parameters
+          //a = 0.3753007, k = -1/4792.0683714, a maximum value of 0.35, and a minimum of 0.14.
+          fireHeatFracToSoil = 0.3753007 * exp(-totalFireIntensity/4792.0683714) + 0.14;
+          fireHeatFracToSoil = fmin(fireHeatFracToSoil, 0.35);
+        }
+        //For passive crown fire we use the surface fire parameter.
       }
-      //For passive crown fire we use the surface fire parameter.
+
+      //Report fire heat with full numerical precission so it can be re-imported:
+      BOOST_LOG_SEV(glg, debug) << "Aboveground fire heat per area (HPA): "
+                                << std::setprecision(std::numeric_limits<double>::max_digits10)
+                                << abgFireHPA << " kJ/m^2";
+      //Only a fraction of the heat of the aboveground fire enters the soil:
+      BOOST_LOG_SEV(glg, debug) << "Heat fraction to soil: " << fireHeatFracToSoil;
+      double fireHeatToSoil = abgFireHPA * fireHeatFracToSoil;//kJ/m^2
+      BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
+
+      burnDepth = SimulateGroundFire(fireHeatToSoil);
     }
-
-    //Report fire heat with full numerical precission so it can be re-imported:
-    BOOST_LOG_SEV(glg, debug) << "Aboveground fire heat per area (HPA): "
-                              << std::setprecision(std::numeric_limits<double>::max_digits10)
-                              << abgFireHPA << " kJ/m^2";
-    //Only a fraction of the heat of the aboveground fire enters the soil:
-    BOOST_LOG_SEV(glg, debug) << "Heat fraction to soil: " << fireHeatFracToSoil;
-    double fireHeatToSoil = abgFireHPA * fireHeatFracToSoil;//kJ/m^2
-    BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
-
-    burnDepth = SimulateGroundFire(fireHeatToSoil);
+    else
+    {
+      /*If the surface fire fails to ignite there is no reason to perform the the calculations for
+      the subsequent stages.
+      Note: Ground fire would be safe if there was no crown fire since it will produce no burn when
+      the surface fire HPA is 0.  However, it is not clear if under the right conditions the Scott &
+      Reinhart model could predict a crown fire even if Burnup doesn't predict a surface fire.
+      Therefore it is safer to skip it.*/
+      BOOST_LOG_SEV(glg, info) << "Surface fire failed to ignite.";
+    }
   }
 
   //Litter and soil carbon stocks are updated in WildFire::updateBurntOrgSoil().
