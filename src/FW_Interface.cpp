@@ -1552,9 +1552,9 @@ std::vector <double> WildFire::SimulateCrownFire()
 
     BOOST_LOG_SEV(glg, debug) << "WRF = " << WRF;
     //Wind and slope are printed elsewhere, but we could print them here too.
-    BOOST_LOG_SEV(glg, debug) << "FMC = " << FMC;
-    BOOST_LOG_SEV(glg, debug) << "CBD = " << CBD;
-    BOOST_LOG_SEV(glg, debug) << "CBH = " << CBH;
+    BOOST_LOG_SEV(glg, debug) << "FMC = " << FMC << " %";
+    BOOST_LOG_SEV(glg, debug) << "CBD = " << CBD << " kg/m^3";
+    BOOST_LOG_SEV(glg, debug) << "CBH = " << CBH << " m";
 
     //Calculate CFB:
     CFB = CrownFractionBurned(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10, 'U');
