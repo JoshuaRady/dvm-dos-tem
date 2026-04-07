@@ -1661,13 +1661,23 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   GFProfile gfProfile(numOrgLayers);
 
   //Walk through the organic soil layers and copy / convert properties to our new profile:
+  /*There are two representations of the soil layers, the ground object and edall.  We walk both
+  layer representaions simultaneously to get the values we need.  The ground object holds all the
+  properties we need but the temperature and moisture values, which seem to be daily values from the
+  end of the month, have been problematic.  edall does not have all the physical properties we need
+  but is has both monthly and daily temperature and moisture values.*/
   Layer* thisLayer = ground->fstshlwl;
+  int layerIndex = MAX_MOS_LAY;//Index of the top organic layer, right below the bottom moss layer.
   for (int i = 0; i < numOrgLayers; i++)
   {
     //Copy data from the source layer to the matching layer:
     gfProfile.thickness_cm[i] = thisLayer->dz * 100.0;//Layer thickness (m -> cm).
     gfProfile.layerDepth[i] = thisLayer->z * 100.0;//Depth at top of layer (m -> cm).
-    gfProfile.tempC[i] = thisLayer->tem;//Layer temperature in Celcius.
+    gfProfile.tempC[i] = edall->m_sois.ts[layerIndex];//Layer temperature in Celcius.
+    //Compare values from two soil representations:
+    //gfProfile.tempC[i] = thisLayer->tem;//Layer temperature in Celcius.
+    BOOST_LOG_SEV(glg, debug) << "Soil layer temp (C): ground Layer->tem = " << thisLayer->tem
+                              << ", edall->m_sois.ts = " << edall->m_sois.ts[layerIndex];
 
     //The humic layers should probably have higher temperatures of ignition but more research is
     //needed.  The values should parameters or be calculated from the level of decay.  They will be
@@ -1735,12 +1745,18 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //Soil moisture content (%):
     //This is the water mass per volume / dry soil mass per volume * 100%.
     //Ice needs to be added to the ground fire model explicitly but for now we convert it to water.
-    //liq is liquid water and ice is ice content in kg/m^2 per layer.  Use the layer depth to convert to density:
+    //liq is liquid water and ice is ice content in kg/m^2 per layer.  Use the layer depth to
+    //convert to water mass per volume:
     //kg/m^2 / m = kg/m^3
-    double waterDensity = (thisLayer->liq + thisLayer->ice) / thisLayer->dz;//kg/m^3	Or moistureContent?????
-    
+    double waterContent = (edall->m_sois.liq[layerIndex] + edall->m_sois.ice[layerIndex]) /
+                          thisLayer->dz;//kg/m^3
+    //Compare values from two soil representations:
+    double waterContentL = (thisLayer->liq + thisLayer->ice) / thisLayer->dz;//kg/m^3, Just for info.
+    BOOST_LOG_SEV(glg, debug) << "Soil water content (kg/m^3): ground object = " << waterContentL
+                              << ", edall = " << waterContent;
+
     //kg/m^3 / kg/m^3 * 100% = %
-    gfProfile.moistureContentPct[i] = waterDensity / gfProfile.bulkDensity[i] * 100.0;//%
+    gfProfile.moistureContentPct[i] = waterContent / gfProfile.bulkDensity[i] * 100.0;//%
 
     //Layer heat capacity (kJ/kg/K):
     //vhcsolid is volumetric heat capacity (J/m^3/K) for dry compacted soil. Converting to specific
@@ -1749,6 +1765,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     gfProfile.c_s[i] = (thisLayer->vhcsolid * (1.0 - thisLayer->poro)) / gfProfile.bulkDensity[i] / 1000.0;//kJ/kg/K
 
     thisLayer = thisLayer->nextl;
+    layerIndex += 1;
   }
 
   BOOST_LOG_SEV(glg, debug) << "Initial translated profile:";
