@@ -156,7 +156,8 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   fire_temp_fm             = controldata["module_settings"]["dsb"]["fire"]["fire_temp_fm"].asInt();
   fire_windspeed           = controldata["module_settings"]["dsb"]["fire"]["fire_windspeed"].asDouble();
   fire_tempair             = controldata["module_settings"]["dsb"]["fire"]["fire_tempair"].asDouble();
-  fire_rh_pct               = controldata["module_settings"]["dsb"]["fire"]["fire_rh_pct"].asDouble();
+  fire_rh_pct              = controldata["module_settings"]["dsb"]["fire"]["fire_rh_pct"].asDouble();
+  fire_dwd_combust_frac    = controldata["module_settings"]["dsb"]["fire"]["fire_dwd_combust_frac"].asDouble();
   // FW_MOD_END.
 }
 

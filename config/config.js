@@ -183,8 +183,10 @@
         "fire_windspeed": -1.0,
         //Air temperature at the time of the fire (C), -300 to ignore:
         "fire_tempair": -300.0,
-        //percent relative humidity at the time of fire (%), -1 to ingnore:
-        "fire_rh_pct": -1.0
+        //Percent relative humidity at the time of fire (%), -1 to ingnore:
+        "fire_rh_pct": -1.0,
+        //The fraction of dead woody debris that is consumed with fire.  1.0 matches old model behavior.
+        "fire_dwd_combust_frac": 1.0
       }
       // Future disturbances go here...
       //"insect": { ... },
