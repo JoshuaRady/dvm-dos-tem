@@ -370,7 +370,7 @@ void WildFire::burn(const int year, const int midx) {
       }
       else
       {
-        BOOST_LOG_SEV(glg, info) << "Invalid value for fire_dwd_combust_frac."
+        BOOST_LOG_SEV(glg, info) << "Invalid value for fire_dwd_combust_frac.";
       }
     }
 
