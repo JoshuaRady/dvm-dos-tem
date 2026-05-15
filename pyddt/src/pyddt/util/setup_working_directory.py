@@ -174,7 +174,8 @@ def cmdline_run(args):
   config['IO']['hist_exp_fire_file']   = os.path.join(input_data_path, 'historic-explicit-fire.nc')
   config['IO']['proj_exp_fire_file']   = os.path.join(input_data_path, 'projected-explicit-fire.nc')
 
-  # The process based fire model input files paths are in the repo:
+  # By default the process based fire model input files are in a repo nested inside the DVM-DOS-TEM
+  # repo.  The default paths are relative to the repo root.  This will make the paths absolute:
   config['IO']['fire_fuel_model_file'] = os.path.join(ddt_dir, config['IO']['fire_fuel_model_file'])
   config['IO']['fire_fosberg_a_file']  = os.path.join(ddt_dir, config['IO']['fire_fosberg_a_file'])
   config['IO']['fire_fosberg_b_file']  = os.path.join(ddt_dir, config['IO']['fire_fosberg_b_file'])
