@@ -165,13 +165,13 @@
         "fire_calculate_delta": false,
         //Ground fire model paramters and settings:
         //The fraction of aboveground fire heat (HPA) that enters the soil:
-        "fire_heat_frac_to_soil": 0.15,
+        "fire_heat_frac_to_soil": 0.25,
         //The fraction of heat lost from the soil:
-        "fire_gf_heat_loss_factor": 0.83,
+        "fire_gf_heat_loss_factor": 0.50,
         //The maximum heat penetration depth for the soil surface heat transfer approximation (cm):
         "fire_gf_surface_pd": 1.0,
         //The maximum heat penetration depth for the smoldering heat transfer approximation (cm):
-        "fire_gf_smolder_pd": 5.0,
+        "fire_gf_smolder_pd": 3.0,
         //The soil layer thickness for the simulation (cm):
         "fire_gf_layer_thickness": 0.1,
         //A temporary parameter to force the fuel model choice:
