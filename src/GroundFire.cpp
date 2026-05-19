@@ -212,7 +212,7 @@ std::vector <double> HeatDistributionLinear(const int numLayers)
  * progression simulated directly, i.e. the model used layer-steps rather than time-steps.
  *
  * @param[in,out] soilCol A GFProfile object representing the soil profile for the simulation.
- * @param[in] fireHeatInput Total longwave heat input into the soil from the surface fire (kJ/m^3).
+ * @param[in] fireHeatInput Total heat input into the soil from the surface fire (kJ/m^2).
  * @param[in] heatLossFactor The fraction of heat lost from the soil (0-1) .  This intended to
  *                           represent radiant and convective losses from the soil surface in the
  *                           time is take for a layer to combust. The downward efficiency factor

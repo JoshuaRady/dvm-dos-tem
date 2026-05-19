@@ -259,6 +259,8 @@ public:
   double r_retain_n; // 0.3 calculated from Harden et al., 2003 (ATHarden42003a)
 
   int cmt2fm;//The fuel model to use for the current CMT. FW_MOD
+  double cbd;//The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). FW_MOD
+  double cbh;//The crown base height (CBH, for a typical mature forest stand, m). FW_MOD
 
 private:
 

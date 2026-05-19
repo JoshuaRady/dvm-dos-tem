@@ -63,6 +63,8 @@ WildFire::WildFire(const std::string& fri_fname,
   this->asp = cell_aspect;
   this->elev = cell_elevation;
   this->lat = cell_latitude;// FW_MOD
+  this->CFB = 0.0;// FW_MOD	
+  this->totalFireIntensity = 0.0;// FW_MOD
   setModelData(modelDataPtr);// FW_MOD
 
   BOOST_LOG_SEV(glg, debug) << "Done making WildFire object.";
@@ -114,6 +116,8 @@ void WildFire::initializeParameter() {
   firpar.r_retain_c = chtlu->r_retain_c;
   firpar.r_retain_n = chtlu->r_retain_n;
   firpar.cmt2fm = chtlu->cmt2fm;//FW_MOD
+  firpar.cbd = chtlu->cbd;//FW_MOD
+  firpar.cbh = chtlu->cbh;//FW_MOD
 };
 
 void WildFire::initializeState() {
@@ -322,7 +326,7 @@ void WildFire::burn(const int year, const int midx) {
   }
 
   //If the fire didn't ignite skip the post-burn calculations:
-  //FW_NOTE: I think this everything in the block can be skipped.  I think that if process WildFire
+  //FW_NOTE: I think that everything in the block can be skipped.  I think that if process WildFire
   //model doesn't predict a fire the following will all cancel out with most calculations coming out
   //to zero.  However, there is a lot going on here so I could be misisng something.  Testing will
   //be infomative.
@@ -343,8 +347,6 @@ void WildFire::burn(const int year, const int midx) {
     if (!md.fire_process_wildfire)// FW_MOD
     {
       // all woody debris will burn out:
-      //double wdebrisc = bdall->m_sois.wdebrisc; //
-      //double wdebrisn = bdall->m_sois.wdebrisn; //
       wdebrisc = bdall->m_sois.wdebrisc;
       wdebrisn = bdall->m_sois.wdebrisn;
       bdall->m_sois.wdebrisc = 0.0;
@@ -352,8 +354,24 @@ void WildFire::burn(const int year, const int midx) {
     }
     else
     {
-      // FW_Note: The process based wildfire model does not yet handle the wood debris pool.
-      BOOST_LOG_SEV(glg, info) << "The process based wildfire model ignores wood debris for now.";
+      /* Ideally the dead woody debris would be represented as fuel classes in the process based
+      wildfire model.  For now we simply combust a fixed fraction and it only effects emissions
+      and not fire behavior.  For example it doesn't contribute to the energy into the soil.  This
+      should be revistied in future model versions.  We have included a parameter controling the
+      fraction combusted to make experimentation easier.  A value of fire_dwd_combust_frac = 1.0
+      gives the same behavior as the old model.*/
+      double dwdCombustFrac = md.fire_dwd_combust_frac;
+      if (dwdCombustFrac >= 0.0 && dwdCombustFrac <= 1.0)
+      {
+        wdebrisc = bdall->m_sois.wdebrisc * dwdCombustFrac;
+        wdebrisn = bdall->m_sois.wdebrisn * dwdCombustFrac;
+        bdall->m_sois.wdebrisc *= (1.0 - dwdCombustFrac);
+        bdall->m_sois.wdebrisn *= (1.0 - dwdCombustFrac);
+      }
+      else
+      {
+        BOOST_LOG_SEV(glg, info) << "Invalid value for fire_dwd_combust_frac.";
+      }
     }
 
     // summarize

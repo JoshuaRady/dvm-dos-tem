@@ -12,11 +12,10 @@
 #include "layerconst.h"
 #include "errorcode.h"
 
+#include <netcdf.h>
 #ifdef WITHMPI
 #include <mpi.h>
 #include <netcdf_par.h>
-#else
-#include <netcdf.h>
 #endif
 
 using namespace std;
@@ -140,6 +139,10 @@ public:
   double fire_gf_smolder_pd;//The maximum heat penetration depth for the smoldering heat transfer approximation (cm).
   double fire_gf_layer_thickness;//The soil layer thickness for the simulation (cm)
   int fire_temp_fm;//A temporaty parameter to force fuel model choice.
+  double fire_windspeed;//A value to override the windspeed at the time of the fire (m/min).
+  double fire_tempair;//A value to override the air temperature at the time of the fire (C).
+  double fire_rh_pct;//A value to override the relative humidity at the time of the fire (%).
+  double fire_dwd_combust_frac;//The fraction of dead woody debris that is consumed with fire.
   // FW_MOD_END.
 
   int cell_timelimit; //Time limit in seconds for cell computation time

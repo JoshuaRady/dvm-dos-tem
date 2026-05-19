@@ -82,6 +82,7 @@ SOURCES= 	src/TEM.o \
 		src/FW_Interface.o \
 		src/GFProfile.o \
 		src/GroundFire.o \
+		external/Fireweed/C++/FireweedCrownFireScottReinhardt.o \
 		external/Fireweed/C++/FireweedDeadFuelMoistureFosberg.o \
 		external/Fireweed/C++/FireweedFuelModels.o \
 		external/Fireweed/C++/FireweedFuelTools.o \
@@ -90,8 +91,8 @@ SOURCES= 	src/TEM.o \
 		external/Fireweed/C++/FireweedMetUtils.o \
 		external/Fireweed/C++/FireweedRAFireSpread.o \
 		external/Fireweed/C++/FireweedStringUtils.o \
-		external/Fireweed/C++/FireweedUnits.o \
 		external/Fireweed/C++/FireweedUtils.o \
+		external/Fireweed/C++/FireweedUnits.o \
 		external/Burnup/C++/BurnupHistory.o \
 		external/Burnup/C++/BurnupCore.o \
 		external/Burnup/C++/BurnupFuelModelInterface.o
@@ -143,6 +144,7 @@ OBJECTS =	ArgHandler.o \
 		FW_Interface.o \
 		GFProfile.o \
 		GroundFire.o \
+		FireweedCrownFireScottReinhardt.o \
 		FireweedDeadFuelMoistureFosberg.o \
 		FireweedFuelModels.o \
 		FireweedFuelTools.o \
@@ -151,14 +153,19 @@ OBJECTS =	ArgHandler.o \
 		FireweedMetUtils.o \
 		FireweedRAFireSpread.o \
 		FireweedStringUtils.o \
-		FireweedUnits.o \
 		FireweedUtils.o \
+		FireweedUnits.o \
 		BurnupHistory.o \
 		BurnupCore.o \
 		BurnupFuelModelInterface.o
 
 
-GIT_SHA := $(shell git describe --abbrev=6 --dirty --always --tags)
+# Set if not set from environment or command line...
+# CAUTION! You could override this from command line in a totally
+# meaningless way. But this is useful in a container build environment where
+# we might not be in a git repo and therefore can't call git describe...
+GIT_SHA ?= $(shell git describe --abbrev=6 --dirty --always --tags)
+
 
 TEMOBJ = obj/TEM.o
 

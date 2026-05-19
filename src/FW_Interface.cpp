@@ -23,6 +23,7 @@
 #include "../include/WildFire.h"
 #include "../include/Layer.h"
 
+#include "FireweedCrownFireScottReinhardt.h"
 #include "FireweedDeadFuelMoistureFosberg.h"
 #include "FireweedFuelTools.h"
 #include "FireweedLiveFuelMoistureGSI.h"
@@ -32,6 +33,8 @@
 #include "../include/GroundFire.h"
 
 #include <cmath>//For fmin().
+#include <iomanip>
+#include <limits>
 
 extern src::severity_logger< severity_level > glg;
 
@@ -64,8 +67,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   double burnDepth = 0.0;//Return value.
 
   //Gather weather and environmental conditions:---------------------------
-  double tempAir = edall->d_atms.ta;//Daily air temp (at surface).
-  //Can we use temperature from climate instead?????
+  double tempAir = GetAirTemperature();
   //Current humidity is needed for calculating fuel moisture but that code handles it itself.
   //We may also need it for duff moisture soon.
   
@@ -176,19 +178,66 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
     siteFM = fm;//Save the input for use in getAbgVegetationBurntFractionsProcess().
     siteBU = burnupOutput;//Save the output for use in getAbgVegetationBurntFractionsProcess().
 
-    //Simulate crown fire:-------------------------------------------------
-    //TBD!!!!!
+    if (FireBurned())
+    {
+      BOOST_LOG_SEV(glg, info) << "Surface fire ignited.";
+  
+      //Simulate crown fire:-------------------------------------------------
+      std::vector <double> crownFireCHPAs = SimulateCrownFire();
 
-    //Simulate ground fire:------------------------------------------------
-    //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
-    //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
-    double abgFireEnergy = burnupOutput.history.IntegrateFireIntensity();//kJ/m^2
-    BOOST_LOG_SEV(glg, debug) << "Aboveground fire energy: " << abgFireEnergy << " kJ/m^2";
-    //Only a fraction of the heat of the aboveground fire enters the soil:
-    double fireHeatToSoil = abgFireEnergy * md.fire_heat_frac_to_soil;//kJ/m^2
-    BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
+      //Simulate ground fire:------------------------------------------------
+      //The ground fire simulation uses the soil profile conditions (obtained by the function) and the
+      //energy flux from the aboveground fire into the soil surface (RA + Burnup + crown).
+      double surfFireHPA = burnupOutput.history.IntegrateFireIntensity();//Surface fire heat per area, kJ/m^2
+      double abgFireHPA = surfFireHPA;
+      double fireHeatFracToSoil = md.fire_heat_frac_to_soil;//For surface and passive crown fire.
 
-    burnDepth = SimulateGroundFire(fireHeatToSoil);
+      if (CFB > 0.0)
+      {
+        //The surface HPA is calculated by both Burnup and the crown fire model.  They should be
+        //similar.  Report them so we can be check.
+        BOOST_LOG_SEV(glg, debug) << "Surface fire HPA from Burnup: " << surfFireHPA << " kJ/m^2";;
+        BOOST_LOG_SEV(glg, debug) << "Surface fire HPA from Scott & Reinhart 2021: "
+                                  << crownFireCHPAs[0] << " kJ/m^2";;
+        BOOST_LOG_SEV(glg, debug) << "Crown fire HPA from Scott & Reinhart 2021: "
+                                  << crownFireCHPAs[1] << " kJ/m^2";;
+
+        abgFireHPA += crownFireCHPAs[1];
+
+        //For 'active' crown fire calculate the heat fraction into the soil:
+        if (CFB >= 0.8)
+        {
+          //We estimated a relationship between crown fire intensity and heat into the soil based on
+          //Thompson, Wotton, & Waddington 2015.  More support is needed.
+          //We model the relationship above CFB = 0.8 as exponential decay with the parameters
+          //a = 0.3753007, k = -1/4792.0683714, a maximum value of 0.35, and a minimum of 0.14.
+          fireHeatFracToSoil = 0.3753007 * exp(-totalFireIntensity/4792.0683714) + 0.14;
+          fireHeatFracToSoil = fmin(fireHeatFracToSoil, 0.35);
+        }
+        //For passive crown fire we use the surface fire parameter.
+      }
+
+      //Report fire heat with full numerical precission so it can be re-imported:
+      BOOST_LOG_SEV(glg, debug) << "Aboveground fire heat per area (HPA): "
+                                << std::setprecision(std::numeric_limits<double>::max_digits10)
+                                << abgFireHPA << " kJ/m^2";
+      //Only a fraction of the heat of the aboveground fire enters the soil:
+      BOOST_LOG_SEV(glg, debug) << "Heat fraction to soil: " << fireHeatFracToSoil;
+      double fireHeatToSoil = abgFireHPA * fireHeatFracToSoil;//kJ/m^2
+      BOOST_LOG_SEV(glg, debug) << "Heat into soil: " << fireHeatToSoil << " kJ/m^2";
+
+      burnDepth = SimulateGroundFire(fireHeatToSoil);
+    }
+    else
+    {
+      /*If the surface fire fails to ignite there is no reason to perform the the calculations for
+      the subsequent stages.
+      Note: Ground fire would be safe if there was no crown fire since it will produce no burn when
+      the surface fire HPA is 0.  However, it is not clear if under the right conditions the Scott &
+      Reinhart model could predict a crown fire even if Burnup doesn't predict a surface fire.
+      Therefore it is safer to skip it.*/
+      BOOST_LOG_SEV(glg, info) << "Surface fire failed to ignite.";
+    }
   }
 
   //Litter and soil carbon stocks are updated in WildFire::updateBurntOrgSoil().
@@ -199,6 +248,8 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   fd->fire_soid.burnthick = burnDepth;
 
   BOOST_LOG_SEV(glg, info) << "Final Calculated Organic Burn Thickness: " << burnDepth;
+  //This message is only here to have an invariant final line for searching the log:
+  BOOST_LOG_SEV(glg, debug) << "Leaving WildFire::ProcessWildfire().";
   return burnDepth;
 }
 
@@ -514,7 +565,7 @@ void GetDeadFuelSizeDistribution(const FuelModel& fm, std::vector <double>& dist
  *
  * The vegetation parameter files include names for most of the PFTS, but only in comments, which
  * are not imported.  These include DecShrub and EvrShrub.  The order of PFTs in a CMT are also not
- * systematic.  The only approach that remains is to check the PFT numbers agains their CMTs.  This
+ * systematic.  The only approach that remains is to check the PFT numbers against their CMTs.  This
  * requires knowledge of the CMT file (cmt_bgcvegetation.txt).  Since the CMTs will change in due
  * course this implementation is not robust and should be replaced soon.
  *
@@ -553,7 +604,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
-    case 5://Tussock Tundra (2022)
+    case 5://Tussock Tundra
       if (pftIdx >= 0 && pftIdx <= 2)//Betula, Decid, EGreen
       {
         return true;
@@ -567,7 +618,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
-    case 7://Heath Tundra (2019)
+    case 7://Heath Tundra
       if (pftIdx >= 0 && pftIdx <= 1)//Decid, EGreen
       {
         return true;
@@ -595,7 +646,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
-    case 31://Boreal Bog
+    case 31://Boreal Bog (Based on PFT order in all parameter files except cmt_firepar.txt, which differs)
       if (pftIdx >= 2 && pftIdx <= 3)//DecShrub, EvrShrub
       {
         return true;
@@ -609,11 +660,131 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
+    case 50://Shrub Tundra TVC
+      if (pftIdx >= 0 && pftIdx <= 1)//DecidShrub, EgreenShrub
+      {
+        return true;
+      }
+      break;
+
+    case 51://Tussock Tundra TVC
+    case 52://Heath-lichen (Trail Valley)
+      return false;
+      break;
+
+    case 55://Arctic Fen (Daring Creek)
+      if (pftIdx == 1)//EgreenShrub
+      {
+        return true;
+      }
+      break;
+
+    case 56://Mixed Tundra (Darling Lake)
+      if (pftIdx >= 2 && pftIdx <= 3)//EgreenShrub, DecidShrub
+      {
+        return true;
+      }
+      break;
+
+    case 57://Heath Tundra (Daring Lake)
+      if (pftIdx == 2 || pftIdx == 4)//EgreenShrub, DecidShrub
+      {
+        return true;
+      }
+      break;
+
+    case 60://Peat Plateau
+      if (pftIdx == 1)//EricShrub
+      {
+        return true;
+      }
+      break;
+
+    case 65://Mature Aspen (BOREAS)
+    case 66://Mature Jack Pine (BOREAS)
+      if (pftIdx == 1)//DecidShrub
+      {
+        return true;
+      }
+      break;
+
+    case 67://Mixed Forest (Groundhog Rover)
+      return false;
+      break;
+
+    case 69://Black Spruce (BOREAS)
+      if (pftIdx == 2)//Shrub
+      {
+        return true;
+      }
+      break;
+
+    case 70://Dwarf Shrub (Chokurdakh)
+      if (pftIdx >= 0 && pftIdx <= 1)//DecidShrub, EgreenShrub
+      {
+        return true;
+      }
+      break;
+
+    case 71://Larch Forest (Yakutsk Spasskaya Pad)
+      if (pftIdx == 2)//Shrubs
+      {
+        return true;
+      }
+      break;
+
+    case 73://Tussock Tundra (Cherskii)
+      if (pftIdx == 1)//Shrub
+      {
+        return true;
+      }
+      break;
+
+    case 74://Scots Pine (Zotino)
+      if (pftIdx == 2)//DwarfShrub
+      {
+        return true;
+      }
+      break;
+
     default:
       BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT.";
       break;
   }
   return false;
+}
+
+/** Is this PFT a tree (and what kind)?
+ *
+ * Currently there is no tree flag so we have to use other information to infer a PFT is a tree.
+ * This may be replaced by a flag or wrap a flag later.  i.e:
+ * cd->d_veg.TBD_TREE_FLAG[pftIndex] == ?????)
+ *
+ * This function has dependacies on a particular version of the parameter file via IsShrub().  
+ *
+ * @param[in] cmtNumber The CMT number.
+ * @param[in] pftIdx The index of the PFT to check.
+ *
+ * @returns Postive if a tree (1 = conifer, 2 = decidous), 0 if not a tree.
+ */
+int WildFire::IsTree(const int cmtNumber, const int pftIdx) const
+{
+  int treeCode = 0;
+
+  if (cd->d_veg.ifwoody[pftIdx] && !IsShrub(cd->cmttype, pftIdx))
+  {
+    if (!cd->d_veg.ifdeciwoody[pftIdx])
+    {
+      treeCode = 1;//Conifer
+    }
+    else
+    {
+      treeCode = 2;//Decidous
+    }
+    //Larch might deserve it's own class.
+  }
+
+  return treeCode;
 }
 
 /** Calculate the fuel bed depth and update it in the fuel model passed.
@@ -655,6 +826,38 @@ void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
   }
 }
 
+/** Get the air temperature at the time of fire.
+ *
+ * For calculating fire behavior the temperature at the time of fire is most important.  We don't
+ * know when in the fire occurs but we would like to calcualte midday to afternoon activity.  This
+ * function returns the daily temperature, which is itself interpoated from monthly values.  In the
+ * future we may use the min, mean, and max daily values to calculate a better approximation of the
+ * temperature at a time of day.  To provide a bit more control for now allow the temperature to be
+ * overiddin with a value in the configuration file.  This is limited as it will be applied to all
+ * fires across all dates and locations.
+ *
+ * @returns The air temperature at the time of fire (C).
+ */
+double WildFire::GetAirTemperature() const
+{
+  double tempAir;
+
+  if (md.fire_tempair == -300.0)//Use the value from the input stream:
+  {
+    tempAir = edall->d_atms.ta;//Daily air temp (at surface).
+    //Would it be better to get the temperature from climate instead?
+    //float tempAir = climate->tair[monthIndex]//Monthly
+    //float tempAir = climate->tair_d[dayOfYearIndex];
+  }
+  else//If provided override with the temperature from the configuration file:
+  {
+    BOOST_LOG_SEV(glg, info) << "Air temperature obtained from config file.";
+    tempAir = md.fire_tempair;
+  }
+
+  return tempAir;
+}
+
 /** Get the wind speed at midflame height in m/min.
  *
  * The Rothermel Albini spread model takes midflame wind speed, an ill defined quantity representing
@@ -665,7 +868,6 @@ void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
  * We need a sub-daily value ~ daily value?
  * The code has to do the following:
  * - Get the daily windspeed from the host model.
- *   Note: Windspeed is not yet available in DVM-DOS-TEM, but it should be soon.
  * - Calculate the windspeed at ~2m if the provided wind speed is at another height.
  * - Possibly: Estimate a sub-daily from a daily mean value.  The fire may occur on timescale where
  *   it occurs at a specific time of day.  In this case it would be good to estimate what the wind
@@ -680,26 +882,98 @@ void CalculateFuelBedDepth(FuelModel& fm, const bool dynamic)
  * daily to sub-daily wind (see above).
  *
  * @note Used in the process wildfire model only.
+ * @note Windspeed is not yet available in DVM-DOS-TEM, but it should be soon.  This code returns
+ *       a stub value that may be overriden in the configuraiton file.
  */
 double WildFire::GetMidflameWindSpeed() const
 {
   double windSpeed;//Return value.
   
-  //Draft:
-  //If this is daily how do we know what day of the month it is?
-  //The wind speed will be provided as directional components in m/s at 2 meters.
-  //double u = edall.d_atms.EasternWindSpeed;//Zonal component U.		Confirm units!!!!!
-  //double v = edall.d_atms.NorthernWindSpeed;//Meridional component V.
-  //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));//Get the vector wind speed.
-  //windSpeed *= 60;//Convert from m/s to m/min.
-  //This a daily average value.  An afternoon value would probably be better.
+  if (md.fire_windspeed == -1.0)//Use the value from the input stream:
+  {
+    //Draft:
+    //If this is daily how do we know what day of the month it is?
+    //The wind speed will be provided as directional components in m/s at 2 meters.
+    //double u = edall.d_atms.EasternWindSpeed;//Zonal component U.		Confirm units!!!!!
+    //double v = edall.d_atms.NorthernWindSpeed;//Meridional component V.
+    //windSpeed = std::sqrt(std::pow(u, 2) + std:pow(v, 2));//Get the vector wind speed.
+    //windSpeed *= 60;//Convert from m/s to m/min.
+    //This a daily average value.  An afternoon value would probably be better.
 
-  //Temporary stub, return an arbitrary value!!!!!:
-  //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
-  //6 * ftPerMi / 60 / ftPerM = 160.9344
-  windSpeed = 160.9344;
-  
+    //Temporary stub, return an arbitrary value!!!!!:
+    //Summer average wind speeds are ~6 mph in Fairbanks Alaska.
+    //6 * ftPerMi / 60 / ftPerM = 160.9344
+    BOOST_LOG_SEV(glg, debug) << "Stub value for wind speed used.";
+    windSpeed = 160.9344;
+  }
+  else//If provided override with the windspeed from the configuration file:
+  {
+    BOOST_LOG_SEV(glg, info) << "Wind speed obtained from config file.";
+    windSpeed = md.fire_windspeed;
+  }
+
   return windSpeed;
+}
+
+/** Get the wind reduction factor for the site.
+ *
+ * The wind reduction factor is a function of forest stand density and structure and commonly
+ * ranges from 0.1 for a dense fully sheltered stand to 0.3 for sparce partially sheltered stands.
+ * 0.4 would be normally be considered unsheltered but is also used as a special value in the crown
+ * fire calculations of Rothermel 1991.
+ *
+ * This is currenltly a stub.  A calculation or input parameters may be added.
+ *
+ * @returns WRF, the wind reduction factor used to estimate midflame wind speed (U) from open
+ *          (6.1 m) windspeed (O), (fraction, midflame wind speed / open wind speed).
+ *
+ * @note Used in the process wildfire model only.
+ * @note This currently only intended for use with forested CMTs with crowning potential.
+ */
+double WildFire::GetWindReductionFactor() const
+{
+  BOOST_LOG_SEV(glg, debug) << "Stub value for wind reduction factor used.";
+  return 0.15;
+}
+
+/** Get the relative humidity at the time of fire.
+ *
+ * @param dayOfYearIndex The day of the year to get the humidity for.
+ *
+ * @returns The percent relative humidity at the time of fire (%).
+ */
+double WildFire::GetRelativeHumidity(const int dayOfYearIndex) const
+{
+  double rhPct;
+
+  if (md.fire_rh_pct == -1.0)//Use the value from the input stream:
+  {
+    //Atmospheric pressure is needed for the the Fireweed code method.
+    //Sea level barometric pressure will be available soon but is not currently.  Use this along with
+    //cd->cell_elevation() to get the pressure at this elevation.
+    //p_hPa = Z;
+
+    //Partial pressure of water vapor:
+    //This is an input variable.  There has been some discussion recently about the units of this.
+    //The docs say it is in hPa but it is used in the code as if it is in Pa
+    //(see Climate.cpp calculate_vpd()).
+    float P_Pa = climate->vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
+
+    //Saturated vapor pressure:
+    //double P_s_hPa = SaturationVaporPressureBuck(tempAir, p_hPa);//Fireweed method returns hPa.
+    //This is a computed climate variable.
+    float P_s_Pa = climate->svp_d[dayOfYearIndex];//From the code this must be in Pa.
+
+    //Use the pressures to calculate relative humidity:
+    rhPct = RHfromVP(P_Pa, P_s_Pa);
+  }
+  else//If provided override with the windspeed from the configuration file:
+  {
+    BOOST_LOG_SEV(glg, info) << "Relative humidity obtained from config file.";
+    rhPct = md.fire_rh_pct;
+  }
+
+  return rhPct;
 }
 
 /** Calculate fuel moisture based on recent weather:
@@ -736,34 +1010,15 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
   //it currently returns 366 days.
   int dayOfYearIndex = temutil::day_of_year(monthIndex, dayOfMonthIndex);
 
-
   //Dead fuel moisture:---------------------------
   BOOST_LOG_SEV(glg, debug) << "Calculating dead fuel moisture:";//Temporary?????
 
   //Current air temperature:
-  //float tempAir = climate->tair[monthIndex]//Monthly
-  float tempAir = climate->tair_d[dayOfYearIndex];
+  double tempAir = GetAirTemperature();
 
   //Calculate current relative humidity:
-
-  //Atmospheric pressure is needed for the the Fireweed code method.
-  //Sea level barometric pressure will be available soon but is not currently.  Use this along with
-  //cd->cell_elevation() to get the pressure at this elevation.
-  //p_hPa = Z;
-
-  //Partial pressure of water vapor:
-  //This is an input variable.  There has been some discussion recently about the units of this.
-  //The docs say it is in hPa but it is used in the code as if it is in Pa
-  //(see Climate.cpp calculate_vpd()).
-  float P_Pa = climate->vapo_d[dayOfYearIndex];//My reading is that vapo_d is a vector of daily values for the whole year.
-
-  //Saturated vapor pressure:
-  //double P_s_hPa = SaturationVaporPressureBuck(tempAir, p_hPa);//Fireweed method returns hPa.
-  //This is a computed climate variable.
-  float P_s_Pa = climate->svp_d[dayOfYearIndex];//From the code this must be in Pa.
-
-  //Use the pressures to calculate relative humidity:
-  double rhPct = RHfromVP(P_Pa, P_s_Pa);
+  double rhPct = GetRelativeHumidity(dayOfYearIndex);
+  BOOST_LOG_SEV(glg, debug) << "Percent relative humidity: " << rhPct;//How many digits do we need?
 
   //We assume that fires occur in the mid-afternoon.  The exact hour might need to be shared across
   //the entire fire code.  The Fosberg model was originally devise with afternoon (~14:30) values in
@@ -771,10 +1026,11 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
   int hourOfDay = 15;
 
   //The percent slope is stored in he CohortData object and also in the wildfire object:
+  //Note: Slope is also duplicated in the Wildfire object.
   double slopePct = cd->cell_slope;//Percent
+  BOOST_LOG_SEV(glg, debug) << "Percent slope: " << slopePct;
 
   //Get the aspect:
-  //Slope is also duplicated in the Wildfire object.
   double aspect = cd->cell_aspect;//Degrees
 
   //Shading should take into consideration both cloudiness and canopy cover:
@@ -856,6 +1112,125 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
   M_f_ij[4] = woodyLFM / 100;
 
   return M_f_ij;
+}
+
+/** Calculate conifer foliar moisture content.
+ *
+ * The moisture cotent of conifir needles typcally varies from around 75 - 150%.  It varies by tree
+ & species, season, location, elevation, and needle age.  It is not stongly responsive to
+ * envioromental conditions.
+ * 
+ * This function is little more than a stub that returns the a typical value of 100% recommened in
+ * the absence of other infromation (Scott & Reinhardt 2001).  It may be improved in the future.
+ * The month of year and species information are candidates that could be used to better inform
+ * values.
+ *
+ * Could add @param[in] monthIndex The current month as a zero based index.
+ #
+ * @returns FMC Foliar moisture content of (conifer) canopy (%, water weight/dry fuel weight x 100).
+ *
+ * @note Used in the process wildfire model only.
+ */
+double WildFire::CalculateFoliarMoistureContent() const
+{
+	BOOST_LOG_SEV(glg, debug) << "Stub value for foliar moisture content used.";
+	return 100.0;
+}
+
+/** Get the canopy bulk density for the stand.
+*
+* This returns a value but there is a bit of work to make it robust.
+*
+* @returns CBD Canopy bulk density, the dry mass of canopy fuel, primarily foliage (needles) and
+*              fine branches, per volume of the canopy (kg/m^3).  AKA crown bulk density.
+*
+* @note Used in the process wildfire model only.
+*/
+double WildFire::GetCanopyBulkDensty() const
+{
+  double CBD = 0.0;
+
+  if (firpar.cbd > 0.0)
+  {
+    CBD = firpar.cbd;
+    //It the value is passed in we should do some sanity checks on it.
+    //Can we use the canopy fuel / m^2 to see if it needs to be reduced?
+    //I haven't come with a way to do the check yet.
+  }
+  else
+  {
+    //To compute CBD we need fuel mass and canopy volume.  We can get foliage mass per area and
+    //estimate a corresponding fine branch (an bark) biomass from that.  We don't have a way to know
+    //the canopy depth in the model at this time.
+
+    BOOST_LOG_SEV(glg, debug) << "Stub value for canopy bulk density used.";
+    CBD = 0.15;//An initial stub value for when an input it missing.
+  }
+
+  return CBD;
+}
+
+/** Get the crown base height for the stand.
+*
+* @returns CBH Crown base height (m). AKA canopy base height, live crown base height (LCBH), z in
+*              original Van Wagner notation.
+*
+* @note Used in the process wildfire model only.
+* @note This currently just returns the parameter value (or a stub) but we may add age adjustment
+*       etc. to the output.
+* @note CBH is only valid for forests and we could check for that.
+*/
+double WildFire::GetCrownBaseHeight() const
+{
+  double CBH = 0.0;
+  
+  if (firpar.cbh > 0.0)
+  {
+    CBH = firpar.cbh;
+  }
+  else
+  {
+    //In the future a missing value may be treated as an error.
+    //For now provide a stub value to allow for testing while values are compiled.
+    BOOST_LOG_SEV(glg, debug) << "Stub value for crown base height used.";
+    CBH = 5.0;
+  }
+  
+  return CBH;
+}
+
+/* Get the canopy fuel load for the stand.
+*
+* Canopy fuel consist of foliage (needles), some degree of fine branches, as well as some bark
+* lichen etc. in some cases.  Crown fire models focus on coniferous crowns so this function returns
+* an estimate of coniferous fuel.
+*
+* @returns CFL, canopy fuel load per area (kg/m^2).  AKA crown fuel load.
+*/
+double WildFire::GetCanopyFuelLoad() const
+{
+  double CFL = 0.0;
+  /*Estimate the non-foliage fuel as a ratio to the foliage (e.g. 0.5 means 5 g of branches etc.
+  burn for every 10 of foliage.  Fine branches directly supply needles so this ratio is an
+  expression of a pipe model allometry.  Other crown fuel like bark may not scale so directly.  It
+  is also the case that the ratio probalbly increases with fire intensity but that is beyond what we
+  have data to support at this time.*/
+  const double nonFoliageFuelRatio = 0.5;//Uniformed intial guestimate.  Move to parameter?
+
+  //Loop through the CMT's PFTs.
+  for (int pftIndex = 0; pftIndex < NUM_PFT; pftIndex++)
+  {
+    //Add up canopy fuel for all coniferous tree PFTs:
+    if (IsTree(cd->cmttype, pftIndex) == 1)
+    {
+      //Foilage and non-foilage carbon converted to dry biomass:
+      CFL += bd[pftIndex]->m_vegs.c[I_leaf] * nonFoliageFuelRatio * c2b / gPerKg;
+    }
+    //We assume that decidous leaves may burn but due to their moisture they are heat sinks to
+    //neutral at best and don't contrbute to crown fire behavior.
+  }
+
+  return CFL;
 }
 
 /** Simulate combustion of surface fuels.
@@ -1056,9 +1431,34 @@ void WildFire::getAbgVegetationBurntFractionsProcess(const int pftIndex)//Name i
       }
       else//Trees:
       {
-        //Ignore trees for now.  Their burning will be added with crown fire:
-        this->r_burn2ag_cn = 0;
-        this->r_dead2ag_cn = 0;
+        //For our purposes trees only burn by crown fire, indicated by a CFB greater than 0:
+        if (CFB > 0.0)
+        {
+          //The extent of combustion is a linear function of the crown fraction burned:
+          //We assume the maximum tree consumption is 0.35.  This is currently true for all tree
+          //PFTs but this could change with an update to the parameter file.  We could get
+          //fvcomb_sev5 for this PFT and use that but since the dead pool flux calculation depends
+          //on the current value things could break.
+          double burntFrac = 0.35 * CFB;
+
+          //Calculate the total mortality (burnt + flux to dead pool) from the burnt fraction:
+          //We fit an equation to the relationship between the extisting severity level parameters
+          //to match the relationship in a continueous fashion:
+          double totalMortFrac = 1.168170 * (1.0 - exp(-5.354249 * burntFrac));
+
+          //We expect conifers to drive crown fire behavior but for mixed forests we assume that
+          //decidous trees experiance comparable combustion and mortaity.  This may not be true but
+          //we lack infomation to support a better scheme and this is constent with the previous
+          //model.
+          this->r_burn2ag_cn = burntFrac;
+          this->r_dead2ag_cn = totalMortFrac - burntFrac;
+        }
+        else
+        {
+          //Note: If CFB = 0 the above calculations should yield zeros, but let's not take chances.
+          this->r_burn2ag_cn = 0;
+          this->r_dead2ag_cn = 0;
+        }
       }
     }
   }
@@ -1134,6 +1534,71 @@ double WildFire::GetLitterBurntFraction() const
   return litterBurntFraction;
 }
 
+/** Simulate crown fire.
+ * 
+ * @returns A vector of the heat per unit area (HPA) of the surface fire component, the crown fire
+ *          component, and of the whole fire in that order (kJ/m^2).  If no crown fire occurs the
+ *          vector will be all zeros.  CFB and totalFireIntensity are also updated.
+ *
+ * @note We return a vector of 0s because is seems a bit safer than returning an empty vector.
+ *       However, the calling code will do better to check if CFB > 0 to determine if a crown fire
+ *       occured.
+ * @note Used in the process wildfire model only.
+ */
+std::vector <double> WildFire::SimulateCrownFire()
+{
+  std::vector <double> cHPAs = {0, 0, 0};
+
+  BOOST_LOG_SEV(glg, debug) << "Entering SimulateCrownFire()...";
+
+  //Check to see if the CMT can ecologically have a crown fire:
+  //Negative prameter values for CBD and CBH signal that this CMT can't crown.
+  if (firpar.cbd > 0.0 && firpar.cbh > 0.0)
+  {
+    //Gather crown fire model inputs:
+    //The site's fuel model is saved in siteFM and reflects the pre-fire states.
+    double WRF = GetWindReductionFactor();
+    double U = GetMidflameWindSpeed();
+    double slopeSteepness = SlopePctToSteepness(cd->cell_slope);//Or pass in?
+    double FMC = CalculateFoliarMoistureContent();
+    double CBD = GetCanopyBulkDensty();
+    double CBH = GetCrownBaseHeight();
+    FuelModel fuelModel10 = GetFuelModelFromCSV(md.fire_fuel_model_file, 10);
+
+    BOOST_LOG_SEV(glg, debug) << "WRF = " << WRF;
+    //Wind and slope are printed elsewhere, but we could print them here too.
+    BOOST_LOG_SEV(glg, debug) << "FMC = " << FMC << " %";
+    BOOST_LOG_SEV(glg, debug) << "CBD = " << CBD << " kg/m^3";
+    BOOST_LOG_SEV(glg, debug) << "CBH = " << CBH << " m";
+
+    //Calculate CFB:
+    CFB = CrownFractionBurned(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, fuelModel10, 'U');
+    //The crown combustion fraction is stored for use in getAbgVegetationBurntFractionsProcess() to
+    //derive combustion and non-combustion mortality.
+
+    if (CFB > 0.0)//A crown fire initiates.
+    {
+      BOOST_LOG_SEV(glg, info) << "Crown fire occured. CFB = " << CFB;
+
+      //Calculate crown fire heat per area:
+      double CFL = GetCanopyFuelLoad();
+      BOOST_LOG_SEV(glg, debug) << "CFL = " << CFL << " kg/m^2";
+      cHPAs = CrownComponentHPA(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, CFL, fuelModel10, 'U');
+
+      //Calculate and store Byram's fire intensity:
+      totalFireIntensity = CrownFireIntensity(siteFM, U, WRF, slopeSteepness, CBD, CBH, FMC, CFL,
+                                              fuelModel10, 'U');//kW/m
+      BOOST_LOG_SEV(glg, debug) << "Total fire intensity = " << totalFireIntensity << " kW/m";
+    }
+    else
+    {
+      BOOST_LOG_SEV(glg, info) << "Crown fire did not occur.";
+    }
+  }
+
+  return cHPAs;
+}
+
 /** Simulate ground fire returning the burn depth.
  * 
  * This effectively replaces the functionality of WildFire::getBurnOrgSoilthick() in the original
@@ -1152,7 +1617,7 @@ double WildFire::SimulateGroundFire(const double fireHeatInput) const
 
   GFProfile gfProfile = GroundFireGetSoilProfile();//Get the soil profile information the model needs.
   double burnDepth = DownwardGroundFire(gfProfile, fireHeatInput, md.fire_gf_heat_loss_factor,
-                                      md.fire_gf_surface_pd, md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
+                                        md.fire_gf_surface_pd, md.fire_gf_smolder_pd) / 100.0;//Convert cm to meters.
 
   BOOST_LOG_SEV(glg, debug) << "Profile after DownwardGroundFire():";
   BOOST_LOG_SEV(glg, debug) << gfProfile;
@@ -1196,13 +1661,23 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   GFProfile gfProfile(numOrgLayers);
 
   //Walk through the organic soil layers and copy / convert properties to our new profile:
+  /*There are two representations of the soil layers, the ground object and edall.  We walk both
+  layer representaions simultaneously to get the values we need.  The ground object holds all the
+  properties we need but the temperature and moisture values, which seem to be daily values from the
+  end of the month, have been problematic.  edall does not have all the physical properties we need
+  but is has both monthly and daily temperature and moisture values.*/
   Layer* thisLayer = ground->fstshlwl;
+  int layerIndex = MAX_MOS_LAY;//Index of the top organic layer, right below the bottom moss layer.
   for (int i = 0; i < numOrgLayers; i++)
   {
     //Copy data from the source layer to the matching layer:
     gfProfile.thickness_cm[i] = thisLayer->dz * 100.0;//Layer thickness (m -> cm).
     gfProfile.layerDepth[i] = thisLayer->z * 100.0;//Depth at top of layer (m -> cm).
-    gfProfile.tempC[i] = thisLayer->tem;//Layer temperature in Celcius.
+    gfProfile.tempC[i] = edall->m_sois.ts[layerIndex];//Layer temperature in Celcius.
+    //Compare values from two soil representations:
+    //gfProfile.tempC[i] = thisLayer->tem;//Layer temperature in Celcius.
+    BOOST_LOG_SEV(glg, debug) << "Soil layer temp (C): ground Layer->tem = " << thisLayer->tem
+                              << ", edall->m_sois.ts = " << edall->m_sois.ts[layerIndex];
 
     //The humic layers should probably have higher temperatures of ignition but more research is
     //needed.  The values should parameters or be calculated from the level of decay.  They will be
@@ -1226,7 +1701,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
     //The soil organic / inorganic fractions are not explicit properties tracked by TEM.  Carbon is
     //used for accounting but this will be less than the total soil organic mass, that which is lost
-    //on /combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
+    //on combustion.  We can estimate the SOM, the complement of the inorganic fraction, from SOC.
     //A SOC to SOM ratio of 0.5 is commonly used for soils without much support.  We collected 
     //literature data for histosols, specificlaly peats, and found support for this value.
     const double SOCtoSOM_Ratio = 0.5;//WILDFIRE_PARAMETER
@@ -1270,12 +1745,18 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     //Soil moisture content (%):
     //This is the water mass per volume / dry soil mass per volume * 100%.
     //Ice needs to be added to the ground fire model explicitly but for now we convert it to water.
-    //liq is liquid water and ice is ice content in kg/m^2 per layer.  Use the layer depth to convert to density:
+    //liq is liquid water and ice is ice content in kg/m^2 per layer.  Use the layer depth to
+    //convert to water mass per volume:
     //kg/m^2 / m = kg/m^3
-    double waterDensity = (thisLayer->liq + thisLayer->ice) / thisLayer->dz;//kg/m^3	Or moistureContent?????
-    
+    double waterContent = (edall->m_sois.liq[layerIndex] + edall->m_sois.ice[layerIndex]) /
+                          thisLayer->dz;//kg/m^3
+    //Compare values from two soil representations:
+    double waterContentL = (thisLayer->liq + thisLayer->ice) / thisLayer->dz;//kg/m^3, Just for info.
+    BOOST_LOG_SEV(glg, debug) << "Soil water content (kg/m^3): ground object = " << waterContentL
+                              << ", edall = " << waterContent;
+
     //kg/m^3 / kg/m^3 * 100% = %
-    gfProfile.moistureContentPct[i] = waterDensity / gfProfile.bulkDensity[i] * 100.0;//%
+    gfProfile.moistureContentPct[i] = waterContent / gfProfile.bulkDensity[i] * 100.0;//%
 
     //Layer heat capacity (kJ/kg/K):
     //vhcsolid is volumetric heat capacity (J/m^3/K) for dry compacted soil. Converting to specific
@@ -1284,10 +1765,16 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     gfProfile.c_s[i] = (thisLayer->vhcsolid * (1.0 - thisLayer->poro)) / gfProfile.bulkDensity[i] / 1000.0;//kJ/kg/K
 
     thisLayer = thisLayer->nextl;
+    layerIndex += 1;
   }
 
   BOOST_LOG_SEV(glg, debug) << "Initial translated profile:";
-  BOOST_LOG_SEV(glg, debug) << gfProfile;
+  //BOOST_LOG_SEV(glg, debug) << gfProfile;
+  //Print with full numeric resolution to enable exact reimport.  We match the default description
+  //line and start the profile on a new line for automated log searches.
+  gfProfile.SetPrintMode(-1);
+  BOOST_LOG_SEV(glg, debug) << "Ground fire soil profile:" << '\n' << gfProfile;
+  gfProfile.SetPrintMode(0);//Restore.
 
   //If there is a moss layer the top organic layer will not start at depth zero.  Adjust for this:
   gfProfile.Resurface();
@@ -1303,9 +1790,8 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
 
   //Convert to layers of equal thickness and interpolate the values in the original profile:
   gfProfile.Interpolate(md.fire_gf_layer_thickness);
-
-  BOOST_LOG_SEV(glg, debug) << "Profile after Interpolate():";
-  BOOST_LOG_SEV(glg, debug) << gfProfile;
+  //It is not necissary to print the profile here since it will be printed after the ground fire
+  //calculation.  The interpolated profile infomation witl not have changed.
 
   return gfProfile;
 }

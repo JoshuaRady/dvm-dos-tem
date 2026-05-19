@@ -154,6 +154,10 @@ ModelData::ModelData(Json::Value controldata):force_cmt(-1) {
   fire_gf_smolder_pd       = controldata["module_settings"]["dsb"]["fire"]["fire_gf_smolder_pd"].asDouble();
   fire_gf_layer_thickness  = controldata["module_settings"]["dsb"]["fire"]["fire_gf_layer_thickness"].asDouble();
   fire_temp_fm             = controldata["module_settings"]["dsb"]["fire"]["fire_temp_fm"].asInt();
+  fire_windspeed           = controldata["module_settings"]["dsb"]["fire"]["fire_windspeed"].asDouble();
+  fire_tempair             = controldata["module_settings"]["dsb"]["fire"]["fire_tempair"].asDouble();
+  fire_rh_pct              = controldata["module_settings"]["dsb"]["fire"]["fire_rh_pct"].asDouble();
+  fire_dwd_combust_frac    = controldata["module_settings"]["dsb"]["fire"]["fire_dwd_combust_frac"].asDouble();
   // FW_MOD_END.
 }
 
@@ -486,11 +490,11 @@ void ModelData::create_netCDF_output_files(int ysize, int xsize,
 #ifdef WITHMPI
       // Creating PARALLEL NetCDF file
       BOOST_LOG_SEV(glg, debug)<<"Creating a parallel output NetCDF file " << creation_filestr;
-      temutil::nc( nc_create_par(creation_filestr.c_str(), NC_CLOBBER|NC_NETCDF4|NC_MPIIO, MPI_COMM_WORLD, MPI_INFO_NULL, &ncid) );
+      temutil::nc( nc_create_par(creation_filestr.c_str(), NC_CLOBBER|NC_NETCDF4|NC_MPIIO, MPI_COMM_WORLD, MPI_INFO_NULL, &ncid), creation_filestr );
 #else
       // Creating NetCDF file
       BOOST_LOG_SEV(glg, debug) << "Creating an output NetCDF file " << creation_filestr;
-      temutil::nc( nc_create(creation_filestr.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid) );
+      temutil::nc( nc_create(creation_filestr.c_str(), NC_CLOBBER|NC_NETCDF4, &ncid), creation_filestr );
 #endif
 
       BOOST_LOG_SEV(glg, debug) << "Adding file-level attributes";
@@ -611,7 +615,7 @@ void ModelData::create_netCDF_output_files(int ysize, int xsize,
 
         BOOST_LOG_SEV(glg, debug) << "Opening historic climate file: "
                                   << this->hist_climate_file;
-        temutil::nc( nc_open(this->hist_climate_file.c_str(), NC_NOWRITE, &hist_climate_ncid) );
+        temutil::nc( nc_open(this->hist_climate_file.c_str(), NC_NOWRITE, &hist_climate_ncid), this->hist_climate_file );
         temutil::nc( nc_inq_varid(hist_climate_ncid, "time", &hist_climate_tcV));
 
         // Copy attributes for time variable
@@ -633,7 +637,7 @@ void ModelData::create_netCDF_output_files(int ysize, int xsize,
 
         BOOST_LOG_SEV(glg, debug) << "Opening projected climate file: "
                                   << this->proj_climate_file;
-        temutil::nc( nc_open(this->proj_climate_file.c_str(), NC_NOWRITE, &proj_climate_ncid) );
+        temutil::nc( nc_open(this->proj_climate_file.c_str(), NC_NOWRITE, &proj_climate_ncid), this->proj_climate_file );
         temutil::nc( nc_inq_varid(proj_climate_ncid, "time", &proj_climate_tcV));
 
         temutil::nc( nc_copy_att(proj_climate_ncid, proj_climate_tcV, "units", ncid, tcVar));
@@ -681,7 +685,7 @@ void ModelData::create_netCDF_output_files(int ysize, int xsize,
         int gmsrcid;
         BOOST_LOG_SEV(glg, debug) << "Opening vegetation file: "
                                   << this->veg_class_file;
-        temutil::nc( nc_open(this->veg_class_file.c_str(), NC_NOWRITE, &gmsrcid) );
+        temutil::nc( nc_open(this->veg_class_file.c_str(), NC_NOWRITE, &gmsrcid), this->veg_class_file );
 
         // Figure out which id is for grid mapping variable
         int srcgmvid = -1;

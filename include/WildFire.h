@@ -134,11 +134,13 @@ private:
   Ground * ground;// FW_MOD: The process based fire model needs access to the soil layer properties.
 
   //FW_NOTE:
-  // The following two objects are only used in the process based wildfire mode and will only be
+  // The following thee objects are only used in the process based wildfire mode and will only be
   // valid after ProcessWildfire() is called.  This is an initial implementation and we may find a
-  // different way to pass the simulation data to functions that need them.  The names may change.
+  // different way to pass the simulation data to functions that need them.
   FuelModel siteFM;// FW_MOD
   BurnupSim siteBU;// FW_MOD
+  double CFB;// FW_MOD
+  double totalFireIntensity;// FW_MOD Only set during crown fire at this time.
 
   bool isFireReturnDate(const int year, const int midx);// FW_MOD
   double getBurnOrgSoilthick(const int year);
@@ -151,22 +153,33 @@ private:
                       double& comb_vegn, double& dead_bg_vegc, double& dead_bg_vegn,
                       double& reta_vegc, double& reta_vegn);// FW_MOD
 
- // FW_MOD_START: Functions for the process based wildfire implementation.
- // FW_NOTE: These functions are defined in FW_Interface.cpp for now.
- double ProcessWildfire(const int monthIndex);
- int GetMatchingFuelModel(const int cmt) const;
- 
- void CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDead);
- double GetLitterRawC() const;
- double GetPFTBiomass(const int pftIndex) const;
- double GetNonVascularBiomass() const;
+  // FW_MOD_START: Functions for the process based wildfire implementation.
+  // FW_NOTE: These functions are defined in FW_Interface.cpp for now.
+  double ProcessWildfire(const int monthIndex);
+  int GetMatchingFuelModel(const int cmt) const;
 
- double GetMidflameWindSpeed() const;
- std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
+  void CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDead);
+  double GetLitterRawC() const;
+  double GetPFTBiomass(const int pftIndex) const;
+  double GetNonVascularBiomass() const;
 
- double SimulateGroundFire(const double fireHeatInput) const;
- GFProfile GroundFireGetSoilProfile() const;
- // FW_MOD_END.
+  int IsTree(const int cmtNumber, const int pftIdx) const;
+
+  double GetAirTemperature() const;
+  double GetMidflameWindSpeed() const;
+  double GetWindReductionFactor() const;
+  double GetRelativeHumidity(const int dayOfYearIndex) const;
+  std::vector <double> CalculateFuelMoisture(const FuelModel& fm, const int monthIndex) const;
+  double CalculateFoliarMoistureContent() const;
+  double GetCanopyBulkDensty() const;
+  double GetCrownBaseHeight() const;
+  double GetCanopyFuelLoad() const;
+
+  std::vector <double> SimulateCrownFire();
+
+  double SimulateGroundFire(const double fireHeatInput) const;
+  GFProfile GroundFireGetSoilProfile() const;
+  // FW_MOD_END.
 
   ////////
   // MAYBE get rid of all these???

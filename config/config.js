@@ -164,19 +164,29 @@
         //Calculate the fuel bed depth, AKA delta, (true) or use a fixed depth (false):
         "fire_calculate_delta": false,
         //Ground fire model paramters and settings:
-        //The fraction of aboveground fire heat that enters the soil:
-        "fire_heat_frac_to_soil": 0.15,
+        //The fraction of aboveground fire heat (HPA) that enters the soil:
+        "fire_heat_frac_to_soil": 0.25,
         //The fraction of heat lost from the soil:
-        "fire_gf_heat_loss_factor": 0.83,
+        "fire_gf_heat_loss_factor": 0.50,
         //The maximum heat penetration depth for the soil surface heat transfer approximation (cm):
         "fire_gf_surface_pd": 1.0,
         //The maximum heat penetration depth for the smoldering heat transfer approximation (cm):
-        "fire_gf_smolder_pd": 5.0,
+        "fire_gf_smolder_pd": 3.0,
         //The soil layer thickness for the simulation (cm):
         "fire_gf_layer_thickness": 0.1,
         //A temporary parameter to force the fuel model choice:
         //Default value of -1 indicates to ignore the setting.
-        "fire_temp_fm": -1
+        "fire_temp_fm": -1,
+        //The following parameters to provide alternate meterology at the time of the fire
+        //(possibly temporary).
+        //Fire wind speed (m/min), -1 to ingnore:
+        "fire_windspeed": -1.0,
+        //Air temperature at the time of the fire (C), -300 to ignore:
+        "fire_tempair": -300.0,
+        //Percent relative humidity at the time of fire (%), -1 to ingnore:
+        "fire_rh_pct": -1.0,
+        //The fraction of dead woody debris that is consumed with fire.  1.0 matches old model behavior.
+        "fire_dwd_combust_frac": 1.0
       }
       // Future disturbances go here...
       //"insect": { ... },
