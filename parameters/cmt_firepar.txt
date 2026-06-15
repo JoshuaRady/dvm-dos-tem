@@ -70,8 +70,8 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //  
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 162    //cmt2fm:// // The matching fuel model.  Provisionally FM TU2 / 162 //
--2.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--2.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+0.783   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+1.50   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT03 // Boreal Deciduous Forest // Calibrated for Murphy Dome.
 //EverTree  DecShrub    DecTree      Moss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -94,8 +94,8 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 161    //cmt2fm:// // The matching fuel model.  Provisionally FM TU1 / 161 //
--2.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--2.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+0.051   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+1.60   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT04 // Shrub Tundra // Calibrated for Toolik area.
 //Salix      Betula      Decid       EGreen       Sedges       Forbs        Grasses      Lichens      Feather      PFT9      // name: units // description // comment // refs
@@ -504,8 +504,8 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161! //
--2.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--2.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+-1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+-1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT66 // Mature Jack Pine // BOREAS
 // EGreenTree   DecidShrub    Lichen  Feathermoss      PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -528,8 +528,8 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161! //
--2.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--2.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+0.106   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+4.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT67 // Mixed Forest-Groundhog River
 //  DecidTrees  EGreenTree       Mosses         Forb         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -552,8 +552,8 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 161    //cmt2fm:// // The matching fuel model.  Provisionally FM TU1 = 161 //
--2.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--2.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+0.051   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+1.60   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT69 // Black Spruce BOREAS// 
 // EGreenTree  DecidTree    Shrub     Sphagnum  FeatherMoss     Lichen        PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -624,8 +624,8 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161! //
--2.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--2.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+0.30   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+7.39   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT73 // Tussock Tundra-Cherskii // 
 //    Sedge        Shrub         Moss         PFT3         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -672,6 +672,6 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 161    //cmt2fm:// // The matching fuel model.  Placeholder until assigned TU1 = 161! //
--2.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--2.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+0.26   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+15.5   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
