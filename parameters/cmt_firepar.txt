@@ -22,8 +22,8 @@
 0.10         //r_retain_c:// // ratio of burning residue C (retained into soil) //None
 0.10         //r_retain_n:// // ratio of burning residue N (retained into soil)//None
 1            //cmt2fm:// // The matching fuel model.  Fm 1 is a placeholder until a version of NB9 can be implemented.//
--1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+-1.0         //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+-1.0         //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT01 // Boreal Black Spruce // Calibrated for Murphy Dome.
 //EverTree  DecShrub    DecTree      Moss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -46,8 +46,8 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 163    //cmt2fm:// // The matching fuel model.  FM TU3 / 163 //
-0.224   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
-1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+0.224  //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+1.0    //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT02 // Boreal White Spruce Forest // Calibrated with Bonanza Creek climate.
 //EverTree  DecShrub    DecTree      Moss         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9      // name: units // description // comment // refs
@@ -65,12 +65,12 @@
 0.48   //foslburn_sev2://  // fraction of OS layer burned for severity 2 // 
 0.54   //foslburn_sev3://  // fraction of OS layer burned for severity 3 // 
 0.69   //foslburn_sev4://  // fraction of OS layer burned for severity 4 // 
-0.80    //foslburn_sev5://  // fraction of OS layer burned for severity 5 // 
+0.80   //foslburn_sev5://  // fraction of OS layer burned for severity 5 // 
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //  
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //  
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 162    //cmt2fm:// // The matching fuel model.  FM TU2 / 162 //
-0.783   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+0.783  //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 1.50   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT03 // Boreal Deciduous Forest // Calibrated for Murphy Dome.
@@ -94,7 +94,7 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 161    //cmt2fm:// // The matching fuel model.  FM TU1 / 161 //
-0.051   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+0.051  //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 1.60   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT04 // Shrub Tundra // Calibrated for Toolik area.
@@ -288,8 +288,8 @@
 0.10    //r_retain_c://  // ratio of burning residue C (retained into soil) //
 0.10    //r_retain_n://  // ratio of burning residue N (retained into soil) //
 122     //cmt2fm:// // The matching fuel model.  FM GS2 / 122 //
--1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
--1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+-1.0    //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+-1.0    //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT44 // Shrub Tundra Kougarok
 //Salix      Betula      Decid       EGreen       Sedges       Forbs        Grasses      Lichens      Feather      PFT9      // name: units // description // comment // refs
@@ -527,9 +527,9 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-4    //cmt2fm:// // The matching fuel model.  FM 4 //
-0.106   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
-4.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
+4      //cmt2fm:// // The matching fuel model.  FM 4 //
+0.106  //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+4.0    //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT67 // Mixed Forest-Groundhog River
 //  DecidTrees  EGreenTree       Mosses         Forb         PFT4         PFT5         PFT6         PFT7         PFT8         PFT9 // name: units // description // comment // refs
@@ -552,7 +552,7 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 161    //cmt2fm:// // The matching fuel model.  FM TU1 / 161 //
-0.051   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+0.051  //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 1.60   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT69 // Black Spruce BOREAS// 
@@ -576,7 +576,7 @@
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
 163    //cmt2fm:// // The matching fuel model.  FM TU3 / 163 //
-0.224   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
+0.224  //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
 // CMT70 // Dwarf Shrub-Chokurdakh // 
@@ -695,7 +695,7 @@
 0.10   // vsmburn:  //  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   // r_retain_c:  //  // ratio of burning residue C (retained into soil) // 
 0.10   // r_retain_n:  //  // ratio of burning residue N (retained into soil) // 
-122     //cmt2fm:// // The matching fuel model.  FM GS2 / 122 //
+122    //cmt2fm:// // The matching fuel model.  FM GS2 / 122 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
