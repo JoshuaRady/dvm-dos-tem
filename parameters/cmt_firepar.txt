@@ -45,7 +45,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-163    //cmt2fm:// // The matching fuel model.  Provisionally FM TU3 / 163 //
+163    //cmt2fm:// // The matching fuel model.  FM TU3 / 163 //
 0.224   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -69,7 +69,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //  
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //  
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-162    //cmt2fm:// // The matching fuel model.  Provisionally FM TU2 / 162 //
+162    //cmt2fm:// // The matching fuel model.  FM TU2 / 162 //
 0.783   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 1.50   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -93,7 +93,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-161    //cmt2fm:// // The matching fuel model.  Provisionally FM TU1 / 161 //
+161    //cmt2fm:// // The matching fuel model.  FM TU1 / 161 //
 0.051   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 1.60   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -117,7 +117,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //    
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //    
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //    
-123    //cmt2fm:// // The matching fuel model.  Provisionally FM GS3 / 123 //
+123    //cmt2fm:// // The matching fuel model.  FM GS3 / 123 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -143,7 +143,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //    
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //    
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //    
-123    //cmt2fm:// // The matching fuel model.  Provisionally FM GS3 / 123 //
+123    //cmt2fm:// // The matching fuel model.  FM GS3 / 123 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -167,7 +167,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //   
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //   
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //   
-101    //cmt2fm:// // The matching fuel model.  Provisionally FM GR1 / 101 //
+101    //cmt2fm:// // The matching fuel model.  FM GR1 / 101 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -191,7 +191,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //   
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //   
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //   
-101    //cmt2fm:// // The matching fuel model.  Provisionally FM GR1 / 101 //
+101    //cmt2fm:// // The matching fuel model.  FM GR1 / 101 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -239,7 +239,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //   
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //   
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //   
-123    //cmt2fm:// // The matching fuel model.  Provisionally FM GS3 / 123 //
+123    //cmt2fm:// // The matching fuel model.  FM GS3 / 123 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -263,7 +263,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //
-123    //cmt2fm://  // The matching fuel model.  Provisionally FM GS3 / 123 //
+123    //cmt2fm://  // The matching fuel model.  FM GS3 / 123 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -287,7 +287,7 @@
 0.50    //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //
 0.10    //r_retain_c://  // ratio of burning residue C (retained into soil) //
 0.10    //r_retain_n://  // ratio of burning residue N (retained into soil) //
-122     //cmt2fm:// // The matching fuel model.  Provisionally FM GS2 / 122 //
+122     //cmt2fm:// // The matching fuel model.  FM GS2 / 122 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -311,7 +311,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning //   
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) //   
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) //   
-123    //cmt2fm:// // The matching fuel model.  Provisionally FM GS3 / 123 //
+123    //cmt2fm:// // The matching fuel model.  FM GS3 / 123 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -335,7 +335,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-123    //cmt2fm:// // The matching fuel model.  Provisionally FM GS3 / 123 //
+123    //cmt2fm:// // The matching fuel model.  FM GS3 / 123 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -359,7 +359,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-123    //cmt2fm:// // The matching fuel model.  Provisionally FM GS3 / 123 //
+123    //cmt2fm:// // The matching fuel model.  FM GS3 / 123 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -407,7 +407,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-122    //cmt2fm:// // The matching fuel model.  Provisionally FM GS2 / 122 //
+122    //cmt2fm:// // The matching fuel model.  FM GS2 / 122 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -551,7 +551,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-161    //cmt2fm:// // The matching fuel model.  Provisionally FM TU1 = 161 //
+161    //cmt2fm:// // The matching fuel model.  FM TU1 = 161 //
 0.051   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 1.60   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -575,7 +575,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-163    //cmt2fm:// // The matching fuel model.  Provisionally FM TU3 / 163 //
+163    //cmt2fm:// // The matching fuel model.  FM TU3 / 163 //
 0.224   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -647,7 +647,7 @@
 0.50   //vsmburn://  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   //r_retain_c://  // ratio of burning residue C (retained into soil) // 
 0.10   //r_retain_n://  // ratio of burning residue N (retained into soil) // 
-123    //cmt2fm:// // The matching fuel model.  Provisionally FM GS3 / 123 //
+123    //cmt2fm:// // The matching fuel model.  FM GS3 / 123 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -695,7 +695,7 @@
 0.10   // vsmburn:  //  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   // r_retain_c:  //  // ratio of burning residue C (retained into soil) // 
 0.10   // r_retain_n:  //  // ratio of burning residue N (retained into soil) // 
-122     //cmt2fm:// // The matching fuel model.  Provisionally FM GS2 / 122 //
+122     //cmt2fm:// // The matching fuel model.  FM GS2 / 122 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //===========================================================
@@ -719,7 +719,7 @@
 0.10   // vsmburn:  //  // volume soil moisture to define wet soil for prevent organic layer burning // 
 0.10   // r_retain_c:  //  // ratio of burning residue C (retained into soil) // 
 0.10   // r_retain_n:  //  // ratio of burning residue N (retained into soil) // 
-123    //cmt2fm:// // The matching fuel model.  Provisionally FM GS3 / 123 //
+123    //cmt2fm:// // The matching fuel model.  FM GS3 / 123 //
 -1.0   //cbd;//  // The crown fuel bulk density (CBD, for a typical mature forest stand, kg/m^3). //
 -1.0   //cbh;//  // The crown base height (CBH, for a typical mature forest stand, m). //
 //==========================================================
