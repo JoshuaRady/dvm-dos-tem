@@ -84,7 +84,7 @@ double GFProfile::DrySoilMassKg(const int layerIndex) const
 {
 	if (layerIndex < 0 || layerIndex >= numLayers)
 	{
-		Stop("Invalid layer index: " + std::to_string(layerIndex));
+		Stop("DrySoilMassKg(): Invalid layer index: " + std::to_string(layerIndex));
 	}
 
 	return bulkDensity[layerIndex] * (thickness_cm[layerIndex] / 100);//kg/m^3 * (cm / 100 cm/m) / layer = kg/m^2/layer.
@@ -111,8 +111,15 @@ double GFProfile::DrySoilMassKg(const int layerIndex) const
  * thick we don't have any information to interpolate on the outsides.  We fill new layers at the
  * top and bottom with the properties of original top and bottom layers.
  *
- * @note If the incoming layer thicknesses are thinner than the new layer thickness the
- * interpolation may crash or produce bad values.  We stop the interpolation if that occurs.
+ * @note Incoming layers that are thinner than the new layer thickness have to be handled.  The
+ * approach used here is to drop layers that are less than half the new layer thickness.  Loss of
+ * very thin layers is not likely to have much of an effect on results.  If layer values were
+ * interpolated everywhere we could use the values of these thin layers.
+ * It is possible for all layers be dropped if they are all thin.  This results in an invalid
+ * profile.  Calling code needs to be aware of this.  It might be advantageous to be able to signal
+ * that the layers were removed to distinguish from a badly formed profile.
+ *       Further examination is needed to determine if thin layers can end up nudged to the same
+ * position, which would be a problem
  */
 void GFProfile::Interpolate(const double newLayerThickness)
 {
@@ -133,20 +140,10 @@ void GFProfile::Interpolate(const double newLayerThickness)
 	int initBottomIndex = numLayers - 1;//The position (index) of the bottom layer before interpolation.
 	//This should be used carefully since the numbers of layers will change during this function.
 
-	//Depth calculations;
-	double columnBottom = layerDepth[numLayers - 1] + thickness_cm[numLayers - 1];//The current bottom of the column.
-	double newColumnBottom = round(columnBottom / newLayerThickness) * newLayerThickness;//The adjusted bottom of the column.
-	double newBottomLayerDepth = newColumnBottom - newLayerThickness;
-
 	//Check if interpolation is necessary:
 	bool needed = false;
 	for (int i = 0; i < numLayers; i++)
 	{
-		if (thickness_cm[i] < newLayerThickness)
-		{
-			Stop("Can't interpolate profile. Original layer thickness is less that the new thickness.");
-		}
-		
 		if (thickness_cm[i] != newLayerThickness)//We don't give any wiggle room.
 		{
 			needed = true;
@@ -156,12 +153,44 @@ void GFProfile::Interpolate(const double newLayerThickness)
 
 	if (needed)
 	{
-		//The first should be at zero, otherwise there are problems.
+		//The first layer should be at zero, otherwise there are problems.
 		if (layerDepth[0] != 0.0)
 		{
 			Stop("The top layer is not at the surface!");
 			//we could dump the layer here.
 		}
+
+		//Check for thin layers and drop them.  Start from the bottome so the a index of the next
+		//layer doesn't change as we go:
+		for (int j = initBottomIndex; j >= 0; j--)
+		{
+			//Keep layers greater than half the new layer thickness:
+			if (thickness_cm[j] <= (newLayerThickness / 2))
+			{
+				Warning("Layer index " + std::to_string(j) + " is thin and is being dropped.");//Change to info?
+				DropLayer(j);
+
+				//If all the layers have dropped there is no interpolaition needed:
+				//We could record the status here.
+				if (numLayers == 0)
+				{
+					return;
+				}
+
+				if (j == 0)//If the top layer is dropped adjust the surface of the profile:
+				{
+					Resurface();
+				}
+			}
+		}
+
+		//Layers may have been dropped so update the bottom layer index before interpolation:
+		initBottomIndex = numLayers - 1;
+
+		//Depth calculations (perform after layers are droppped);
+		double columnBottom = layerDepth[numLayers - 1] + thickness_cm[numLayers - 1];//The current bottom of the column.
+		double newColumnBottom = std::round(columnBottom / newLayerThickness) * newLayerThickness;//The adjusted bottom of the column.
+		double newBottomLayerDepth = newColumnBottom - newLayerThickness;
 
 		//Nudge the existing layers to the nearest equidistant layer postion:
 		//The most we will move a value is by newLayerThickness / 2, which will probably not matter
@@ -186,7 +215,8 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		//is not necessary.
 		if (layerDepth[numLayers - 1] != newBottomLayerDepth)
 		{
-			int numNewLayers = (newBottomLayerDepth - layerDepth[numLayers - 1]) / newLayerThickness;
+			int numNewLayers = std::round((newBottomLayerDepth - layerDepth[numLayers - 1]) /
+			                               newLayerThickness);
 			AddLayersToBottom(numNewLayers);
 		}
 
@@ -217,7 +247,7 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		//Add layers above the top layer if needed:
 		if (layerDepth[0] != 0.0)
 		{
-			int numNewLayers = layerDepth[0] / newLayerThickness;
+			int numNewLayers = std::round(layerDepth[0] / newLayerThickness);
 			AddLayersToTop(numNewLayers);
 		}
 
@@ -324,8 +354,12 @@ void GFProfile::AddLayersToTop(const int numNewLayers)
 		Stop("AddLayersToTop(): Invalid value for numNewLayers: " + std::to_string(numNewLayers));
 	}
 
-	double layerThickness = thickness_cm[0];
+	if (numLayers == 0)
+	{
+		Stop("AddLayersToTop(): Can't add layers to empty profile.");
+	}
 
+	double layerThickness = thickness_cm[0];
 	thickness_cm.insert(thickness_cm.begin(), numNewLayers, layerThickness);
 	
 	for (int i = numNewLayers - 1; i >= 0; i--)
@@ -359,15 +393,17 @@ void GFProfile::AddLayersToTop(const int numNewLayers)
  * @param[in] numNewLayers The number of layers to add.
  *
  * @returns Nothing.
- *
- * @note Bug!  This function assumes there is at least one exixting layer and will crash if called
- * on an empty profile.
 */
 void GFProfile::AddLayersToBottom(const int numNewLayers)
 {
 	if (numNewLayers < 1)
 	{
 		Stop("AddLayersToBottom(): Invalid value for numNewLayers: " + std::to_string(numNewLayers));
+	}
+
+	if (numLayers == 0)
+	{
+		Stop("AddLayersToBottom(): Can't add layers to empty profile.");
 	}
 
 	thickness_cm.insert(thickness_cm.end(), numNewLayers, thickness_cm[numLayers - 1]);
@@ -460,6 +496,10 @@ void GFProfile::Resurface()//Or AdjustDepths()
  *                          this to true will add a check for this.
  *
  * @returns Whether the profile passed the checks.
+ *
+ * @note This code treats a profile without layers as invalid.  This is appropriate in some cases
+ * but in others layers can be dropped during interpolation.  We need to add a way to distinguish
+ * between the two.
  */
 bool GFProfile::Validate(const bool uniformLayers) const
 {
@@ -587,7 +627,15 @@ bool GFProfile::EqualThickness() const
  */ 
 double GFProfile::GetThickness() const
 {
-	return accumulate(thickness_cm.begin(), thickness_cm.end(), 0);
+	if (numLayers == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		return std::accumulate(thickness_cm.begin(), thickness_cm.end(), 0.0);
+		//Or: layerDepth[numLayers] + thickness_cm[numLayers]
+	}
 }
 
 /** Get the simulated depth of burn, AKA burn thickness.
@@ -780,6 +828,41 @@ std::ostream& GFProfile::PrintDelimited(std::ostream& output, const char delim) 
 void GFProfile::SetPrintMode(const int mode)
 {
 	printMode = mode;
+}
+
+//Private Functions:--------------------------------------------------------------------------------
+
+/** Remove a layers from the profile.
+ *
+ * @param[in] layerIndex The layer index to remove.
+ *
+ * @returns Nothing.
+ *
+ * @note Very thin layers may be removed during interpolation.  This leaves the the profile in an
+ * intermediate state with gaps in the profile.  The profile will remain invalid until interpolation
+ * is complete.
+ */
+void GFProfile::DropLayer(const int layerIndex)
+{
+	if (layerIndex < 0 || layerIndex >= numLayers)
+	{
+		Stop("DropLayer(): Invalid layer index: " + std::to_string(layerIndex));
+	}
+
+	thickness_cm.erase(thickness_cm.begin() + layerIndex);
+	layerDepth.erase(layerDepth.begin() + layerIndex);
+	tempC.erase(tempC.begin() + layerIndex);
+	t_ig.erase(t_ig.begin() + layerIndex);
+	bulkDensity.erase(bulkDensity.begin() + layerIndex);
+	inorganicPct.erase(inorganicPct.begin() + layerIndex);
+	moistureContentPct.erase(moistureContentPct.begin() + layerIndex);
+	c_s.erase(c_s.begin() + layerIndex);
+	burnt.erase(burnt.begin() + layerIndex);
+	heatSink.erase(heatSink.begin() + layerIndex);
+	heatSource.erase(heatSource.begin() + layerIndex);
+	type.erase(type.begin() + layerIndex);
+
+	numLayers -= 1;
 }
 
 //External functions:-------------------------------------------------------------------------------

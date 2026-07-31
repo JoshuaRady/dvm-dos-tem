@@ -212,6 +212,7 @@ std::vector <double> HeatDistributionLinear(const int numLayers)
  * progression simulated directly, i.e. the model used layer-steps rather than time-steps.
  *
  * @param[in,out] soilCol A GFProfile object representing the soil profile for the simulation.
+ *                        A profle with layers of equal thickness is expected.
  * @param[in] fireHeatInput Total heat input into the soil from the surface fire (kJ/m^2).
  * @param[in] heatLossFactor The fraction of heat lost from the soil (0-1) .  This intended to
  *                           represent radiant and convective losses from the soil surface in the
@@ -234,6 +235,13 @@ double DownwardGroundFire(GFProfile& soilCol, const double fireHeatInput,
                           const double heatLossFactor, const double surfacePD,
                           const double smolderPD, const int surfaceTM, const int smolderTM)
 {
+	//If there is no organic soil there is nothing to burn:
+	//Note: This check may be integrated with validity checking in the future.
+	if (soilCol.NumLayers() == 0)
+	{
+		return 0.0;
+	}
+
 	//Validity checking:
 	if (!soilCol.Validate())//This is may be overkill since Validate() will be called with interpolation.  However, in the testing setting is useful.
 	{
@@ -267,7 +275,7 @@ double DownwardGroundFire(GFProfile& soilCol, const double fireHeatInput,
 		Stop("smolderPD is less than a layer thickness.");
 	}
 
-	//The single layer smoldering heat transfer scheme is still available but is primarily intented
+	//The single layer smoldering heat transfer scheme is still available but is primarily intended
 	//for testing so make it clear when it is being used:
 	if (smolderTM == 0)
 	{
