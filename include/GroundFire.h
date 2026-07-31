@@ -9,8 +9,8 @@
  *
  **************************************************************************************************/
 
-#ifndef FW_GROUNDFIRE_H
-#define FW_GROUNDFIRE_H
+#ifndef GROUNDFIRE_H
+#define GROUNDFIRE_H
 
 #include <vector>
 
@@ -25,4 +25,4 @@ double DownwardGroundFire(GFProfile& soilCol, const double fireHeatInput = 0.0,/
                           const double smolderPD = 5.0, const int surfaceTM = 1,
                           const int smolderTM = 1);
 
-#endif //FW_GROUNDFIRE_H
+#endif //GROUNDFIRE_H

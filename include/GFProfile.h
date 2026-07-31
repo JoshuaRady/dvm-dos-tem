@@ -88,6 +88,8 @@ class GFProfile {
 
 	int printMode;//Store the printing style for stream operator output.
 
+	void DropLayer(const int layerIndex);
+
 	friend std::ostream& operator<<(std::ostream& output, const GFProfile& gfProfile);
 };
 
