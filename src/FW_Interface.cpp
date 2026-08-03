@@ -32,7 +32,7 @@
 
 #include "../include/GroundFire.h"
 
-#include <cmath>//For fmin().
+#include <cmath>//For fmin() & isnan().
 #include <iomanip>
 #include <limits>
 
@@ -484,7 +484,16 @@ double WildFire::GetLitterRawC() const
     }
   }
 
-  return bdall->m_sois.rawc[topFibricIndex];
+  double topFibricRawC = bdall->m_sois.rawc[topFibricIndex];
+  //Rarely this stock can be NaN.  Return zero instead:
+  if (std::isnan(topFibricRawC))
+  {
+    return 0.0;
+  }
+  else
+  {
+    return topFibricRawC;
+  }
 }
 
 /** Get the total biomass for a non-vascular PFT on the site.
