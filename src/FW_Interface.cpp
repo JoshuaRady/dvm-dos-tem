@@ -799,7 +799,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       break;
 
     default:
-      BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT.";
+      BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT: " << cmtNumber;
       break;
   }
   return false;
