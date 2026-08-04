@@ -756,6 +756,48 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
+    case 75://Bog-Igarka
+      if (pftIdx == 0)//Shrubs
+      {
+        return true;
+      }
+      break;
+
+    case 76://Shrub Tundra-Seida
+      if (pftIdx >= 0 && pftIdx <= 2)//DecidShrub, Betnan, Salix
+      {
+        return true;
+      }
+      break;
+
+    case 82://ScotsPine-Fennosc
+      if (pftIdx == 2)//EGreenShrub
+      {
+        return true;
+      }
+      break;
+
+    case 90://Heath-Zachenberg
+      if (pftIdx == 0)//Dwarfshrub
+      {
+        return true;
+      }
+      break;
+
+    case 92://Abisko Bog - bonanza calibration
+      if (pftIdx == 1 || pftIdx == 3)//Eshrub, Dshrub
+      {
+        return true;
+      }
+      break;
+
+    case 93://Adventalen - imnavait calibration
+      if (pftIdx == 0)//Decid
+      {
+        return true;
+      }
+      break;
+
     default:
       BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT.";
       break;
