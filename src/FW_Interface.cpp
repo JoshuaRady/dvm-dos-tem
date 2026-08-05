@@ -32,7 +32,7 @@
 
 #include "../include/GroundFire.h"
 
-#include <cmath>//For fmin().
+#include <cmath>//For fmin() & isnan().
 #include <iomanip>
 #include <limits>
 
@@ -484,7 +484,16 @@ double WildFire::GetLitterRawC() const
     }
   }
 
-  return bdall->m_sois.rawc[topFibricIndex];
+  double topFibricRawC = bdall->m_sois.rawc[topFibricIndex];
+  //Rarely this stock can be NaN.  Return zero instead:
+  if (std::isnan(topFibricRawC))
+  {
+    return 0.0;
+  }
+  else
+  {
+    return topFibricRawC;
+  }
 }
 
 /** Get the total biomass for a non-vascular PFT on the site.
@@ -747,8 +756,50 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       }
       break;
 
+    case 75://Bog-Igarka
+      if (pftIdx == 0)//Shrubs
+      {
+        return true;
+      }
+      break;
+
+    case 76://Shrub Tundra-Seida
+      if (pftIdx >= 0 && pftIdx <= 2)//DecidShrub, Betnan, Salix
+      {
+        return true;
+      }
+      break;
+
+    case 82://ScotsPine-Fennosc
+      if (pftIdx == 2)//EGreenShrub
+      {
+        return true;
+      }
+      break;
+
+    case 90://Heath-Zachenberg
+      if (pftIdx == 0)//Dwarfshrub
+      {
+        return true;
+      }
+      break;
+
+    case 92://Abisko Bog - bonanza calibration
+      if (pftIdx == 1 || pftIdx == 3)//Eshrub, Dshrub
+      {
+        return true;
+      }
+      break;
+
+    case 93://Adventalen - imnavait calibration
+      if (pftIdx == 0)//Decid
+      {
+        return true;
+      }
+      break;
+
     default:
-      BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT.";
+      BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT: " << cmtNumber;
       break;
   }
   return false;
