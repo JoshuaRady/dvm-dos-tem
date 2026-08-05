@@ -189,7 +189,9 @@ void GFProfile::Interpolate(const double newLayerThickness)
 
 		//Depth calculations (perform after layers are droppped);
 		double columnBottom = layerDepth[numLayers - 1] + thickness_cm[numLayers - 1];//The current bottom of the column.
-		double newColumnBottom = std::round(columnBottom / newLayerThickness) * newLayerThickness;//The adjusted bottom of the column.
+		//Calculate the adjusted bottom of the column making sure each current layer translates to at least one new layer:
+		double newColumnBottom = std::max(std::round(columnBottom / newLayerThickness) * newLayerThickness,
+		                                  numLayers * newLayerThickness);
 		double newBottomLayerDepth = newColumnBottom - newLayerThickness;
 
 		//Nudge the existing layers to the nearest equidistant layer postion:
@@ -213,7 +215,7 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		//Add layers below the bottom layer if needed:
 		//If the bottom of the lowest layer after nudging is where we expect the new bottom to be it
 		//is not necessary.
-		if (layerDepth[numLayers - 1] != newBottomLayerDepth)
+		if (!FloatCompare(layerDepth[numLayers - 1], newBottomLayerDepth))
 		{
 			int numNewLayers = std::round((newBottomLayerDepth - layerDepth[numLayers - 1]) /
 			                               newLayerThickness);
@@ -581,14 +583,26 @@ bool GFProfile::Validate(const bool uniformLayers) const
 
 	if (!InRange(inorganicPct, 0.0, 100.0))
 	{
-		Warning("Invalid percentage(s) for inorganic content");
+		Warning("Invalid percentage(s) for inorganic content.");
 		valid = false;
 	}
 
-	if (!InRange(moistureContentPct, 0.0, 1000.0))//Don't have a great idea of the upper limit.
+	//if (!InRange(moistureContentPct, 0.0, 1000.0))//This upper limit is poorly informed..
+	//{
+	//	Warning("Invalid soil moisture content(s).");
+	//	valid = false;
+	//}
+	for (int i = 0; i < numLayers; i++)
 	{
-		Warning("Invalid soil moisture content(s).");
-		valid = false;
+		if (moistureContentPct[i] < 0.0)
+		{
+			Warning("Invalid soil moisture content: " + std::to_string(moistureContentPct[i]));
+			valid = false;
+		}
+		else if (moistureContentPct[i] > 1000.0)//Only warn until a better upper limit is determined:
+		{
+			Warning("High soil moisture content: " + std::to_string(moistureContentPct[i]));
+		}
 	}
 
 	//We don't check the calculated properties.
