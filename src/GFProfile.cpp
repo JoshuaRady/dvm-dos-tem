@@ -185,28 +185,51 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		}
 
 		//Layers may have been dropped so update the bottom layer index before interpolation:
-		initBottomIndex = numLayers - 1;
-
-		//Depth calculations (perform after layers are droppped);
-		double columnBottom = layerDepth[numLayers - 1] + thickness_cm[numLayers - 1];//The current bottom of the column.
-		//Calculate the adjusted bottom of the column making sure each current layer translates to at least one new layer:
-		double newColumnBottom = std::max(std::round(columnBottom / newLayerThickness) * newLayerThickness,
-		                                  numLayers * newLayerThickness);
-		double newBottomLayerDepth = newColumnBottom - newLayerThickness;
+		initBottomIndex = numLayers - 1;//Maybe change the name since the value may have changed?
+		//Store the original bottom of the soil column before making futher changes to it.
+		double columnBottom = layerDepth[initBottomIndex] + thickness_cm[initBottomIndex];
 
 		//Nudge the existing layers to the nearest equidistant layer postion:
 		//The most we will move a value is by newLayerThickness / 2, which will probably not matter
 		//if newLayerThickness is small.  This process may mean that the top and bottom layers are
 		//no longer at the top and bottom (see notes).
+		//Thin layers can complicate these calcaultions somewhat.
+		double addedThickness = 0.0;
 		for (int j = 0; j < numLayers; j++)
 		{
+			//Adjust layer depths due to expansion of thin layers to the minimum layer thickness:
+			if (thickness_cm[j] < newLayerThickness)
+			{
+				addedThickness += newLayerThickness - thickness_cm[j];
+				columnBottom += newLayerThickness - thickness_cm[j];
+			}
+			if (j + 1 < numLayers)
+			{
+				layerDepth[j + 1] += addedThickness;
+			}
+
 			double layerCenter = layerDepth[j] + (thickness_cm[j] / 2);//The center depth of the original layer.
-			
+
 			//Nudge the original layer properties to the new layer that the original center falls in:
 			int newLayerIndex = layerCenter / newLayerThickness;//Round down / truncate the division to get the layer.
+
+			//Without the depth adjustement above it is nessisary to check and adjust the postion in
+			//some cases.  Leaving until further testing is complete.
+			if (newLayerIndex < j)
+			{
+				//newLayerIndex = j;
+				Warning("This layer is being nudged to a shallower postion and expected.");
+			}
+
 			layerDepth[j] = newLayerIndex * newLayerThickness;
 			thickness_cm[j] = newLayerThickness;
 		}
+
+		//Depth calculations (perform after layers are dropped and depths are tweaked):
+		//Calculate the adjusted bottom of the column making sure each current layer translates to at least one new layer:
+		double newColumnBottom = std::max(std::round(columnBottom / newLayerThickness) * newLayerThickness,
+		                                  numLayers * newLayerThickness);
+		double newBottomLayerDepth = newColumnBottom - newLayerThickness;
 
 		//Start the interpolation from the bottom of the column.  By doing this any layers added
 		//will be below the next layer we have to examine.  That means the layer indexes won't
@@ -227,7 +250,8 @@ void GFProfile::Interpolate(const double newLayerThickness)
 		{
 			//See if adjacent layers are one new layer thickness apart:
 			double deltaZ = layerDepth[j] - layerDepth[j - 1];
-			if (deltaZ != newLayerThickness)
+			//if (deltaZ != newLayerThickness)
+			if (!FloatCompare(deltaZ, newLayerThickness))
 			{
 				//If not add layers to fill in between them:
 				//We use round() to avoid inappropriate rounding down when we cast to int. 
@@ -241,7 +265,7 @@ void GFProfile::Interpolate(const double newLayerThickness)
 					Stop("Distance between layers is not a multiple of the new layer thickness.");
 				}
 			
-				//Interpolate values for the new layers being inserted::
+				//Interpolate values for the new layers being inserted:
 				InterpolateBetween(j - 1, j, numNewLayers);
 			}
 		}
