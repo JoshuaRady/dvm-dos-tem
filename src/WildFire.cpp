@@ -206,10 +206,17 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
         BOOST_LOG_SEV(glg, debug) << "Determine fire from explicit fire regime.";
 
         if ( this->exp_burn_mask[year] == 1 ){
-          if ( temutil::doy2month(this->exp_jday_of_burn[year]) == midx ) {
-            ignite = true;
+          const int jday = this->exp_jday_of_burn[year];
+          if (jday >= 0 && jday <= 364) {
+            if ( temutil::doy2month(jday) == midx ) {
+              ignite = true;
+            }
+            // do nothing: correct year, wrong month
+          } else {
+            BOOST_LOG_SEV(glg, warn) << "Invalid exp_jday_of_burn[" << year
+                                     << "]=" << jday
+                                     << "; skipping explicit fire ignition.";
           }
-          // do nothing: correct year, wrong month
         }
         break;
       }

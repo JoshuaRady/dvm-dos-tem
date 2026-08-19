@@ -598,9 +598,17 @@ namespace temutil {
     } else if (the_type == NC_FLOAT) {
       float dataF[timeD_len];
       temutil::nc( nc_get_vara_float(ncid, timeseries_var, start, count, &dataF[0]) );
-      unsigned dataArraySize = sizeof(dataF) / sizeof(DTYPE);
-      data2.insert(data2.end(), &dataF[0], &dataF[dataArraySize]);
-
+      data2.reserve(timeD_len);
+      for (size_t i = 0; i < timeD_len; ++i) {
+        data2.push_back(static_cast<DTYPE>(dataF[i]));
+      }
+    } else if (the_type == NC_DOUBLE) {
+      double dataD[timeD_len];
+      temutil::nc( nc_get_vara_double(ncid, timeseries_var, start, count, &dataD[0]) );
+      data2.reserve(timeD_len);
+      for (size_t i = 0; i < timeD_len; ++i) {
+        data2.push_back(static_cast<DTYPE>(dataD[i]));
+      }
     } else {
       BOOST_LOG_SEV(glg, warn) << "Unknown datatype: '" << the_type << "'. Returning empty vector.";
     }

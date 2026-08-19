@@ -492,6 +492,16 @@ void Soil_Env::updateDailySM(double weighted_veg_tran) {
   // define the soil water module's domain
   //Skip moss for all soil moisture calculations
   Layer * fstsoill = ground->fstshlwl;
+  if (fstsoill == NULL) {
+    fstsoill = ground->fstdeepl;
+  }
+  if (fstsoill == NULL) {
+    fstsoill = ground->fstminel;
+  }
+  if (fstsoill == NULL) {
+    BOOST_LOG_SEV(glg, warn) << "No fibric/deep/mineral soil layer for updateDailySM; skipping hydrology.";
+    return;
+  }
   Layer * lstsoill = ground->lstsoill;
   Layer * drainl = ground->drainl;
   double draindepth = ground->draindepth;
@@ -615,8 +625,9 @@ void Soil_Env::updateDailySM(double weighted_veg_tran) {
   // a closed talik, there should be no water exiting other than
   // transpiration, and in the case of an open talik, our equations
   // may need modification. 
-  if(ground->fstshlwl->frozen != 1 && ground->fstmossl->frozen != 1){
-    richards.update(ground->fstshlwl, drainl, draindepth, baseflow,
+  const bool moss_unfrozen = (ground->fstmossl == NULL || ground->fstmossl->frozen != 1);
+  if(fstsoill->frozen != 1 && moss_unfrozen){
+    richards.update(fstsoill, drainl, draindepth, baseflow,
                     ed->d_sois.watertab, root_water_up, evap,
                     infil, cd->cell_slope);
     ed->d_soi2l.qdrain += richards.qdrain;
@@ -653,11 +664,13 @@ void Soil_Env::updateDailySM(double weighted_veg_tran) {
   }
   //for moss layers excluded from hydrological process, match
   //water to first shallow layer.
-  currl = ground->fstshlwl->prevl;
-  while (currl!=NULL && currl->isMoss) {
-    double lwc = ground->fstshlwl->getVolLiq();
-    currl->liq = currl->dz*(1.0-currl->frozenfrac) * lwc * DENLIQ;
-    currl=currl->prevl;
+  if (ground->fstshlwl != NULL) {
+    currl = ground->fstshlwl->prevl;
+    while (currl!=NULL && currl->isMoss) {
+      double lwc = ground->fstshlwl->getVolLiq();
+      currl->liq = currl->dz*(1.0-currl->frozenfrac) * lwc * DENLIQ;
+      currl=currl->prevl;
+    }
   }
   if(ed->d_soi2l.qdrain < 0){
    BOOST_LOG_SEV(glg, warn) << "qdrain is negative!";
