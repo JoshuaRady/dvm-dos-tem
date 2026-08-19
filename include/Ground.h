@@ -126,6 +126,9 @@ public :
   // update water drainage layer and depth
   void setDrainL();
 
+  /** First fibric layer, or first deep organic layer if fibric was removed. */
+  Layer* getTopOrganicLayer() const;
+
   // soil burning caused soil structure change
   double adjustSoilAfterburn();
 

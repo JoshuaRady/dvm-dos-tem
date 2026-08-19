@@ -1708,6 +1708,15 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   //Only consider the organic horizon(s):
   int numOrgLayers =  ground->organic.shlwnum + ground->organic.deepnum;
 
+  Layer* thisLayer = ground->getTopOrganicLayer();
+  if (thisLayer == NULL || numOrgLayers <= 0) {
+    if (numOrgLayers > 0) {
+      BOOST_LOG_SEV(glg, warn) << "GroundFireGetSoilProfile: no organic layer in "
+                               << "ground column but numOrgLayers=" << numOrgLayers;
+    }
+    return GFProfile(0);
+  }
+
   //Create an object to hold the profile data:
   GFProfile gfProfile(numOrgLayers);
 
@@ -1717,10 +1726,14 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   properties we need but the temperature and moisture values, which seem to be daily values from the
   end of the month, have been problematic.  edall does not have all the physical properties we need
   but is has both monthly and daily temperature and moisture values.*/
-  Layer* thisLayer = ground->fstshlwl;
   int layerIndex = MAX_MOS_LAY;//Index of the top organic layer, right below the bottom moss layer.
   for (int i = 0; i < numOrgLayers; i++)
   {
+    if (thisLayer == NULL) {
+      BOOST_LOG_SEV(glg, warn) << "GroundFireGetSoilProfile: organic layer chain ended "
+                               << "at index " << i << " (expected " << numOrgLayers << ")";
+      break;
+    }
     //Copy data from the source layer to the matching layer:
     gfProfile.thickness_cm[i] = thisLayer->dz * 100.0;//Layer thickness (m -> cm).
     gfProfile.layerDepth[i] = thisLayer->z * 100.0;//Depth at top of layer (m -> cm).

@@ -491,10 +491,7 @@ void Soil_Env::retrieveDailyFronts() {
 void Soil_Env::updateDailySM(double weighted_veg_tran) {
   // define the soil water module's domain
   //Skip moss for all soil moisture calculations
-  Layer * fstsoill = ground->fstshlwl;
-  if (fstsoill == NULL) {
-    fstsoill = ground->fstdeepl;
-  }
+  Layer * fstsoill = ground->getTopOrganicLayer();
   if (fstsoill == NULL) {
     fstsoill = ground->fstminel;
   }

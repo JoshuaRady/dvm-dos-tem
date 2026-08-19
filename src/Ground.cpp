@@ -1895,6 +1895,17 @@ void Ground::getLayerFrozenstatusByFronts(Layer * soill) {
 }
 
 
+Layer* Ground::getTopOrganicLayer() const {
+  if (fstshlwl != NULL) {
+    return fstshlwl;
+  }
+  if (fstdeepl != NULL) {
+    return fstdeepl;
+  }
+  return NULL;
+}
+
+
 void Ground::setDrainL() {
 
   draindepth = 0.;
@@ -2410,10 +2421,10 @@ double Ground::getCarbonForDepthRange(double upperz, double lowerz){
 
   double accumulatedC = 0.0;
 
-  //Ignore moss and start with the first fibric layer
-  Layer *currl = fstshlwl;
+  //Ignore moss and start with the first fibric or deep organic layer
+  Layer *currl = getTopOrganicLayer();
 
-  while(!currl->isRock){
+  while(currl != NULL && !currl->isRock){
     double currl_bottom = currl->z + currl->dz;
 
     // If the layer contains the upper boundary
