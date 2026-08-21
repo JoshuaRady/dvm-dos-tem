@@ -715,7 +715,7 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
     BOOST_LOG_SEV(glg, debug) << "Handling burnt 'litter' carbon...";
 
     // This loop is duplicated from WildFire::GetLitterRawC():
-    int topFibricIndex = -1;// = The soil layer that contains the litter.
+    int topFibricIndex = -1;// = The soil layer that contains the litter. -1 indicates the layer wasn't found.
     for (int i = 0; i < cd->m_soil.numsl; i++)//Assumes we are starting at the top layer.
     {
       if (cd->m_soil.type[i] == 1)//Shallow organic / peat ~ I_FIB
@@ -725,7 +725,8 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
       }
     }
 
-    if (topFibricIndex != -1) {
+    if (topFibricIndex != -1)
+    {
       double litterBurntFraction = GetLitterBurntFraction();
 
       burnedsolc = bdall->m_sois.rawc[topFibricIndex] * litterBurntFraction;//Burnt litter carbon.

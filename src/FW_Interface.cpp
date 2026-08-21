@@ -465,7 +465,7 @@ double WildFire::GetLitterRawC() const
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::GetLitterRawC()...";
 
-  int topFibricIndex = -1;
+  int topFibricIndex = -1;// = The soil layer that contains the litter. -1 indicates the layer wasn't found.
 
   BOOST_LOG_SEV(glg, debug) << "Getting litter carbon.";
 
@@ -484,7 +484,8 @@ double WildFire::GetLitterRawC() const
     }
   }
 
-  if (topFibricIndex == -1) {
+  if (topFibricIndex == -1)
+  {
     BOOST_LOG_SEV(glg, warn) << "GetLitterRawC: no top fibric index found.";
     return 0.0;
   }
