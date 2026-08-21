@@ -1139,6 +1139,15 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
     //...
     //double vpd_hPa = VPDfromRHBuck(tempAir, rh, p_hPa);
 
+    //FW_TEMP:
+    //Rarely the VPD is negative, which is invalid.  The upstream cause has not been identified.
+    //Until a permanent fix is made we will force negative values to 0 to avoid a fatal error.  In
+    //most cases observed negative VPDs are very small.
+    if (vpdPa < 0)
+    {
+      vpdPa = 0.0;
+    }
+
     //temutil::length_of_day gives the day length in hours:
     float dayLengthSec = temutil::length_of_day(lat, dayOfYearIndex) * 60 * 60;
 
