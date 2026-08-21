@@ -465,7 +465,7 @@ double WildFire::GetLitterRawC() const
 {
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::GetLitterRawC()...";
 
-  int topFibricIndex;
+  int topFibricIndex = -1;
 
   BOOST_LOG_SEV(glg, debug) << "Getting litter carbon.";
 
@@ -482,6 +482,11 @@ double WildFire::GetLitterRawC() const
       topFibricIndex = i;
       break;
     }
+  }
+
+  if (topFibricIndex == -1) {
+    BOOST_LOG_SEV(glg, warn) << "GetLitterRawC: no top fibric index found.";
+    return 0.0;
   }
 
   double topFibricRawC = bdall->m_sois.rawc[topFibricIndex];
