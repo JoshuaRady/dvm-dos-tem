@@ -207,12 +207,20 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
 
         if ( this->exp_burn_mask[year] == 1 ){
           const int jday = this->exp_jday_of_burn[year];
-          if (jday >= 0 && jday <= 364) {
+          if (jday >= 0 && jday <= 364)
+          {
             if ( temutil::doy2month(jday) == midx ) {
               ignite = true;
             }
             // do nothing: correct year, wrong month
-          } else {
+          }
+          else
+          {
+            /*Temporary work arround: This condition should only be possible if the explict fire
+            input file conatains errors.  In that case we can't really know the intention.  Is
+            this a fire that should occur wihout a valid date or should a fire not occur?  This
+            should be (and was) fatal.  This check lowers a fatal error in doy2month() to a warning
+            here.  Followint further testing we hopefully will be able to take this back out.*/
             BOOST_LOG_SEV(glg, warn) << "Invalid exp_jday_of_burn[" << year
                                      << "]=" << jday
                                      << "; skipping explicit fire ignition.";
