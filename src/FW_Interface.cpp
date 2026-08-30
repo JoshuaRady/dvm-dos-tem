@@ -33,6 +33,7 @@
 #include "../include/GroundFire.h"
 
 #include <cmath>//For fmin() & isnan().
+#include <fstream>
 #include <iomanip>
 #include <limits>
 
@@ -1131,7 +1132,12 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
 
   double herbLFM = 0;
   double woodyLFM = 0;
-  for (int i = dayOfYearIndex - 20; i <= dayOfYearIndex; i++)
+  
+  // Ensure we don't start at a negative index
+  int startIdx = std::max(0, dayOfYearIndex - 20);
+  int numDays = (dayOfYearIndex - startIdx) + 1;
+  
+  for (int i = startIdx; i <= dayOfYearIndex; i++)
   {
     //Minimum and maximum daily temperature are not currently available but will be soon.  We
     //use a hack value for now:
@@ -1147,13 +1153,22 @@ std::vector <double> WildFire::CalculateFuelMoisture(const FuelModel& fm, const 
     //temutil::length_of_day gives the day length in hours:
     float dayLengthSec = temutil::length_of_day(lat, dayOfYearIndex) * 60 * 60;
 
+// #region agent log
+if (dayOfYearIndex < 20 && i == startIdx) {
+    std::ofstream logFile("/mnt/exacloud/ext_ejafarov_woodwellclimate_org/.cursor/debug-ba0c68.log", std::ios_base::app);
+    if (logFile.is_open()) {
+        logFile << "{\"sessionId\":\"ba0c68\",\"runId\":\"post-fix\",\"hypothesisId\":\"H1\",\"location\":\"FW_Interface.cpp:1150\",\"message\":\"Post-fix Option A handling early year\",\"data\":{\"dayOfYearIndex\":" << dayOfYearIndex << ",\"startIdx\":" << startIdx << ",\"numDays\":" << numDays << ",\"vpdPa\":" << vpdPa << "},\"timestamp\":0}\n";
+    }
+}
+// #endregion
+
     double gsi = GrowingSeasonIndex(tempCMin, vpdPa, dayLengthSec);
     herbLFM += HerbaceousLiveFuelMoisture(gsi);
     woodyLFM += WoodyLiveFuelMoisture(gsi);
   }
   //Average:
-  herbLFM = herbLFM / 21;
-  woodyLFM = woodyLFM / 21;
+  herbLFM = herbLFM / numDays;
+  woodyLFM = woodyLFM / numDays;
 
 
   //Combine the live and dead moisture:-----------
