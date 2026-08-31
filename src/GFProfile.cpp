@@ -132,6 +132,9 @@ void GFProfile::Interpolate(const double newLayerThickness)
 	//If the layer thickness or depths are off the interpolation may succeed but the output will be compromised:
 	if (!Validate())
 	{
+		//FW_Debug: WIEMIP temporary.  Get more info if validation fails.
+		Print(std::cout);//Dump the profile.
+
 		Stop("Interpolate(): The soil column is not valid.");
 	}
 
