@@ -1721,16 +1721,49 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   BOOST_LOG_SEV(glg, debug) << "Entering GroundFireGetSoilProfile()...";
 
   //Only consider the organic horizon(s):
-  int numOrgLayers =  ground->organic.shlwnum + ground->organic.deepnum;
+  //int numOrgLayers =  ground->organic.shlwnum + ground->organic.deepnum;
 
   Layer* thisLayer = ground->getTopOrganicLayer();
-  if (thisLayer == NULL || numOrgLayers <= 0) {
-    if (numOrgLayers > 0) {
-      BOOST_LOG_SEV(glg, warn) << "GroundFireGetSoilProfile: no organic layer in "
-                               << "ground column but numOrgLayers=" << numOrgLayers;
+//   if (thisLayer == NULL || numOrgLayers <= 0) {
+//     if (numOrgLayers > 0) {
+//       BOOST_LOG_SEV(glg, warn) << "GroundFireGetSoilProfile: no organic layer in "
+//                                << "ground column but numOrgLayers=" << numOrgLayers;
+//     }
+//     return GFProfile(0);
+//   }
+
+  //FW_TEST: Revised approach to getting the number of layers.
+  //Count the organic layers in the layer list:
+  int numOrgLayers = 0;
+  while (thisLayer != NULL)
+  {
+    if (thisLayer->isOrganic)
+    {
+      numOrgLayers += 1;
+      thisLayer = thisLayer->nextl;
     }
+    else
+    {
+      break;
+    }
+  }
+  thisLayer = ground->getTopOrganicLayer();//Reset.
+  //We do not seem to always get accurate layer counts from ground->organic:
+  if (numOrgLayers != (ground->organic.shlwnum + ground->organic.deepnum;))
+  {
+    BOOST_LOG_SEV(glg, warn) << "GroundFireGetSoilProfile(): " << numOrgLayers
+                             << " organic layers counted in the Ground object but organic.shlwnum = "
+                             << ground->organic.shlwnum << "and organic.deepnum = "
+                             << ground->organic.deepnum;
+  }
+  
+  //This is retained from the patch above but is probably dangerous.  The GFProfile should probably
+  //be called without an explicit layer count.  A profile with 0 layer may produced undefined behavior.
+  if (numOrgLayers == 0)
+  {
     return GFProfile(0);
   }
+  //FW_TEST_END.
 
   //Create an object to hold the profile data:
   GFProfile gfProfile(numOrgLayers);
