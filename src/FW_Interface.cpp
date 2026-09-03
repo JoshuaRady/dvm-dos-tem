@@ -1749,7 +1749,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   }
   thisLayer = ground->getTopOrganicLayer();//Reset.
   //We do not seem to always get accurate layer counts from ground->organic:
-  if (numOrgLayers != (ground->organic.shlwnum + ground->organic.deepnum;))
+  if (numOrgLayers != (ground->organic.shlwnum + ground->organic.deepnum))
   {
     BOOST_LOG_SEV(glg, warn) << "GroundFireGetSoilProfile(): " << numOrgLayers
                              << " organic layers counted in the Ground object but organic.shlwnum = "
