@@ -1781,6 +1781,7 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
       BOOST_LOG_SEV(glg, warn) << "GroundFireGetSoilProfile: organic layer chain ended "
                                << "at index " << i << " (expected " << numOrgLayers << ")";
       break;
+      //FW_NOTE: Breaking here is problematic.  It will leave the remaining layers uninitialized. 
     }
     //Copy data from the source layer to the matching layer:
     gfProfile.thickness_cm[i] = thisLayer->dz * 100.0;//Layer thickness (m -> cm).
