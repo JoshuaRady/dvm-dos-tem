@@ -1762,8 +1762,8 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     double layerTempC = edall->m_sois.ts[layerIndex];
     if (layerTempC < -60.0 || layerTempC > 50.0)
     {
-      BOOST_LOG_SEV(glg, warn) << "Unlikely soil temperature " << layerTempC << "C for layer index "
-                               << layerIndex;
+      BOOST_LOG_SEV(glg, warn) << "GroundFireGetSoilProfile(): Unlikely soil temperature "
+                               << layerTempC << " C for layer index " << layerIndex;
     }
 
     //The humic layers should probably have higher temperatures of ignition but more research is
