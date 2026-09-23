@@ -189,7 +189,7 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
   {
     int fire_ignition_mode;
 
-    if (stage.compare("tr-run"))
+    if (stage.compare("tr-run") == 0)
     {
       fire_ignition_mode = md.fire_ignition_tr;
     }
