@@ -35,6 +35,7 @@
 #include <cmath>//For fmin() & isnan().
 #include <iomanip>
 #include <limits>
+#include <stdexcept>
 
 extern src::severity_logger< severity_level > glg;
 
@@ -398,7 +399,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         //needs to be addressed during fuel model selection.
         if (!fm.LiveHerbaceousPresent())
         {
-          BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";
+          BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
+          throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model.");
         }
 
         //Include aboveground parts:
@@ -422,7 +424,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
           //See notes above.
           if (!fm.LiveHerbaceousPresent())
           {
-            BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";
+            BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
+            throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model.");
           }
 
           fm.w_o_ij[liveHerbIndex] += mossBiomass;
@@ -438,7 +441,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         //behavior.  See notes for herbaceous fules above.
         if (!fm.LiveHerbaceousPresent())
         {
-          BOOST_LOG_SEV(glg, fatal) << "The live woody fuel type is not active in this fuel model.";
+          BOOST_LOG_SEV(glg, fatal) << "The live woody fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
+          throw std::runtime_error("The live woody fuel type is not active in this fuel model.");
         }
 
         //Include aboveground parts:
@@ -805,7 +809,8 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       break;
 
     default:
-      BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT: " << cmtNumber;
+      BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT: " << cmtNumber;//FW_NOTE: Remove if throw yields message?
+      throw std::runtime_error("IsShrub() does not know this CMT: " + cmtNumber);
       break;
   }
   return false;
@@ -1593,7 +1598,8 @@ double WildFire::GetLitterBurntFraction() const
     
     if (!ValidProportion(litterBurntFraction))
     {
-      BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;
+      BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;//FW_NOTE: Remove if throw yields message?
+      throw std::runtime_error("Invalid litter burnt fraction calculated: " + litterBurntFraction);
     }
   }
 
@@ -1815,7 +1821,8 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     }
     else//Same as checking !thisLayer->isOrganic.
     {
-      BOOST_LOG_SEV(glg, fatal) << "Layer is not an expected organic type.";
+      BOOST_LOG_SEV(glg, fatal) << "Layer is not an expected organic type.";//FW_NOTE: Remove if throw yields message?
+      throw std::runtime_error("Layer is not an expected organic type.");
     }
 
     gfProfile.bulkDensity[i] = thisLayer->bulkden / gPerKg;//Dry soil mass per volume (g/m^3 -> kg/m^3).
@@ -1906,7 +1913,8 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   //Check the profile before interpolating:
   if (!gfProfile.Validate())
   {
-    BOOST_LOG_SEV(glg, fatal) << "Translated profile it not valid.";
+    BOOST_LOG_SEV(glg, fatal) << "Translated profile it not valid.";//FW_NOTE: Remove if throw yields message?
+    throw std::runtime_error("Translated profile it not valid.");
   }
 
   //Convert to layers of equal thickness and interpolate the values in the original profile:

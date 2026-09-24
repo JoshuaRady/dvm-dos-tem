@@ -23,6 +23,7 @@
 
 #include <string>
 #include <sstream>
+#include <stdexcept>
 
 #include "../include/WildFire.h"
 
@@ -249,7 +250,10 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
       }
       default:
       {
-        BOOST_LOG_SEV(glg, fatal) << "Undefined ignition mode! (" << stage << ")";
+        BOOST_LOG_SEV(glg, fatal) << "Undefined ignition mode! (" << stage << ")";//FW_NOTE: Not needed if error initiates failed status.
+        std::string msg = "Undefined ignition mode! (stage: " + stage + ", fire_ignition_mode: " + 
+                          fire_ignition_mode + ")";
+        throw std::runtime_error(msg);
         break;
       }
     }
