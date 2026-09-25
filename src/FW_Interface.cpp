@@ -30,6 +30,7 @@
 #include "FireweedMetUtils.h"
 #include "FireweedUtils.h"
 
+#include "../include/DDTMessenger.h"
 #include "../include/GroundFire.h"
 
 #include <cmath>//For fmin() & isnan().
@@ -66,6 +67,10 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   BOOST_LOG_SEV(glg, debug) << "Entering WildFire::ProcessWildfire()...";
 
   double burnDepth = 0.0;//Return value.
+
+  //Connect the Fireweed messaging system into DVM-DOS-TEM:----------------
+  DDTMessenger NewMessanger;
+  Msg = &NewMessanger;
 
   //Gather weather and environmental conditions:---------------------------
   double tempAir = GetAirTemperature();
