@@ -163,6 +163,7 @@ void Vegetation::initializeState() {
 void Vegetation::set_state_from_restartdata(const RestartData & rd) {
 
   cd->yrsdist = rd.yrsdist;
+  cd->mthsdist = rd.yrsdist * 12;
 
   for (int ip=0; ip<NUM_PFT; ip++) {
     cd->m_veg.vegage[ip]      = rd.vegage[ip];

@@ -22,6 +22,16 @@
 
 extern src::severity_logger< severity_level > glg;
 
+// Minimum thickness (m) of a shallow (fibric) organic layer. Organic layer
+// thickness is derived from carbon every month (updateOslThickness5Carbon),
+// and after a fire a new fibric layer is seeded from one month of aboveground
+// litterfall. When vegetation is (nearly) dead that litter can be ~1e-3 gC/m2,
+// giving dz ~ 1e-8 m. Such a layer breaks the soil N integration (NaN), freezes
+// the soil pools for the rest of the run and corrupts the restart file. The
+// layer must still exist (aboveground litter is only deposited into a fibric
+// layer), so its thickness is floored instead.
+static const double MIN_VIABLE_SHLW_THICK = 5.0e-4;
+
 std::string soildesc2tag(const bool val, std::string tag) {
   if (val) {
     std::stringstream ss;
@@ -1337,6 +1347,10 @@ COMBINEBEGIN:
     //if(bd->m_v2soi.ltrfalcall > 0.0){
       organic.shlwchanged =true;
       double thick = thicknessFromCarbon(abvgfallC, soildimpar.coefshlwa, soildimpar.coefshlwb);
+      // Aboveground litter is only deposited into a fibric layer, so the layer
+      // must be created even from a trace of litter; but give it a viable
+      // minimum thickness (see MIN_VIABLE_SHLW_THICK).
+      thick = fmax(thick, MIN_VIABLE_SHLW_THICK);
       //organic.ShlwThickScheme(MINSLWTHICK);
       organic.ShlwThickScheme(thick);
       OrganicLayer* plnew = new OrganicLayer(organic.shlwdz[0], 1, chtlu);
@@ -1680,7 +1694,7 @@ void Ground::combineTwoSoilLayersL2U(SoilLayer* lsl, SoilLayer* usl) {
   usl->sompr+=lsl->sompr;
   usl->somcr+=lsl->somcr;
   usl->orgn +=lsl->orgn;
-  usl->avln =+lsl->avln;
+  usl->avln +=lsl->avln;
   // after combination, needs to update 'usl'- 'frozen' status based on
   //   'fronts' if given
   getLayerFrozenstatusByFronts(usl);
@@ -2166,6 +2180,11 @@ void Ground::getOslThickness5Carbon(SoilLayer* sl, const double &plctop,
   }
 
   sl->dz=plbot-pltop;
+  // Keep a fibric layer numerically viable when it holds only a trace of C
+  // (e.g. right after a fire while vegetation is recovering).
+  if (sl->isFibric && sl->dz < MIN_VIABLE_SHLW_THICK) {
+    sl->dz = MIN_VIABLE_SHLW_THICK;
+  }
   double orgsoil_dz_new = sl->dz;
   //need to adjust 'freezing/thawing front depth', if 'fronts'
   //  depth below 'sl->z'

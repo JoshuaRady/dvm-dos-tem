@@ -189,7 +189,7 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
   {
     int fire_ignition_mode;
 
-    if (stage.compare("tr-run"))
+    if (stage.compare("tr-run") == 0)
     {
       fire_ignition_mode = md.fire_ignition_tr;
     }
@@ -837,8 +837,19 @@ void WildFire::updateBurntOrgSoil(double burndepth, double& burnedsolc, double& 
       rootfracsum += cd->m_soil.frootfrac[il][ip];
     }
 
-    for (int il = 0; il < cd->m_soil.numsl; il++) {
-      cd->m_soil.frootfrac[il][ip] /= rootfracsum;
+    // Guard against 0/0: if the burn consumed every root-bearing layer of
+    // this PFT (or the PFT has no roots), rootfracsum is 0 and dividing
+    // would write NaN into frootfrac. That NaN persists in the moss layer
+    // (never recomputed) and silently zeroes rtlfalfrac for all layers for
+    // the rest of the run (see Cohort::updateMonthly_Bgc).
+    if (rootfracsum > 0.0) {
+      for (int il = 0; il < cd->m_soil.numsl; il++) {
+        cd->m_soil.frootfrac[il][ip] /= rootfracsum;
+      }
+    } else {
+      for (int il = 0; il < cd->m_soil.numsl; il++) {
+        cd->m_soil.frootfrac[il][ip] = 0.0;
+      }
     }
   }
 }

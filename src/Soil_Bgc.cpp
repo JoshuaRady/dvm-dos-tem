@@ -28,6 +28,19 @@
 
 extern src::severity_logger< severity_level > glg;
 
+// Safeguards for the litterfall C:N -> decomposition rate (kd) adjustment.
+// kd = kdc * (ltrfcn/lcclnc)^-0.784 has no lower bound on ltrfcn, so a
+// degenerate litter flux (e.g. a dead PFT that still sheds structural N but
+// almost no C, giving C:N ~ 1e-5) can amplify kd by 1e5-1e6 and empty the
+// soil C pools within a few months.
+//
+// MIN_LTRFAL_C_FOR_CN: layer litterfall C flux (gC/m2/month) below which the
+//   litter input is treated as absent for the C:N diagnostic (ltrfcn = 0 ->
+//   default kdc is used, as in months without litterfall).
+// MIN_LTRFAL_CN: lowest litterfall C:N ratio allowed in getKdyrly().
+static const double MIN_LTRFAL_C_FOR_CN = 1.0e-3;
+static const double MIN_LTRFAL_CN = 1.0;
+
 /** New constructor. Build it complete! Build it right! */
 Soil_Bgc::Soil_Bgc(): nfeed(false), avlnflg(false), baseline(false),
                       d2wdebrisc(UIN_D), d2wdebrisn(UIN_D),
@@ -153,7 +166,7 @@ void Soil_Bgc::prepareIntegration(const bool &mdnfeedback,
       ltrfln[i] = bd->m_v2soi.rtlfalfrac[i] * blwlfn;
     }
 
-    if (ltrflc[i]>0. && ltrfln[i]> 0.) {
+    if (ltrflc[i] > MIN_LTRFAL_C_FOR_CN && ltrfln[i] > 0.) {
       bd->m_soid.ltrfcn[i] = ltrflc[i]/ltrfln[i];
     } else {
       bd->m_soid.ltrfcn[i] = 0.0;
@@ -365,8 +378,8 @@ void Soil_Bgc::set_state_from_restartdata(const RestartData & rdata) {
 		  bd->m_sois.avln[il] = 0;
     }
 
-    for(int i=0; i<10; i++) {
-      bd->prvltrfcnque[il].clear();
+    bd->prvltrfcnque[il].clear();
+    for(int i=0; i<12; i++) {
       double tmpcn = rdata.prvltrfcnA[i][il];
 
       if(tmpcn!=MISSING_D) {
@@ -733,8 +746,17 @@ void Soil_Bgc::deltan() {
         double nminadj = del_soi2l.avlnlost +
                          totnextract - bd->m_a2soi.avlninput - totdzavln;
 
-        for(int i=0; i<cd->m_soil.numsl; i++) {
-          del_soi2soi.netnmin[i] *=nminadj/totnetnmin;
+        // Guard against 0/0: when there is no net mineralization anywhere
+        // (e.g. right after a fire removed all organic-layer N while the
+        // mineral layers are frozen) the rescaling would write NaN into
+        // netnmin for every layer, which then poisons all soil N pools and
+        // freezes the soil BGC for the rest of the run. In that case there
+        // is nothing to redistribute; the N deficit is handled by the
+        // integrator (negative avln is taken from orgn).
+        if (totnetnmin != 0.0) {
+          for(int i=0; i<cd->m_soil.numsl; i++) {
+            del_soi2soi.netnmin[i] *=nminadj/totnetnmin;
+          }
         }
       }
     } else { // End (this->avlnflg == 1)
@@ -1134,7 +1156,9 @@ void Soil_Bgc::updateKdyrly4all() {
 double Soil_Bgc::getKdyrly(double & yrltrcn, const double lcclnc,
                            const double & kdc) {
   double kd = kdc;
-  kd = kdc * pow( (yrltrcn),-0.784 ) / pow( lcclnc,-0.784 );
+  // Bound the C:N ratio from below so the power law cannot blow up.
+  double cn = (yrltrcn > MIN_LTRFAL_CN) ? yrltrcn : MIN_LTRFAL_CN;
+  kd = kdc * pow( cn,-0.784 ) / pow( lcclnc,-0.784 );
   return kd;
 };
 

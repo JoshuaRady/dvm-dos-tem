@@ -154,6 +154,8 @@ void Vegetation_Bgc::set_state_from_restartdata(const RestartData & rdata) {
   bd->m_vegs.labn = rdata.labn[ipft];
   bd->m_vegs.deadc = rdata.deadc[ipft];
   bd->m_vegs.deadn = rdata.deadn[ipft];
+  bd->m_vegs.deadc0 = rdata.deadc[ipft];
+  bd->m_vegs.deadn0 = rdata.deadn[ipft];
   //
   bd->m_vegs.call    = 0.;
   bd->m_vegs.strnall = 0.;
