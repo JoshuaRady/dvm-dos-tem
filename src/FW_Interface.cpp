@@ -815,7 +815,7 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
 
     default:
       BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT: " << cmtNumber;//FW_NOTE: Remove if throw yields message?
-      throw std::runtime_error("IsShrub() does not know this CMT: " + cmtNumber);
+      throw std::runtime_error("IsShrub() does not know this CMT: " + std::to_string(cmtNumber));
       break;
   }
   return false;
@@ -1604,7 +1604,7 @@ double WildFire::GetLitterBurntFraction() const
     if (!ValidProportion(litterBurntFraction))
     {
       BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;//FW_NOTE: Remove if throw yields message?
-      throw std::runtime_error("Invalid litter burnt fraction calculated: " + litterBurntFraction);
+      throw std::runtime_error("Invalid litter burnt fraction calculated: " + std::to_string(litterBurntFraction));
     }
   }
 
@@ -1918,8 +1918,8 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   //Check the profile before interpolating:
   if (!gfProfile.Validate())
   {
-    BOOST_LOG_SEV(glg, fatal) << "Translated profile it not valid.";//FW_NOTE: Remove if throw yields message?
-    throw std::runtime_error("Translated profile it not valid.");
+    BOOST_LOG_SEV(glg, fatal) << "Translated profile is not valid.";//FW_NOTE: Remove if throw yields message?
+    throw std::runtime_error("Translated profile is not valid.");
   }
 
   //Convert to layers of equal thickness and interpolate the values in the original profile:
