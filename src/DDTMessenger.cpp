@@ -15,6 +15,8 @@
 
 #include <stdexcept>
 
+extern src::severity_logger< severity_level > glg;
+
 /** Post neutral log messages at the info level.
  *
  * @param message A message to log.
