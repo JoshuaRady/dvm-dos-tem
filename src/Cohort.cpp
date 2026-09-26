@@ -963,6 +963,10 @@ void Cohort::getSoilFineRootFrac_Monthly() {
                                                                 ROOTTHICK);
 //          cd.m_soil.frootfrac[il][ip] *= bd[ip].m_vegs.c[I_root];  // root C
 //          totfrootc += cd.m_soil.frootfrac[il][ip];
+        } else {
+          // moss layer: no roots. Reset explicitly so that a stale value
+          // (e.g. NaN from a fire event) can never persist between months.
+          cd.m_soil.frootfrac[il][ip] = 0.0;
         }
       } // end m_soil.numsl loop
     } // end veg.cov[ip] > 0.0
