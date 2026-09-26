@@ -17,9 +17,9 @@
 
 class DDTMessenger : public FWMessenger {
   public:
-    void Log(const std::string& message);
-    void Warning(const std::string& message);
-    void Stop(const std::string& message);
+    void Log(const std::string& message) const;
+    void Warning(const std::string& message) const;
+    void Stop(const std::string& message) const;
 };
 
 #endif //DDTMESSENGER_H
