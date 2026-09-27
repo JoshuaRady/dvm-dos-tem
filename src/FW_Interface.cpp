@@ -45,6 +45,9 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
 //This could vary by PFT but many models use a single value.
 const double gPerKg = 1000;//Move to FireweedUnits.h?
 
+//A global object used to connect the Fireweed's messaging system to DVM-DOS-TEM's native system:
+DDTMessenger NewMessanger;
+
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
  *
  * This is the main entry point for the process based wildfire model.
@@ -69,7 +72,6 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   double burnDepth = 0.0;//Return value.
 
   //Connect the Fireweed messaging system into DVM-DOS-TEM:----------------
-  DDTMessenger NewMessanger;
   Msg = &NewMessanger;
 
   //Gather weather and environmental conditions:---------------------------
