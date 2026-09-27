@@ -250,10 +250,9 @@ bool WildFire::should_ignite(const int year, const int midx, const std::string& 
       }
       default:
       {
-        BOOST_LOG_SEV(glg, fatal) << "Undefined ignition mode! (" << stage << ")";//FW_NOTE: Not needed if error initiates failed status.
-        std::string msg = "Undefined ignition mode! (stage: " + stage + ", fire_ignition_mode: " + 
-                          std::to_string(fire_ignition_mode) + ")";
-        throw std::runtime_error(msg);
+        throw std::runtime_error("Undefined ignition mode! (stage: " + stage +
+                                 ", fire_ignition_mode: " +  std::to_string(fire_ignition_mode) +
+                                 ")");
         break;
       }
     }

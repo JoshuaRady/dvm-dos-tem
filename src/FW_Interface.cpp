@@ -404,7 +404,6 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         //needs to be addressed during fuel model selection.
         if (!fm.LiveHerbaceousPresent())
         {
-          BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
           throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model: " +
                                    fm.code + "/" + std::to_string(fm.code));
         }
@@ -430,7 +429,6 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
           //See notes above.
           if (!fm.LiveHerbaceousPresent())
           {
-            BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
             throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model: " +
                                      fm.code + "/" + std::to_string(fm.code));
           }
@@ -448,7 +446,6 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         //behavior.  See notes for herbaceous fules above.
         if (!fm.LiveWoodyPresent())
         {
-          BOOST_LOG_SEV(glg, fatal) << "The live woody fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
           throw std::runtime_error("The live woody fuel type is not active in this fuel model: " +
                                    fm.code + "/" + std::to_string(fm.code));
         }
@@ -817,7 +814,6 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       break;
 
     default:
-      BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT: " << cmtNumber;//FW_NOTE: Remove if throw yields message?
       throw std::runtime_error("IsShrub() does not know this CMT: " + std::to_string(cmtNumber));
       break;
   }
@@ -1606,7 +1602,6 @@ double WildFire::GetLitterBurntFraction() const
     
     if (!ValidProportion(litterBurntFraction))
     {
-      BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;//FW_NOTE: Remove if throw yields message?
       throw std::runtime_error("Invalid litter burnt fraction calculated: " + std::to_string(litterBurntFraction));
     }
   }
@@ -1829,7 +1824,6 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     }
     else//Same as checking !thisLayer->isOrganic.
     {
-      BOOST_LOG_SEV(glg, fatal) << "Layer is not an expected organic type.";//FW_NOTE: Remove if throw yields message?
       throw std::runtime_error("Layer is not an expected organic type.");
     }
 
@@ -1921,7 +1915,6 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   //Check the profile before interpolating:
   if (!gfProfile.Validate())
   {
-    BOOST_LOG_SEV(glg, fatal) << "Translated profile is not valid.";//FW_NOTE: Remove if throw yields message?
     throw std::runtime_error("Translated profile is not valid.");
   }
 
