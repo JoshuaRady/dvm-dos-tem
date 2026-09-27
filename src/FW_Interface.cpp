@@ -436,7 +436,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
       {
         //If the woody class is not present adding carbon to it will not influence the fire
         //behavior.  See notes for herbaceous fules above.
-        if (!fm.LiveHerbaceousPresent())
+        if (!fm.LiveWoodyPresent())
         {
           BOOST_LOG_SEV(glg, fatal) << "The live woody fuel type is not active in this fuel model.";
         }
