@@ -405,7 +405,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         if (!fm.LiveHerbaceousPresent())
         {
           BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
-          throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model.");
+          throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model: " +
+                                   fm.code + "/" + std::to_string(fm.code));
         }
 
         //Include aboveground parts:
@@ -430,7 +431,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
           if (!fm.LiveHerbaceousPresent())
           {
             BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
-            throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model.");
+            throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model: " +
+                                     fm.code + "/" + std::to_string(fm.code));
           }
 
           fm.w_o_ij[liveHerbIndex] += mossBiomass;
@@ -447,7 +449,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         if (!fm.LiveWoodyPresent())
         {
           BOOST_LOG_SEV(glg, fatal) << "The live woody fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
-          throw std::runtime_error("The live woody fuel type is not active in this fuel model.");
+          throw std::runtime_error("The live woody fuel type is not active in this fuel model: " +
+                                   fm.code + "/" + std::to_string(fm.code));
         }
 
         //Include aboveground parts:
