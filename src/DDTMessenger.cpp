@@ -45,8 +45,7 @@ void DDTMessenger::Warning(const std::string& message) const
  */
 void DDTMessenger::Stop(const std::string& message) const
 {
-	*errorStream << "Error: " << message << std::endl;//Temporary: Leave in the leaky messaging for now.
-	//The code catching the exception should record the message but we do it manually to be safe.
+	//The code catching the exception should record the message but we do it manually to be safe:
 	BOOST_LOG_SEV(glg, fatal) << message;
 	throw std::runtime_error(message);
 }
