@@ -30,7 +30,7 @@
 #include "FireweedMetUtils.h"
 #include "FireweedUtils.h"
 
-#include "../include/DDTMessenger.h"
+#include "../include/FireweedToTEMLogger.h"
 #include "../include/GroundFire.h"
 
 #include <cmath>//For fmin() & isnan().
