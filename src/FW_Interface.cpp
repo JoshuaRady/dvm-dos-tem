@@ -46,7 +46,7 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
 const double gPerKg = 1000;//Move to FireweedUnits.h?
 
 //A global object used to connect the Fireweed's messaging system to DVM-DOS-TEM's native system:
-DDTMessenger FWtoDDTMessanger;
+FWtoTEMMessenger FWtoDDTMessanger;
 
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
  *
