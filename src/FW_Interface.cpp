@@ -406,9 +406,22 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         //needs to be addressed during fuel model selection.
         if (!fm.LiveHerbaceousPresent())
         {
-          throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model: " +
-                                   fm.code + "/" + std::to_string(fm.number) + ", for CMT " +
-                                   std::to_string(cd->cmttype));
+          //Currently one CMT using fuel model TU2/162 has forbs.  For now we allow the herbaceous
+          //component to be ignored.  This is an area for potential refinement:
+          //Note: Other CMTs have moss without a live herbaceous class.  This will only cause
+          //problems if moss is not treated like a dead fuel.
+          if (fm.numvber == 101)
+          {
+            BOOST_LOG_SEV(glg, warn) <<
+              "Live herbaceous fuel is currently ignored with fuel model TU2/162 for CMT " <<
+              cd->cmttype;
+          }
+          else
+          {
+            throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model: " +
+                                     fm.code + "/" + std::to_string(fm.number) + ", for CMT " +
+                                     std::to_string(cd->cmttype));
+          }
         }
 
         //Include aboveground parts:
@@ -447,12 +460,23 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
       if (IsShrub(cd->cmttype, pftIndex))
       {
         //If the woody class is not present adding carbon to it will not influence the fire
-        //behavior.  See notes for herbaceous fules above.
+        //behavior.  See notes for herbaceous fuels above.
         if (!fm.LiveWoodyPresent())
         {
-          throw std::runtime_error("The live woody fuel type is not active in this fuel model: " +
-                                   fm.code + "/" + std::to_string(fm.number) + ", for CMT " +
-                                   std::to_string(cd->cmttype));
+          //Some CMTs using fuel model GR1/101 have shrubs.  For now we allow the shrub component to
+          //be ignored.  This is an area for potential refinement:
+          if (fm.numvber == 101)
+          {
+            BOOST_LOG_SEV(glg, warn) <<
+              "Live woody fuel is currently ignored with fuel model GR1/101 for CMT " <<
+              cd->cmttype;
+          }
+          else
+          {
+            throw std::runtime_error("The live woody fuel type is not active in this fuel model: " +
+                                     fm.code + "/" + std::to_string(fm.number) + ", for CMT " +
+                                     std::to_string(cd->cmttype));
+          }
         }
 
         //Include aboveground parts:
