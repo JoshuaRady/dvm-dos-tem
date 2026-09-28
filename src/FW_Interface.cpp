@@ -410,7 +410,7 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
           //component to be ignored.  This is an area for potential refinement:
           //Note: Other CMTs have moss without a live herbaceous class.  This will only cause
           //problems if moss is not treated like a dead fuel.
-          if (fm.number == 101)
+          if (fm.number == 162)
           {
             BOOST_LOG_SEV(glg, warn) <<
               "Live herbaceous fuel is currently ignored with fuel model TU2/162 for CMT " <<
