@@ -1,5 +1,5 @@
 /***********************************************************************************************//**
- * @file DDTMessenger.h
+ * @file FireweedToTEMLogger.h
  * \author Joshua M. Rady
  * Woodwell Climate Research Center
  * \date 2026
@@ -10,16 +10,16 @@
  *
  **************************************************************************************************/
 
-#ifndef DDTMESSENGER_H
-#define DDTMESSENGER_H
+#ifndef FIREWEEDTOTEMLOGGER_H
+#define FIREWEEDTOTEMLOGGER_H
 
 #include "FireweedMessaging.h"
 
-class DDTMessenger : public FWMessenger {
+class FWtoTEMMessenger : public FWMessenger {
   public:
     void Log(const std::string& message) const;
     void Warning(const std::string& message) const;
     void Stop(const std::string& message) const;
 };
 
-#endif //DDTMESSENGER_H
+#endif //FIREWEEDTOTEMLOGGER_H

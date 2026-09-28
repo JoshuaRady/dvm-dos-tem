@@ -1,5 +1,5 @@
 /***********************************************************************************************//**
- * @file DDTMessenger.cpp
+ * @file FireweedToTEMLogger.cpp
  * \author Joshua M. Rady
  * Woodwell Climate Research Center
  * \date 2026
@@ -10,7 +10,7 @@
  *
  **************************************************************************************************/
 
-#include "./include/DDTMessenger.h"
+#include "./include/FireweedToTEMLogger.h"
 #include "../include/TEMLogger.h"
 
 #include <stdexcept>
@@ -21,7 +21,7 @@ extern src::severity_logger< severity_level > glg;
  *
  * @param message A message to log.
  */
-void DDTMessenger::Log(const std::string& message) const
+void FWtoTEMMessenger::Log(const std::string& message) const
 {
 	BOOST_LOG_SEV(glg, info) << message;
 }
@@ -30,7 +30,7 @@ void DDTMessenger::Log(const std::string& message) const
  *
  * @param message A warning message.
  */
-void DDTMessenger::Warning(const std::string& message) const
+void FWtoTEMMessenger::Warning(const std::string& message) const
 {
 	BOOST_LOG_SEV(glg, warn) << message;
 }
@@ -43,10 +43,9 @@ void DDTMessenger::Warning(const std::string& message) const
  *
  * @param message An error message.
  */
-void DDTMessenger::Stop(const std::string& message) const
+void FWtoTEMMessenger::Stop(const std::string& message) const
 {
-	*errorStream << "Error: " << message << std::endl;//Temporary: Leave in the leaky messaging for now.
-	//The code catching the exception should record the message but we do it manually to be safe.
+	//The code catching the exception should record the message but we do it manually to be safe:
 	BOOST_LOG_SEV(glg, fatal) << message;
 	throw std::runtime_error(message);
 }

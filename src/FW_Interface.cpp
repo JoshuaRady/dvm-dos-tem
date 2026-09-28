@@ -45,6 +45,9 @@ const double c2b = 2.0;//The carbon to biomass multiplier for vegetation on a dr
 //This could vary by PFT but many models use a single value.
 const double gPerKg = 1000;//Move to FireweedUnits.h?
 
+//A global object used to connect the Fireweed's messaging system to DVM-DOS-TEM's native system:
+FWtoTEMMessenger FWtoTEMMsg;
+
 /** Calculate wildfire behavior and effects using the modeled vegetation, fuels, and meteorology.
  *
  * This is the main entry point for the process based wildfire model.
@@ -69,8 +72,7 @@ double WildFire::ProcessWildfire(const int monthIndex)//Name could change.
   double burnDepth = 0.0;//Return value.
 
   //Connect the Fireweed messaging system into DVM-DOS-TEM:----------------
-  DDTMessenger NewMessanger;
-  Msg = &NewMessanger;
+  Msg = &FWtoTEMMsg;
 
   //Gather weather and environmental conditions:---------------------------
   double tempAir = GetAirTemperature();
@@ -404,8 +406,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
         //needs to be addressed during fuel model selection.
         if (!fm.LiveHerbaceousPresent())
         {
-          BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
-          throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model.");
+          throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model: " +
+                                   fm.code + "/" + std::to_string(fm.code));
         }
 
         //Include aboveground parts:
@@ -429,8 +431,8 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
           //See notes above.
           if (!fm.LiveHerbaceousPresent())
           {
-            BOOST_LOG_SEV(glg, fatal) << "The live herbaceous fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
-            throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model.");
+            throw std::runtime_error("The live herbaceous fuel type is not active in this fuel model: " +
+                                     fm.code + "/" + std::to_string(fm.code));
           }
 
           fm.w_o_ij[liveHerbIndex] += mossBiomass;
@@ -444,10 +446,10 @@ void WildFire::CohortStatesToFuelLoading(FuelModel& fm, const bool treatMossAsDe
       {
         //If the woody class is not present adding carbon to it will not influence the fire
         //behavior.  See notes for herbaceous fules above.
-        if (!fm.LiveHerbaceousPresent())
+        if (!fm.LiveWoodyPresent())
         {
-          BOOST_LOG_SEV(glg, fatal) << "The live woody fuel type is not active in this fuel model.";//FW_NOTE: Remove if throw yields message?
-          throw std::runtime_error("The live woody fuel type is not active in this fuel model.");
+          throw std::runtime_error("The live woody fuel type is not active in this fuel model: " +
+                                   fm.code + "/" + std::to_string(fm.code));
         }
 
         //Include aboveground parts:
@@ -814,7 +816,6 @@ bool IsShrub(const int cmtNumber, const int pftIdx)
       break;
 
     default:
-      BOOST_LOG_SEV(glg, fatal) << "IsShrub() does not know this CMT: " << cmtNumber;//FW_NOTE: Remove if throw yields message?
       throw std::runtime_error("IsShrub() does not know this CMT: " + std::to_string(cmtNumber));
       break;
   }
@@ -1603,7 +1604,6 @@ double WildFire::GetLitterBurntFraction() const
     
     if (!ValidProportion(litterBurntFraction))
     {
-      BOOST_LOG_SEV(glg, fatal) << "Invalid litter burnt fraction calculated: " << litterBurntFraction;//FW_NOTE: Remove if throw yields message?
       throw std::runtime_error("Invalid litter burnt fraction calculated: " + std::to_string(litterBurntFraction));
     }
   }
@@ -1826,7 +1826,6 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
     }
     else//Same as checking !thisLayer->isOrganic.
     {
-      BOOST_LOG_SEV(glg, fatal) << "Layer is not an expected organic type.";//FW_NOTE: Remove if throw yields message?
       throw std::runtime_error("Layer is not an expected organic type.");
     }
 
@@ -1918,7 +1917,6 @@ GFProfile WildFire::GroundFireGetSoilProfile() const
   //Check the profile before interpolating:
   if (!gfProfile.Validate())
   {
-    BOOST_LOG_SEV(glg, fatal) << "Translated profile is not valid.";//FW_NOTE: Remove if throw yields message?
     throw std::runtime_error("Translated profile is not valid.");
   }
 
